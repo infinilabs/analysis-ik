@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>org.elasticsearch.index.analysis.IKAnalysisBinderProcessor</OriginalElement>
+  <nodes>
+    <node x="1244.0" y="553.0">org.elasticsearch.index.analysis.IKAnalysisBinderProcessor</node>
+    <node x="2212.0" y="489.0">org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.AnalyzersBindings</node>
+    <node x="1316.0" y="0.0">java.lang.Object</node>
+    <node x="1244.0" y="329.0">org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor</node>
+    <node x="616.0" y="510.0">org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.TokenFiltersBindings</node>
+    <node x="0.0" y="510.0">org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.CharFiltersBindings</node>
+    <node x="1608.0" y="510.0">org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.TokenizersBindings</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.TokenFiltersBindings" target="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor">
+      <point x="152.0" y="-77.0" />
+      <point x="1072.0" y="469.0" />
+      <point x="1347.2" y="469.0" />
+      <point x="-68.79999999999995" y="55.0" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.CharFiltersBindings" target="java.lang.Object">
+      <point x="-149.0" y="-77.0" />
+      <point x="149.0" y="299.0" />
+      <point x="1336.0" y="299.0" />
+      <point x="-80.0" y="139.5" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor" target="java.lang.Object">
+      <point x="0.0" y="-55.0" />
+      <point x="0.0" y="139.5" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.AnalyzersBindings" target="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor">
+      <point x="-180.5" y="-98.0" />
+      <point x="2392.5" y="459.0" />
+      <point x="1553.6" y="459.0" />
+      <point x="137.5999999999999" y="55.0" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.CharFiltersBindings" target="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor">
+      <point x="149.0" y="-77.0" />
+      <point x="447.0" y="459.0" />
+      <point x="1278.4" y="459.0" />
+      <point x="-137.5999999999999" y="55.0" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.IKAnalysisBinderProcessor" target="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor">
+      <point x="0.0" y="-34.0" />
+      <point x="0.0" y="55.0" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.TokenFiltersBindings" target="java.lang.Object">
+      <point x="-152.0" y="-77.0" />
+      <point x="768.0" y="309.0" />
+      <point x="1376.0" y="309.0" />
+      <point x="-40.0" y="139.5" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.AnalyzersBindings" target="java.lang.Object">
+      <point x="180.5" y="-98.0" />
+      <point x="2753.5" y="299.0" />
+      <point x="1496.0" y="299.0" />
+      <point x="80.0" y="139.5" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.TokenizersBindings" target="java.lang.Object">
+      <point x="146.0" y="-77.0" />
+      <point x="2046.0" y="309.0" />
+      <point x="1456.0" y="309.0" />
+      <point x="40.0" y="139.5" />
+    </edge>
+    <edge source="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor.TokenizersBindings" target="org.elasticsearch.index.analysis.AnalysisModule.AnalysisBinderProcessor">
+      <point x="-146.0" y="-77.0" />
+      <point x="1754.0" y="469.0" />
+      <point x="1484.8" y="469.0" />
+      <point x="68.79999999999995" y="55.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="110.5" y="89.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Fields</Category>
+    <Category>Methods</Category>
+    <Category>Constructors</Category>
+    <Category>Inner Classes</Category>
+    <Category>Properties</Category>
+  </Categories>
+</Diagram>
+
