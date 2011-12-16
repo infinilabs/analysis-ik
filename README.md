@@ -17,7 +17,7 @@ Dict Configuration (es-root/config/ik/IKAnalyzer.cfg.xml)
 	<entry key="ext_dict">custom/mydict.dic;custom/sougou.dict</entry>
 	<entry key="ext_stopwords">custom/ext_stopword.dic</entry>
 </properties>
-<pre>
+</pre>
 
 Configuration (elasticsearch.yml)
 -------------
