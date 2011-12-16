@@ -13,6 +13,7 @@ Dict Configuration (es-root/config/ik/IKAnalyzer.cfg.xml)
 -------------
 
 https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnalyzer.cfg.xml
+
 <pre>
 
 ﻿<?xml version="1.0" encoding="UTF-8"?>
