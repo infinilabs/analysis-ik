@@ -32,6 +32,7 @@ Analysis Configuration (elasticsearch.yml)
 -------------
 
 <pre>
+
     {
         "index" : {
             "analysis" : {
@@ -43,6 +44,7 @@ Analysis Configuration (elasticsearch.yml)
             }
         }
     }
+    
 </pre>
 
 Mapping Configuration
@@ -50,12 +52,17 @@ Mapping Configuration
 
 Here is a quick example:
 1.create a index
+
 <pre>
+
 curl -XPUT http://localhost:9200/index
+
 </pre>
 
 2.create a mapping
+
 <pre>
+
 curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
     "fulltext": {
@@ -81,7 +88,9 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 </pre>
 
 3.indexing some docs
+
 <pre>
+
 curl -XPOST http://localhost:9200/index/fulltext/1 -d'
 {content:"美国留给伊拉克的是个烂摊子吗"}
 '
@@ -100,7 +109,9 @@ curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 </pre>
 
 4.query with highlighting
+
 <pre>
+
 curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 {
     "query" : { "term" : { "content" : "中国" }},
