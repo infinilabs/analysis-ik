@@ -116,7 +116,9 @@ curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 </pre>
 
 here is the query result
+
 <pre>
+
 {
     "took": 14,
     "timed_out": false,
@@ -160,6 +162,8 @@ here is the query result
         ]
     }
 }
+
 </pre>
+
 
 have fun.
