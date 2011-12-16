@@ -12,13 +12,7 @@ you need a service restart after that!
 Dict Configuration (es-root/config/ik/IKAnalyzer.cfg.xml)
 -------------
 
-<pre>
-<properties>
-	<comment>IK Analyzer 扩展配置</comment>
-	<entry key="ext_dict">custom/mydict.dic;custom/sougou.dict</entry>
-	<entry key="ext_stopwords">custom/ext_stopword.dic</entry>
-</properties>
-</pre>
+https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnalyzer.cfg.xml
 
 Configuration (elasticsearch.yml)
 -------------
