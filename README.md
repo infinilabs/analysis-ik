@@ -14,7 +14,7 @@ Dict Configuration (es-root/config/ik/IKAnalyzer.cfg.xml)
 
 https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnalyzer.cfg.xml
 
-Configuration (elasticsearch.yml)
+Analysis Configuration (elasticsearch.yml)
 -------------
 
 <pre>
