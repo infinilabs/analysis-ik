@@ -7,6 +7,13 @@ In order to install the plugin, simply run: `bin/plugin -install medcl/elasticse
 wget http://github.com/downloads/medcl/elasticsearch-analysis-ik/ik.zip
 unzip these dict file to your elasticsearch's config folder,like: your-es-root/config/ik
 
+<pre>
+cd config
+wget http://github.com/downloads/medcl/elasticsearch-analysis-ik/ik.zip --no-check-certificate
+unzip ik.zip
+rm ik.zip
+</pre>
+
 you need a service restart after that!
 
 Dict Configuration (es-root/config/ik/IKAnalyzer.cfg.xml)
