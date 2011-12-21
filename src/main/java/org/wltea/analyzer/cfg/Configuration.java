@@ -27,7 +27,7 @@ import static org.wltea.analyzer.dic.Dictionary.*;
 
 public class Configuration {
 
-	private static String FILE_NAME = "ik/IkAnalyzer.cfg.xml";
+	private static String FILE_NAME = "ik/IKAnalyzer.cfg.xml";
 	private static final String EXT_DICT = "ext_dict";
 	private static final String EXT_STOP = "ext_stopwords";
     private static ESLogger logger = null;
