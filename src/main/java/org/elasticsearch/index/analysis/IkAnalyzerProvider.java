@@ -9,14 +9,23 @@ import org.elasticsearch.index.Index;
 import org.elasticsearch.index.settings.IndexSettings;
 import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.lucene.IKAnalyzer;
-
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {
     private final IKAnalyzer analyzer;
+    private ESLogger logger=null;
     @Inject
     public IkAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, Environment env, @Assisted String name, @Assisted Settings settings) {
         super(index, indexSettings, name, settings);
-        analyzer=new IKAnalyzer(settings);
+
+//        logger = Loggers.getLogger("ik-analyzer");
+//
+//        logger.info("[Setting] {}",settings.getAsMap().toString());
+//        logger.info("[Index Setting] {}",indexSettings.getAsMap().toString());
+//        logger.info("[Env Setting] {}",env.configFile());
+
+        analyzer=new IKAnalyzer(indexSettings);
     }
 
     @Override

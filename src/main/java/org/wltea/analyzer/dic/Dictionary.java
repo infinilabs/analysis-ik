@@ -57,6 +57,8 @@ public class Dictionary {
 
     public void Init(Settings settings){
 
+//        logger.info("[Init Setting] {}",settings.getAsMap().toString());
+
             if(!dictInited){
                 environment =new Environment(settings);
                 configuration=new Configuration(settings);
@@ -74,6 +76,17 @@ public class Dictionary {
 		_MainDict = new DictSegment((char)0);
 
         File file= new File(environment.configFile(), Dictionary.PATH_DIC_MAIN);
+
+//        logger.info("[Main Dict Loading] {}",file.getAbsolutePath());
+//        logger.info("[Environment] {}",environment.homeFile());
+//        logger.info("[Environment] {}",environment.workFile());
+//        logger.info("[Environment] {}",environment.workWithClusterFile());
+//        logger.info("[Environment] {}",environment.dataFiles());
+//        logger.info("[Environment] {}",environment.dataWithClusterFiles());
+//        logger.info("[Environment] {}",environment.configFile());
+//        logger.info("[Environment] {}",environment.pluginsFile());
+//        logger.info("[Environment] {}",environment.logsFile());
+
         InputStream is = null;
         try {
             is = new FileInputStream(file);

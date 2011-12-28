@@ -25,6 +25,8 @@ public final class IKAnalyzer extends Analyzer {
 	}
 
     public IKAnalyzer(Settings settings) {
+
+
        Dictionary.getInstance().Init(settings);
     }
 
