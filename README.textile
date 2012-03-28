@@ -46,20 +46,17 @@ https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnaly
 Analysis Configuration (elasticsearch.yml)
 -------------
 
+<Pre>
+index:
+  analysis:                   
+    analyzer:      
+      mmseg:
+          alias: [mmseg_analyzer]
+          type: org.elasticsearch.index.analysis.MMsegAnalyzerProvider
+</pre>
+Or
 <pre>
-
-    {
-        "index" : {
-            "analysis" : {
-                "analyzer" : {
-                    "ik" : {
-                        type: org.elasticsearch.index.analysis.IkAnalyzerProvider
-                    }
-                }
-            }
-        }
-    }
-    
+index.analysis.analyzer.mmseg.type : "mmseg"
 </pre>
 
 Mapping Configuration
