@@ -50,13 +50,13 @@ Analysis Configuration (elasticsearch.yml)
 index:
   analysis:                   
     analyzer:      
-      mmseg:
-          alias: [mmseg_analyzer]
-          type: org.elasticsearch.index.analysis.MMsegAnalyzerProvider
+      ik:
+          alias: [ik_analyzer]
+          type: org.elasticsearch.index.analysis.IkAnalyzerProvider
 </pre>
 Or
 <pre>
-index.analysis.analyzer.mmseg.type : "mmseg"
+index.analysis.analyzer.ik.type : "ik"
 </pre>
 
 Mapping Configuration
