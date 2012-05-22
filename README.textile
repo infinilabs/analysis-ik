@@ -4,15 +4,15 @@ IK Analysis for ElasticSearch
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
 
-    --------------------------------------------------
-    | IK  Analysis Plugin         |   ElasticSearch  |
-    --------------------------------------------------
-    | master                      | 0.19.4 -> master |
-    --------------------------------------------------
-    | 1.1.0                       | 0.19.4 -> master |
-    --------------------------------------------------
-    | 1.0.0                       | 0.16.2 -> 0.19.0 |
-    --------------------------------------------------
+--------------------------------------------------
+| IK  Analysis Plugin         |   ElasticSearch  |
+--------------------------------------------------
+| master                      | 0.19.4 -> master |
+--------------------------------------------------
+| 1.1.0                       | 0.19.4 -> master |
+--------------------------------------------------
+| 1.0.0                       | 0.16.2 -> 0.19.0 |
+--------------------------------------------------
 
 
 Install
@@ -85,7 +85,7 @@ curl -XPUT http://localhost:9200/index
 
 2.create a mapping
 
-```bash
+<pre>
 
 curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
@@ -108,13 +108,12 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
             }
         }
     }
-}
-'
-```
+}'
+</pre>
 
 3.indexing some docs
 
-```bash
+<pre>
 
 curl -XPOST http://localhost:9200/index/fulltext/1 -d'
 {content:"美国留给伊拉克的是个烂摊子吗"}
@@ -131,12 +130,11 @@ curl -XPOST http://localhost:9200/index/fulltext/3 -d'
 curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 {content:"中国驻洛杉矶领事馆遭亚裔男子枪击 嫌犯已自首"}
 '
-
-```
+</pre>
 
 4.query with highlighting
 
-```bash
+<pre>
 
 curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 {
@@ -150,11 +148,11 @@ curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
     }
 }
 '
-```
+</pre>
 
 here is the query result
 
-```bash
+<pre>
 
 {
     "took": 14,
@@ -200,7 +198,7 @@ here is the query result
     }
 }
 
-```
+</pre>
 
 
 have fun.
