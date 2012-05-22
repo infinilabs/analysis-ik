@@ -28,7 +28,7 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
         analyzer=new IKAnalyzer(indexSettings);
     }
 
-    @Override
+/*    @Override
     public String name() {
         return "ik";
     }
@@ -36,7 +36,20 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
     @Override
     public AnalyzerScope scope() {
         return AnalyzerScope.INDEX;
-    }
+    }*/
+
+
+    public IkAnalyzerProvider(Index index, Settings indexSettings, String name,
+    		Settings settings) {
+		super(index, indexSettings, name, settings);
+		analyzer=new IKAnalyzer(indexSettings);
+	}
+
+	public IkAnalyzerProvider(Index index, Settings indexSettings,
+			String prefixSettings, String name, Settings settings) {
+		super(index, indexSettings, prefixSettings, name, settings);
+		analyzer=new IKAnalyzer(indexSettings);
+	}
 
 
     @Override public IKAnalyzer get() {
