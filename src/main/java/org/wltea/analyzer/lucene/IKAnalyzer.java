@@ -3,12 +3,12 @@
  */
 package org.wltea.analyzer.lucene;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.elasticsearch.common.settings.Settings;
 import org.wltea.analyzer.dic.Dictionary;
+
+import java.io.Reader;
 
 public final class IKAnalyzer extends Analyzer {
 	
@@ -25,8 +25,6 @@ public final class IKAnalyzer extends Analyzer {
 	}
 
     public IKAnalyzer(Settings settings) {
-
-
        Dictionary.getInstance().Init(settings);
     }
 
