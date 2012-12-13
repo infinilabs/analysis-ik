@@ -3,21 +3,15 @@
  */
 package org.wltea.analyzer.dic;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.List;
-
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
+
+import java.io.*;
+import java.util.Collection;
+import java.util.List;
 
 public class Dictionary {
 
@@ -128,10 +122,12 @@ public class Dictionary {
 			for(String extDictName : extDictFiles){
 
                 File tempFile=new File(environment.configFile(),extDictName);
+
                 try {
                     is = new FileInputStream(tempFile);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
+                    logger.error("[Dict Loading]",e);
                 }
 
                 if(is == null){
@@ -149,7 +145,7 @@ public class Dictionary {
 							_MainDict.fillSegment(theWord.trim().toCharArray());
 						}
 					} while (theWord != null);
-                 logger.info("[Dict Loading] {},MainDict Size:{}",file.toString(),_MainDict.getDicNum());
+                 logger.info("[Dict Loading] {},MainDict Size:{}",tempFile.toString(),_MainDict.getDicNum());
 				} catch (IOException ioe) {
 					System.err.println("Extension Dictionary loading exception.");
 					ioe.printStackTrace();

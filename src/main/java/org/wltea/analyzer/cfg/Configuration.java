@@ -3,27 +3,22 @@
  */
 package org.wltea.analyzer.cfg;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.InvalidPropertiesFormatException;
-import java.util.List;
-import java.util.Properties;
-
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
-import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.seg.CJKSegmenter;
 import org.wltea.analyzer.seg.ISegmenter;
 import org.wltea.analyzer.seg.LetterSegmenter;
 import org.wltea.analyzer.seg.QuantifierSegmenter;
 
-import static org.wltea.analyzer.dic.Dictionary.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.InvalidPropertiesFormatException;
+import java.util.List;
+import java.util.Properties;
+
+import static org.wltea.analyzer.dic.Dictionary.getInstance;
 
 public class Configuration {
 

@@ -107,7 +107,7 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 }'
 </pre>
 
-3.indexing some docs
+3.index some docs
 
 <pre>
 
