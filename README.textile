@@ -6,8 +6,9 @@ The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support
 
 Version
 -------------
- master                      | 0.19.4 -> master   
- 1.1.0                       | 0.19.4 -> master   
+ master                      | 0.20.2 -> master
+ 1.1.3                       | 0.20.2 -> master
+ 1.1.2                       | 0.19.x
  1.0.0                       | 0.16.2 -> 0.19.0   
 
 
@@ -18,7 +19,7 @@ In order to install the plugin, simply run:
  
 <pre>
 cd bin
-plugin -install medcl/elasticsearch-analysis-ik/1.1.0
+plugin -install medcl/elasticsearch-analysis-ik/1.1.3
 </pre>
  
 also download the dict files,unzip these dict file to your elasticsearch's config folder,such as: your-es-root/config/ik
