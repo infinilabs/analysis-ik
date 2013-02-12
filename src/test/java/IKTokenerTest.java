@@ -2,11 +2,12 @@
  *
  */
 
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
+import org.junit.Test;
+import org.wltea.analyzer.lucene.IKTokenizer;
+
 import java.io.IOException;
 import java.io.StringReader;
-
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
-import org.wltea.analyzer.lucene.IKTokenizer;
 
 
 /**
@@ -15,6 +16,7 @@ import org.wltea.analyzer.lucene.IKTokenizer;
  */
 public class IKTokenerTest  {
 
+    @Test
 	public void testLucene3Tokenizer(){
 		String t = "IK分词器Lucene Analyzer接口实现类 民生银行";
 		IKTokenizer tokenizer = new IKTokenizer(new StringReader(t) , false);

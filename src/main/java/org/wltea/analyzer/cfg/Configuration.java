@@ -7,18 +7,12 @@ import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
-import org.wltea.analyzer.seg.CJKSegmenter;
-import org.wltea.analyzer.seg.ISegmenter;
-import org.wltea.analyzer.seg.LetterSegmenter;
-import org.wltea.analyzer.seg.QuantifierSegmenter;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Properties;
-
-import static org.wltea.analyzer.dic.Dictionary.getInstance;
 
 public class Configuration {
 
@@ -27,6 +21,10 @@ public class Configuration {
 	private static final String EXT_STOP = "ext_stopwords";
     private static ESLogger logger = null;
 	private Properties props;
+    /*
+	 * 是否使用smart方式分词
+	 */
+    private boolean useSmart=true;
 
 	public  Configuration(Settings settings){
 
@@ -34,7 +32,8 @@ public class Configuration {
 		props = new Properties();
         Environment environment=new Environment(settings);
         File fileConfig= new File(environment.configFile(), FILE_NAME);
-        InputStream input = null;// Configuration.class.getResourceAsStream(FILE_NAME);
+
+        InputStream input = null;
         try {
             input = new FileInputStream(fileConfig);
         } catch (FileNotFoundException e) {
@@ -52,7 +51,27 @@ public class Configuration {
 		}
 	}
 
-	public  List<String> getExtDictionarys(){
+    /**
+     * 返回useSmart标志位
+     * useSmart =true ，分词器使用智能切分策略， =false则使用细粒度切分
+     * @return useSmart
+     */
+    public boolean useSmart() {
+        return useSmart;
+    }
+
+    /**
+     * 设置useSmart标志位
+     * useSmart =true ，分词器使用智能切分策略， =false则使用细粒度切分
+     * @param useSmart
+     */
+    public void setUseSmart(boolean useSmart) {
+        this.useSmart = useSmart;
+    }
+
+
+
+    public  List<String> getExtDictionarys(){
 		List<String> extDictFiles = new ArrayList<String>(2);
 		String extDictCfg = props.getProperty(EXT_DICT);
 		if(extDictCfg != null){
@@ -88,14 +107,5 @@ public class Configuration {
 			}
 		}		
 		return extStopWordDictFiles;		
-	}
-
-	public static List<ISegmenter> loadSegmenter(){
-		getInstance();
-		List<ISegmenter> segmenters = new ArrayList<ISegmenter>(4);
-		segmenters.add(new QuantifierSegmenter());
-		segmenters.add(new LetterSegmenter());
-		segmenters.add(new CJKSegmenter());
-		return segmenters;
 	}
 }

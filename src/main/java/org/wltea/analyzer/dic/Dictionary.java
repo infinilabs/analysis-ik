@@ -47,15 +47,15 @@ public class Dictionary {
         logger = Loggers.getLogger("ik-analyzer");
 	}
 
+   public Configuration getConfig(){
+       return  configuration;
+   }
 
-
-    public void Init(Settings settings){
-
-//        logger.info("[Init Setting] {}",settings.getAsMap().toString());
+    public void Init(Settings indexSettings){
 
             if(!dictInited){
-                environment =new Environment(settings);
-                configuration=new Configuration(settings);
+                environment =new Environment(indexSettings);
+                configuration=new Configuration(indexSettings);
                 loadMainDict();
                 loadSurnameDict();
                 loadQuantifierDict();
@@ -70,16 +70,6 @@ public class Dictionary {
 		_MainDict = new DictSegment((char)0);
 
         File file= new File(environment.configFile(), Dictionary.PATH_DIC_MAIN);
-
-//        logger.info("[Main Dict Loading] {}",file.getAbsolutePath());
-//        logger.info("[Environment] {}",environment.homeFile());
-//        logger.info("[Environment] {}",environment.workFile());
-//        logger.info("[Environment] {}",environment.workWithClusterFile());
-//        logger.info("[Environment] {}",environment.dataFiles());
-//        logger.info("[Environment] {}",environment.dataWithClusterFiles());
-//        logger.info("[Environment] {}",environment.configFile());
-//        logger.info("[Environment] {}",environment.pluginsFile());
-//        logger.info("[Environment] {}",environment.logsFile());
 
         InputStream is = null;
         try {
@@ -142,7 +132,7 @@ public class Dictionary {
 						if (theWord != null && !"".equals(theWord.trim())) {
 
 
-							_MainDict.fillSegment(theWord.trim().toCharArray());
+							_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
 						}
 					} while (theWord != null);
                  logger.info("[Dict Loading] {},MainDict Size:{}",tempFile.toString(),_MainDict.getDicNum());

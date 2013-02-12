@@ -13,8 +13,9 @@ import java.io.Reader;
 public final class IKAnalyzer extends Analyzer {
 	
 	private boolean isMaxWordLength = false;
+    private boolean useSmart=false;
 
-	public IKAnalyzer(){
+    public IKAnalyzer(){
 		this(false);
 	}
 	
@@ -24,14 +25,19 @@ public final class IKAnalyzer extends Analyzer {
 		this.setMaxWordLength(isMaxWordLength);
 	}
 
-    public IKAnalyzer(Settings settings) {
-       Dictionary.getInstance().Init(settings);
+    public IKAnalyzer(Settings indexSetting,Settings settings1) {
+        super();
+       Dictionary.getInstance().Init(indexSetting);
+
+        if(settings1.get("use_smart", "true").equals("true")){
+            useSmart=true;
+        }
     }
 
 
     @Override
 	public TokenStream tokenStream(String fieldName, Reader reader) {
-		return new IKTokenizer(reader , isMaxWordLength());
+		return new IKTokenizer(reader , useSmart);
 	}
 
 	public void setMaxWordLength(boolean isMaxWordLength) {
