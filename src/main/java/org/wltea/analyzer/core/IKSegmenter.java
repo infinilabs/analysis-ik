@@ -129,8 +129,6 @@ public final class IKSegmenter {
 				}
 			}
 			//对分词进行歧义处理
-            logger.error("useSmart:"+String.valueOf(useSmart));
-
 			this.arbitrator.process(context, useSmart);
 			//将分词结果输出到结果集，并处理未切分的单个CJK字符
 			context.outputToResult();

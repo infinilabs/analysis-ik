@@ -66,7 +66,10 @@ index:
       ik:
           alias: [ik_analyzer]
           type: org.elasticsearch.index.analysis.IkAnalyzerProvider
-       ik_smart:
+      ik_max_word:
+          type: ik
+          use_smart: false
+      ik_smart:
           type: ik
           use_smart: true
 </pre>
