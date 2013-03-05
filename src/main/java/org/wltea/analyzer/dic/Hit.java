@@ -1,6 +1,6 @@
 /**
  * 
- * IK ÖĞÎÄ·Ö´Ê  °æ±¾ 5.0
+ * IK ä¸­æ–‡åˆ†è¯  ç‰ˆæœ¬ 5.0
  * IK Analyzer release 5.0
  * 
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,42 +18,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Ô´´úÂëÓÉÁÖÁ¼Òæ(linliangyi2005@gmail.com)Ìá¹©
- * °æÈ¨ÉùÃ÷ 2012£¬ÎÚÁú²è¹¤×÷ÊÒ
+ * æºä»£ç ç”±æ—è‰¯ç›Š(linliangyi2005@gmail.com)æä¾›
+ * ç‰ˆæƒå£°æ˜ 2012ï¼Œä¹Œé¾™èŒ¶å·¥ä½œå®¤
  * provided by Linliangyi and copyright 2012 by Oolong studio
  * 
  */
 package org.wltea.analyzer.dic;
 
 /**
- * ±íÊ¾Ò»´Î´ÊµäÆ¥ÅäµÄÃüÖĞ
+ * è¡¨ç¤ºä¸€æ¬¡è¯å…¸åŒ¹é…çš„å‘½ä¸­
  */
 public class Hit {
-	//Hit²»Æ¥Åä
+	//Hitä¸åŒ¹é…
 	private static final int UNMATCH = 0x00000000;
-	//HitÍêÈ«Æ¥Åä
+	//Hitå®Œå…¨åŒ¹é…
 	private static final int MATCH = 0x00000001;
-	//HitÇ°×ºÆ¥Åä
+	//Hitå‰ç¼€åŒ¹é…
 	private static final int PREFIX = 0x00000010;
 	
 	
-	//¸ÃHITµ±Ç°×´Ì¬£¬Ä¬ÈÏÎ´Æ¥Åä
+	//è¯¥HITå½“å‰çŠ¶æ€ï¼Œé»˜è®¤æœªåŒ¹é…
 	private int hitState = UNMATCH;
 	
-	//¼ÇÂ¼´ÊµäÆ¥Åä¹ı³ÌÖĞ£¬µ±Ç°Æ¥Åäµ½µÄ´Êµä·ÖÖ§½Úµã
+	//è®°å½•è¯å…¸åŒ¹é…è¿‡ç¨‹ä¸­ï¼Œå½“å‰åŒ¹é…åˆ°çš„è¯å…¸åˆ†æ”¯èŠ‚ç‚¹
 	private DictSegment matchedDictSegment; 
 	/*
-	 * ´Ê¶Î¿ªÊ¼Î»ÖÃ
+	 * è¯æ®µå¼€å§‹ä½ç½®
 	 */
 	private int begin;
 	/*
-	 * ´Ê¶ÎµÄ½áÊøÎ»ÖÃ
+	 * è¯æ®µçš„ç»“æŸä½ç½®
 	 */
 	private int end;
 	
 	
 	/**
-	 * ÅĞ¶ÏÊÇ·ñÍêÈ«Æ¥Åä
+	 * åˆ¤æ–­æ˜¯å¦å®Œå…¨åŒ¹é…
 	 */
 	public boolean isMatch() {
 		return (this.hitState & MATCH) > 0;
@@ -64,7 +64,7 @@ public class Hit {
 	}
 
 	/**
-	 * ÅĞ¶ÏÊÇ·ñÊÇ´ÊµÄÇ°×º
+	 * åˆ¤æ–­æ˜¯å¦æ˜¯è¯çš„å‰ç¼€
 	 */
 	public boolean isPrefix() {
 		return (this.hitState & PREFIX) > 0;
@@ -74,7 +74,7 @@ public class Hit {
 		this.hitState = this.hitState | PREFIX;
 	}
 	/**
-	 * ÅĞ¶ÏÊÇ·ñÊÇ²»Æ¥Åä
+	 * åˆ¤æ–­æ˜¯å¦æ˜¯ä¸åŒ¹é…
 	 */
 	public boolean isUnmatch() {
 		return this.hitState == UNMATCH ;
