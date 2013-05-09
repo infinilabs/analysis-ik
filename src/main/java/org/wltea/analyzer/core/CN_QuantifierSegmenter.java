@@ -24,13 +24,13 @@
  */
 package org.wltea.analyzer.core;
 
-import org.wltea.analyzer.dic.Dictionary;
-import org.wltea.analyzer.dic.Hit;
-
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import org.wltea.analyzer.dic.Dictionary;
+import org.wltea.analyzer.dic.Hit;
 
 /**
  * 
@@ -155,7 +155,7 @@ class CN_QuantifierSegmenter implements ISegmenter{
 				//处理词段队列
 				Hit[] tmpArray = this.countHits.toArray(new Hit[this.countHits.size()]);
 				for(Hit hit : tmpArray){
-					hit = Dictionary.matchInMainDictWithHit(context.getSegmentBuff(), context.getCursor() , hit);
+					hit = Dictionary.getSingleton().matchWithHit(context.getSegmentBuff(), context.getCursor() , hit);
 					if(hit.isMatch()){
 						//输出当前的词
 						Lexeme newLexeme = new Lexeme(context.getBufferOffset() , hit.getBegin() , context.getCursor() - hit.getBegin() + 1 , Lexeme.TYPE_COUNT);
@@ -174,7 +174,7 @@ class CN_QuantifierSegmenter implements ISegmenter{
 
 			//*********************************
 			//对当前指针位置的字符进行单字匹配
-			Hit singleCharHit = Dictionary.matchInQuantifierDict(context.getSegmentBuff(), context.getCursor(), 1);
+			Hit singleCharHit = Dictionary.getSingleton().matchInQuantifierDict(context.getSegmentBuff(), context.getCursor(), 1);
 			if(singleCharHit.isMatch()){//首字成量词词
 				//输出当前的词
 				Lexeme newLexeme = new Lexeme(context.getBufferOffset() , context.getCursor() , 1 , Lexeme.TYPE_COUNT);
