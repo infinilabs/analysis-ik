@@ -24,11 +24,16 @@
  */
 package org.wltea.analyzer.core;
 
-import org.wltea.analyzer.dic.Dictionary;
-
 import java.io.IOException;
 import java.io.Reader;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
+
+import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.dic.Dictionary;
 
 /**
  * 
@@ -68,12 +73,12 @@ class AnalyzeContext {
     private Map<Integer , LexemePath> pathMap;    
     //最终分词结果集
     private LinkedList<Lexeme> results;
-    
+    private boolean useSmart;
 	//分词器配置项
-	private boolean useSmart;
-    
+//	private Configuration cfg;
+
     public AnalyzeContext(boolean useSmart){
-    	this.useSmart = useSmart;
+        this.useSmart = useSmart;
     	this.segmentBuff = new char[BUFF_SIZE];
     	this.charTypes = new int[BUFF_SIZE];
     	this.buffLocker = new HashSet<String>();
@@ -313,7 +318,7 @@ class AnalyzeContext {
 		while(result != null){
     		//数量词合并
     		this.compound(result);
-    		if(Dictionary.isStopWord(this.segmentBuff ,  result.getBegin() , result.getLength())){
+    		if(Dictionary.getSingleton().isStopWord(this.segmentBuff ,  result.getBegin() , result.getLength())){
        			//是停止词继续取列表的下一个
     			result = this.results.pollFirst(); 				
     		}else{
@@ -344,6 +349,7 @@ class AnalyzeContext {
 	 * 组合词元
 	 */
 	private void compound(Lexeme result){
+
 		if(!this.useSmart){
 			return ;
 		}

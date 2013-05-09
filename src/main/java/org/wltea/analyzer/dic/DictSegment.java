@@ -326,13 +326,5 @@ class DictSegment implements Comparable<DictSegment>{
 		//对当前节点存储的char进行比较
 		return this.nodeChar.compareTo(o.nodeChar);
 	}
-
-    public int getDicNum(){
-        if(charMap!=null)
-        {
-            return charMap.size();
-        }
-        return 0;
-    }
-
+	
 }

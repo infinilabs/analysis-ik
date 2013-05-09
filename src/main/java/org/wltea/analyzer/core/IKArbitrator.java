@@ -38,7 +38,7 @@ class IKArbitrator {
 	
 	/**
 	 * 分词歧义处理
-	 * @param orgLexemes
+//	 * @param orgLexemes
 	 * @param useSmart
 	 */
 	void process(AnalyzeContext context , boolean useSmart){
@@ -87,7 +87,6 @@ class IKArbitrator {
 	 * 歧义识别
 	 * @param lexemeCell 歧义路径链表头
 	 * @param fullTextLength 歧义路径文本长度
-	 * @param option 候选结果路径
 	 * @return
 	 */
 	private LexemePath judge(QuickSortSet.Cell lexemeCell , int fullTextLength){
@@ -120,7 +119,7 @@ class IKArbitrator {
 	
 	/**
 	 * 向前遍历，添加词元，构造一个无歧义词元组合
-	 * @param LexemePath path
+//	 * @param LexemePath path
 	 * @return
 	 */
 	private Stack<QuickSortSet.Cell> forwardPath(QuickSortSet.Cell lexemeCell , LexemePath option){
@@ -140,7 +139,7 @@ class IKArbitrator {
 	
 	/**
 	 * 回滚词元链，直到它能够接受指定的词元
-	 * @param lexeme 
+//	 * @param lexeme
 	 * @param l
 	 */
 	private void backPath(Lexeme l  , LexemePath option){

@@ -120,7 +120,7 @@ class LetterSegmenter implements ISegmenter {
 	/**
 	 * 处理数字字母混合输出
 	 * 如：windos2000 | linliangyi2005@gmail.com
-	 * @param input
+//	 * @param input
 	 * @param context
 	 * @return
 	 */
