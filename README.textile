@@ -6,34 +6,20 @@ The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support
 
 Version
 -------------
- master                      | 0.20.2 -> master
- 1.1.3                       | 0.20.2 -> master
+ master                      | 0.90.0 -> master
+ 1.1.4                       | 0.90.0
+ 1.1.3                       | 0.20.2
  1.1.2                       | 0.19.x
  1.0.0                       | 0.16.2 -> 0.19.0   
 
 
 Install
 -------------
-
-In order to install the plugin, simply run:
- 
-<pre>
-cd bin
-<del>plugin -install medcl/elasticsearch-analysis-ik/1.1.3</del>
-</pre>
-
-<del>also download the dict files,unzip these dict file to your elasticsearch's config folder,such as: your-es-root/config/ik</del>
-
-now you can download this plugin from RTF project(https://github.com/medcl/elasticsearch-rtf)
+you can download this plugin from RTF project(https://github.com/medcl/elasticsearch-rtf)
 https://github.com/medcl/elasticsearch-rtf/tree/master/elasticsearch/plugins/analysis-ik
 https://github.com/medcl/elasticsearch-rtf/tree/master/elasticsearch/config/ik
 
-<pre>
-cd config
-wget http://github.com/downloads/medcl/elasticsearch-analysis-ik/ik.zip --no-check-certificate
-unzip ik.zip
-rm ik.zip
-</pre>
+<del>also remember to download the dict files,unzip these dict file into your elasticsearch's config folder,such as: your-es-root/config/ik</del>
 
 you need a service restart after that!
 
