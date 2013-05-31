@@ -26,8 +26,8 @@
 package org.wltea.analyzer.dic;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 词典树分段，表示词典树的一个分枝
@@ -35,7 +35,7 @@ import java.util.Map;
 class DictSegment implements Comparable<DictSegment>{
 	
 	//公用字典表，存储汉字
-	private static final Map<Character , Character> charMap = new HashMap<Character , Character>(16 , 0.95f);
+	private static final Map<Character , Character> charMap = new ConcurrentHashMap<Character , Character>(16 , 0.95f);
 	//数组大小上限
 	private static final int ARRAY_LENGTH_LIMIT = 3;
 
@@ -298,7 +298,7 @@ class DictSegment implements Comparable<DictSegment>{
 		if(this.childrenMap == null){
 			synchronized(this){
 				if(this.childrenMap == null){
-					this.childrenMap = new HashMap<Character , DictSegment>(ARRAY_LENGTH_LIMIT * 2,0.8f);
+					this.childrenMap = new ConcurrentHashMap<Character, DictSegment>(ARRAY_LENGTH_LIMIT * 2,0.8f);
 				}
 			}
 		}

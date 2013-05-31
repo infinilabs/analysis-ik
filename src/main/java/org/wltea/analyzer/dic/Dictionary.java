@@ -25,15 +25,15 @@
  */
 package org.wltea.analyzer.dic;
 
-import java.io.*;
-import java.util.Collection;
-import java.util.List;
-
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
+
+import java.io.*;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 词典管理类,单子模式
@@ -45,20 +45,19 @@ public class Dictionary {
 	 * 词典单子实例
 	 */
 	private static Dictionary singleton;
-	
-	/*
-	 * 主词典对象
-	 */
-	private DictSegment _MainDict;
-	
-	/*
-	 * 停止词词典 
-	 */
-	private DictSegment _StopWordDict;
-	/*
-	 * 量词词典
-	 */
-	private DictSegment _QuantifierDict;
+
+    private DictSegment _MainDict;
+
+    private DictSegment _SurnameDict;
+
+    private DictSegment _QuantifierDict;
+
+    private DictSegment _SuffixDict;
+
+    private DictSegment _PrepDict;
+
+    private DictSegment _StopWords;
+
 	
 	/**
 	 * 配置对象
@@ -95,10 +94,10 @@ public class Dictionary {
             environment =new Environment(indexSettings);
             configuration=new Configuration(indexSettings);
             loadMainDict();
-//            loadSurnameDict();
+            loadSurnameDict();
             loadQuantifierDict();
-//            loadSuffixDict();
-//            loadPrepDict();
+            loadSuffixDict();
+            loadPrepDict();
             loadStopWordDict();
             dictInited=true;
         }
@@ -218,7 +217,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray , int begin, int length){			
-		return singleton._StopWordDict.match(charArray, begin, length).isMatch();
+		return singleton._StopWords.match(charArray, begin, length).isMatch();
 	}	
 	
 	/**
@@ -247,18 +246,17 @@ public class Dictionary {
 				}
 			} while (theWord != null);
 			
-		} catch (IOException ioe) {
-			System.err.println("Main Dictionary loading exception.");
-			ioe.printStackTrace();
-			
-		}finally{
+		} catch (IOException e) {
+            logger.error("ik-analyzer",e);
+
+        }finally{
 			try {
 				if(is != null){
                     is.close();
                     is = null;
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+                logger.error("ik-analyzer",e);
 			}
 		}
 		//加载扩展词典
@@ -275,8 +273,14 @@ public class Dictionary {
 			InputStream is = null;
 			for(String extDictName : extDictFiles){
 				//读取扩展词典文件
-				System.out.println("加载扩展词典：" + extDictName);
-				is = this.getClass().getClassLoader().getResourceAsStream(extDictName);
+                logger.info("加载扩展词典：" + extDictName);
+                File file=new File(environment.configFile(), extDictName);
+                try {
+                    is = new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    logger.error("ik-analyzer",e);
+                }
+
 				//如果找不到扩展的字典，则忽略
 				if(is == null){
 					continue;
@@ -288,24 +292,21 @@ public class Dictionary {
 						theWord = br.readLine();
 						if (theWord != null && !"".equals(theWord.trim())) {
 							//加载扩展词典数据到主内存词典中
-							//System.out.println(theWord);
 							_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
 						}
 					} while (theWord != null);
 					
-				} catch (IOException ioe) {
-					System.err.println("Extension Dictionary loading exception.");
-					ioe.printStackTrace();
-					
-				}finally{
+				} catch (IOException e) {
+                    logger.error("ik-analyzer",e);
+                }finally{
 					try {
 						if(is != null){
 		                    is.close();
 		                    is = null;
 						}
 					} catch (IOException e) {
-						e.printStackTrace();
-					}
+                        logger.error("ik-analyzer",e);
+                    }
 				}
 			}
 		}		
@@ -316,15 +317,21 @@ public class Dictionary {
 	 */
 	private void loadStopWordDict(){
 		//建立一个主词典实例
-		_StopWordDict = new DictSegment((char)0);
+        _StopWords = new DictSegment((char)0);
 		//加载扩展停止词典
 		List<String> extStopWordDictFiles  = configuration.getExtStopWordDictionarys();
 		if(extStopWordDictFiles != null){
 			InputStream is = null;
 			for(String extStopWordDictName : extStopWordDictFiles){
-				System.out.println("加载扩展停止词典：" + extStopWordDictName);
+//				logger.info("加载扩展停止词典：" + extStopWordDictName);
+
 				//读取扩展词典文件
-				is = this.getClass().getClassLoader().getResourceAsStream(extStopWordDictName);
+                File file=new File(environment.configFile(), extStopWordDictName);
+                try {
+                    is = new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    logger.error("ik-analyzer",e);
+                }
 				//如果找不到扩展的字典，则忽略
 				if(is == null){
 					continue;
@@ -335,15 +342,13 @@ public class Dictionary {
 					do {
 						theWord = br.readLine();
 						if (theWord != null && !"".equals(theWord.trim())) {
-							//System.out.println(theWord);
 							//加载扩展停止词典数据到内存中
-							_StopWordDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+                            _StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
 						}
 					} while (theWord != null);
 					
-				} catch (IOException ioe) {
-					System.err.println("Extension Stop word Dictionary loading exception.");
-					ioe.printStackTrace();
+				} catch (IOException e) {
+                    logger.error("ik-analyzer",e);
 					
 				}finally{
 					try {
@@ -352,7 +357,7 @@ public class Dictionary {
 		                    is = null;
 						}
 					} catch (IOException e) {
-						e.printStackTrace();
+                        logger.error("ik-analyzer",e);
 					}
 				}
 			}
@@ -371,7 +376,7 @@ public class Dictionary {
         try {
             is = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error("ik-analyzer",e);
         }
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
@@ -384,8 +389,7 @@ public class Dictionary {
 			} while (theWord != null);
 			
 		} catch (IOException ioe) {
-			System.err.println("Quantifier Dictionary loading exception.");
-			ioe.printStackTrace();
+			logger.error("Quantifier Dictionary loading exception.");
 			
 		}finally{
 			try {
@@ -394,11 +398,128 @@ public class Dictionary {
                     is = null;
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+                logger.error("ik-analyzer",e);
 			}
 		}
 	}
 
+
+    private void loadSurnameDict(){
+
+        _SurnameDict = new DictSegment((char)0);
+        File file=new File(environment.configFile(),Dictionary.PATH_DIC_SURNAME);
+        InputStream is = null;
+        try {
+            is = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            logger.error("ik-analyzer",e);
+        }
+        if(is == null){
+            throw new RuntimeException("Surname Dictionary not found!!!");
+        }
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+            String theWord;
+            do {
+                theWord = br.readLine();
+                if (theWord != null && !"".equals(theWord.trim())) {
+                    _SurnameDict.fillSegment(theWord.trim().toCharArray());
+                }
+            } while (theWord != null);
+//            logger.info("[Dict Loading] {},SurnameDict Size:{}",file.toString(),_SurnameDict.getDicNum());
+        } catch (IOException e) {
+            logger.error("ik-analyzer",e);
+        }finally{
+            try {
+                if(is != null){
+                    is.close();
+                    is = null;
+                }
+            } catch (IOException e) {
+                logger.error("ik-analyzer",e);
+            }
+        }
+    }
+
+
+
+    private void loadSuffixDict(){
+
+        _SuffixDict = new DictSegment((char)0);
+        File file=new File(environment.configFile(),Dictionary.PATH_DIC_SUFFIX);
+        InputStream is = null;
+        try {
+            is = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            logger.error("ik-analyzer",e);
+        }
+        if(is == null){
+            throw new RuntimeException("Suffix Dictionary not found!!!");
+        }
+        try {
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+            String theWord;
+            do {
+                theWord = br.readLine();
+                if (theWord != null && !"".equals(theWord.trim())) {
+                    _SuffixDict.fillSegment(theWord.trim().toCharArray());
+                }
+            } while (theWord != null);
+//            logger.info("[Dict Loading] {},SuffixDict Size:{}",file.toString(),_SuffixDict.getDicNum());
+        } catch (IOException e) {
+            logger.error("ik-analyzer",e);
+        }finally{
+            try {
+                if(is != null){
+                    is.close();
+                    is = null;
+                }
+            } catch (IOException e) {
+                logger.error("ik-analyzer",e);
+            }
+        }
+    }
+
+
+    private void loadPrepDict(){
+
+        _PrepDict = new DictSegment((char)0);
+        File file=new File(environment.configFile(),Dictionary.PATH_DIC_PREP);
+        InputStream is = null;
+        try {
+            is = new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            logger.error("ik-analyzer",e);
+        }
+        if(is == null){
+            throw new RuntimeException("Preposition Dictionary not found!!!");
+        }
+        try {
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+            String theWord;
+            do {
+                theWord = br.readLine();
+                if (theWord != null && !"".equals(theWord.trim())) {
+
+                    _PrepDict.fillSegment(theWord.trim().toCharArray());
+                }
+            } while (theWord != null);
+//            logger.info("[Dict Loading] {},PrepDict Size:{}",file.toString(),_PrepDict.getDicNum());
+        } catch (IOException e) {
+            logger.error("ik-analyzer",e);
+        }finally{
+            try {
+                if(is != null){
+                    is.close();
+                    is = null;
+                }
+            } catch (IOException e) {
+                logger.error("ik-analyzer",e);
+            }
+        }
+    }
 
     public static Dictionary getInstance(){
         return Dictionary.singleton;

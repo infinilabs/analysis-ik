@@ -37,7 +37,7 @@ public class Configuration {
         try {
             input = new FileInputStream(fileConfig);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error("ik-analyzer",e);
         }
         if(input != null){
 			try {
