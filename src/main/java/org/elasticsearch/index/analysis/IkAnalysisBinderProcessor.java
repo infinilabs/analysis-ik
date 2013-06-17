@@ -12,4 +12,11 @@ public class IkAnalysisBinderProcessor extends AnalysisModule.AnalysisBinderProc
         analyzersBindings.processAnalyzer("ik", IkAnalyzerProvider.class);
         super.processAnalyzers(analyzersBindings);
     }
+
+
+    @Override
+    public void processTokenizers(TokenizersBindings tokenizersBindings) {
+      tokenizersBindings.processTokenizer("ik", IkTokenizerFactory.class);
+      super.processTokenizers(tokenizersBindings);
+    }
 }
