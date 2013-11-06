@@ -66,13 +66,11 @@ public final class IKAnalyzer extends Analyzer{
 		this.useSmart = useSmart;
 	}
 
-    public IKAnalyzer(Settings indexSetting,Settings settings1) {
-        super();
-        Dictionary.getInstance().Init(indexSetting);
+    Settings settings;
 
-        if(settings1.get("use_smart", "true").equals("true")){
-            useSmart = true;
-        }
+    public IKAnalyzer(Settings indexSetting,Settings settings) {
+        super();
+        this.settings=settings;
     }
 
 	/**
@@ -80,7 +78,7 @@ public final class IKAnalyzer extends Analyzer{
 	 */
 	@Override
 	protected TokenStreamComponents createComponents(String fieldName, final Reader in) {
-		Tokenizer _IKTokenizer = new IKTokenizer(in , this.useSmart());
+		Tokenizer _IKTokenizer = new IKTokenizer(in , settings);
 		return new TokenStreamComponents(_IKTokenizer);
 	}
 

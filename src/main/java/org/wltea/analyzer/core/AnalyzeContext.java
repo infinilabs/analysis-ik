@@ -90,10 +90,6 @@ class AnalyzeContext {
     int getCursor(){
     	return this.cursor;
     }
-//    
-//    void setCursor(int cursor){
-//    	this.cursor = cursor;
-//    }
     
     char[] getSegmentBuff(){
     	return this.segmentBuff;
@@ -115,7 +111,7 @@ class AnalyzeContext {
      * 根据context的上下文情况，填充segmentBuff 
      * @param reader
      * @return 返回待分析的（有效的）字串长度
-     * @throws IOException 
+     * @throws java.io.IOException
      */
     int fillBuffer(Reader reader) throws IOException{
     	int readCount = 0;

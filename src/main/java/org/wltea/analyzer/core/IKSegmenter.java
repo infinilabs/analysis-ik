@@ -28,8 +28,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.elasticsearch.common.settings.Settings;
 import org.wltea.analyzer.cfg.Configuration;
-//import org.wltea.analyzer.cfg.DefaultConfig;
 import org.wltea.analyzer.dic.Dictionary;
 
 /**
@@ -53,38 +53,33 @@ public final class IKSegmenter {
 
 	/**
 	 * IK分词器构造函数
-	 * @param input 
-	 * @param useSmart 为true，使用智能分词策略
-	 * 
-	 * 非智能分词：细粒度输出所有可能的切分结果
-	 * 智能分词： 合并数词和量词，对分词结果进行歧义判断
-	 */
-	public IKSegmenter(Reader input , boolean useSmart){
+	 * @param input
+     */
+	public IKSegmenter(Reader input , Settings settings){
 		this.input = input;
-//		this.cfg = DefaultConfig.getInstance();
-        this.useSmart=useSmart;
-		this.init();
+		this.cfg = new Configuration(settings);
+        this.useSmart = settings.get("use_smart", "true").equals("true");
+        this.init();
 	}
 	
-	/**
-	 * IK分词器构造函数
-	 * @param input
-	 * @param cfg 使用自定义的Configuration构造分词器
-	 * 
-	 */
-	public IKSegmenter(Reader input , Configuration cfg){
-		this.input = input;
-		this.cfg = cfg;
-		this.init();
-	}
+//	/**
+//	 * IK分词器构造函数
+//	 * @param input
+//	 * @param cfg 使用自定义的Configuration构造分词器
+//	 *
+//	 */
+//	public IKSegmenter(Reader input , Configuration cfg){
+//		this.input = input;
+//		this.cfg = cfg;
+//		this.init();
+//	}
 	
 	/**
 	 * 初始化
 	 */
 	private void init(){
 		//初始化词典单例
-//		Dictionary.initial(this.cfg);
-//        Dictionary.getSingleton();
+		Dictionary.initial(this.cfg);
 		//初始化分词上下文
 		this.context = new AnalyzeContext(useSmart);
 		//加载子分词器
@@ -111,7 +106,7 @@ public final class IKSegmenter {
 	/**
 	 * 分词，获取下一个词元
 	 * @return Lexeme 词元对象
-	 * @throws IOException
+	 * @throws java.io.IOException
 	 */
 	public synchronized Lexeme next()throws IOException{
 		Lexeme l = null;

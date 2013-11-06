@@ -21,16 +21,13 @@ public class Configuration {
 	private static final String EXT_STOP = "ext_stopwords";
     private static ESLogger logger = null;
 	private Properties props;
-    /*
-	 * 是否使用smart方式分词
-	 */
-    private boolean useSmart=true;
+    private Environment environment;
 
-	public  Configuration(Settings settings){
-
+    public  Configuration(Settings settings){
         logger = Loggers.getLogger("ik-analyzer");
 		props = new Properties();
-        Environment environment=new Environment(settings);
+        environment=new Environment(settings);
+
         File fileConfig= new File(environment.configFile(), FILE_NAME);
 
         InputStream input = null;
@@ -42,7 +39,6 @@ public class Configuration {
         if(input != null){
 			try {
 				props.loadFromXML(input);
-                logger.info("[Dict Loading] {}",FILE_NAME);
 			} catch (InvalidPropertiesFormatException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -50,7 +46,6 @@ public class Configuration {
 			}
 		}
 	}
-
 
     public  List<String> getExtDictionarys(){
 		List<String> extDictFiles = new ArrayList<String>(2);
@@ -89,4 +84,8 @@ public class Configuration {
 		}		
 		return extStopWordDictFiles;		
 	}
+
+    public File getDictRoot() {
+        return environment.configFile();
+    }
 }

@@ -6,6 +6,8 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.Index;
 import org.elasticsearch.index.settings.IndexSettings;
+import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {
@@ -13,18 +15,21 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
     @Inject
     public IkAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, Environment env, @Assisted String name, @Assisted Settings settings) {
         super(index, indexSettings, name, settings);
+        Dictionary.initial(new Configuration(settings));
         analyzer=new IKAnalyzer(indexSettings,settings);
     }
 
     public IkAnalyzerProvider(Index index, Settings indexSettings, String name,
     		Settings settings) {
 		super(index, indexSettings, name, settings);
+        Dictionary.initial(new Configuration(settings));
 		analyzer=new IKAnalyzer(indexSettings,settings);
 	}
 
 	public IkAnalyzerProvider(Index index, Settings indexSettings,
 			String prefixSettings, String name, Settings settings) {
 		super(index, indexSettings, prefixSettings, name, settings);
+        Dictionary.initial(new Configuration(settings));
 		analyzer=new IKAnalyzer(indexSettings,settings);
 	}
 

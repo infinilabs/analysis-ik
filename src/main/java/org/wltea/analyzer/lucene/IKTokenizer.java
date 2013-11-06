@@ -34,6 +34,8 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.Settings;
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
 
@@ -58,14 +60,14 @@ public final class IKTokenizer extends Tokenizer {
 	/**
 	 * Lucene 4.0 Tokenizer适配器类构造函数
 	 * @param in
-	 * @param useSmart
-	 */
-	public IKTokenizer(Reader in , boolean useSmart){
+     */
+	public IKTokenizer(Reader in , Settings settings){
 	    super(in);
 	    offsetAtt = addAttribute(OffsetAttribute.class);
 	    termAtt = addAttribute(CharTermAttribute.class);
 	    typeAtt = addAttribute(TypeAttribute.class);
-		_IKImplement = new IKSegmenter(input , useSmart);
+
+		_IKImplement = new IKSegmenter(input , settings);
 	}
 
 	/* (non-Javadoc)
