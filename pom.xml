@@ -31,7 +31,7 @@
     </parent>
 
     <properties>
-        <elasticsearch.version>0.90.2</elasticsearch.version>
+        <elasticsearch.version>0.90.6</elasticsearch.version>
     </properties>
 
   <repositories>
@@ -76,6 +76,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.10</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
 
@@ -55,11 +56,15 @@ public final class IKSegmenter {
 	 * IK分词器构造函数
 	 * @param input
      */
-	public IKSegmenter(Reader input , Settings settings){
+	public IKSegmenter(Reader input , Settings settings, Environment environment){
 		this.input = input;
-		this.cfg = new Configuration(settings);
+		this.cfg = new Configuration(environment);
         this.useSmart = settings.get("use_smart", "true").equals("true");
         this.init();
+	}
+	
+	public IKSegmenter(Reader input){
+		new IKSegmenter(input, null,null);
 	}
 	
 //	/**
