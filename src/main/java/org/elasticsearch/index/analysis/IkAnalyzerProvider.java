@@ -12,27 +12,13 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
 
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {
     private final IKAnalyzer analyzer;
+
     @Inject
     public IkAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, Environment env, @Assisted String name, @Assisted Settings settings) {
         super(index, indexSettings, name, settings);
-        Dictionary.initial(new Configuration(settings));
-        analyzer=new IKAnalyzer(indexSettings,settings);
+        Dictionary.initial(new Configuration(env));
+        analyzer=new IKAnalyzer(indexSettings, settings, env);
     }
-
-    public IkAnalyzerProvider(Index index, Settings indexSettings, String name,
-    		Settings settings) {
-		super(index, indexSettings, name, settings);
-        Dictionary.initial(new Configuration(settings));
-		analyzer=new IKAnalyzer(indexSettings,settings);
-	}
-
-	public IkAnalyzerProvider(Index index, Settings indexSettings,
-			String prefixSettings, String name, Settings settings) {
-		super(index, indexSettings, prefixSettings, name, settings);
-        Dictionary.initial(new Configuration(settings));
-		analyzer=new IKAnalyzer(indexSettings,settings);
-	}
-
 
     @Override public IKAnalyzer get() {
         return this.analyzer;
