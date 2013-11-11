@@ -3,16 +3,19 @@
  */
 package org.wltea.analyzer.cfg;
 
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
-
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Properties;
+
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.env.Environment;
 
 public class Configuration {
 
@@ -23,10 +26,10 @@ public class Configuration {
 	private Properties props;
     private Environment environment;
 
-    public  Configuration(Settings settings){
+    public  Configuration(Environment env){
         logger = Loggers.getLogger("ik-analyzer");
 		props = new Properties();
-        environment=new Environment(settings);
+        environment = env;
 
         File fileConfig= new File(environment.configFile(), FILE_NAME);
 

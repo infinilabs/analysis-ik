@@ -34,7 +34,6 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
-import org.elasticsearch.common.settings.Settings;
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
 
@@ -71,8 +70,8 @@ public class SWMCQueryBuilder {
 	 */
 	private static List<Lexeme> doAnalyze(String keywords){
 		List<Lexeme> lexemes = new ArrayList<Lexeme>();
-        Settings settings=null;
-		IKSegmenter ikSeg = new IKSegmenter(new StringReader(keywords) , settings);
+
+		IKSegmenter ikSeg = new IKSegmenter(new StringReader(keywords));
 		try{
 			Lexeme l = null;
 			while( (l = ikSeg.next()) != null){

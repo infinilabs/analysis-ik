@@ -29,7 +29,7 @@ import java.io.Reader;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
 import org.elasticsearch.common.settings.Settings;
-import org.wltea.analyzer.dic.Dictionary;
+import org.elasticsearch.env.Environment;
 
 /**
  * IK分词器，Lucene Analyzer接口实现
@@ -67,10 +67,12 @@ public final class IKAnalyzer extends Analyzer{
 	}
 
     Settings settings;
+    Environment environment;
 
-    public IKAnalyzer(Settings indexSetting,Settings settings) {
+    public IKAnalyzer(Settings indexSetting,Settings settings, Environment environment) {
         super();
         this.settings=settings;
+        this.environment= environment;
     }
 
 	/**
@@ -78,7 +80,7 @@ public final class IKAnalyzer extends Analyzer{
 	 */
 	@Override
 	protected TokenStreamComponents createComponents(String fieldName, final Reader in) {
-		Tokenizer _IKTokenizer = new IKTokenizer(in , settings);
+		Tokenizer _IKTokenizer = new IKTokenizer(in , settings, environment);
 		return new TokenStreamComponents(_IKTokenizer);
 	}
 
