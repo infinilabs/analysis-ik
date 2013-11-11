@@ -23,10 +23,10 @@ public class Configuration {
 	private Properties props;
     private Environment environment;
 
-    public  Configuration(Settings settings){
+    public  Configuration(Environment env){
         logger = Loggers.getLogger("ik-analyzer");
 		props = new Properties();
-        environment=new Environment(settings);
+        environment = env;
 
         File fileConfig= new File(environment.configFile(), FILE_NAME);
 
