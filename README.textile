@@ -35,7 +35,7 @@ https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnaly
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">  
 <properties>  
 	<comment>IK Analyzer 扩展配置</comment>
-	<!--用户可以在这里配置自己的扩展字典 -->	
+	<!--用户可以在这里配置自己的扩展字典 -->
 	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic</entry> 	
 	 <!--用户可以在这里配置自己的扩展停止词字典-->
 	<entry key="ext_stopwords">custom/ext_stopword.dic</entry> 	
@@ -198,3 +198,8 @@ here is the query result
 
 
 have fun.
+
+常见问题：
+
+1.自定义词典为什么没有生效？
+清确保你的扩展词典的文本格式为UTF8编码
