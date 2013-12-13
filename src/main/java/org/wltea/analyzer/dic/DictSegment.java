@@ -114,8 +114,8 @@ class DictSegment implements Comparable<DictSegment>{
 		}
 		//设置hit的当前处理位置
 		searchHit.setEnd(begin);
-		
-		Character keyChar = new Character(charArray[begin]);
+
+        Character keyChar = new Character(charArray[begin]);
 		DictSegment ds = null;
 		
 		//引用实例变量为本地变量，避免查询时遇到更新的同步问题

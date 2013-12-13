@@ -152,7 +152,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray , int begin, int length){
-        return singleton._MainDict.match(String.valueOf(charArray).trim().toLowerCase().toCharArray(), begin, length);
+        return singleton._MainDict.match(String.valueOf(charArray).toLowerCase().toCharArray(), begin, length);
 	}
 	
 	/**
@@ -160,7 +160,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray , int begin, int length){
-		return singleton._QuantifierDict.match(String.valueOf(charArray).trim().toLowerCase().toCharArray(), begin, length);
+		return singleton._QuantifierDict.match(String.valueOf(charArray).toLowerCase().toCharArray(), begin, length);
 	}
 	
 	
@@ -179,7 +179,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray , int begin, int length){			
-		return singleton._StopWords.match(String.valueOf(charArray).trim().toLowerCase().toCharArray(), begin, length).isMatch();
+		return singleton._StopWords.match(String.valueOf(charArray).toLowerCase().toCharArray(), begin, length).isMatch();
 	}	
 	
 	/**

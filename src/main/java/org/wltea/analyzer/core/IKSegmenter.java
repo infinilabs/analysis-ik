@@ -23,15 +23,15 @@
  */
 package org.wltea.analyzer.core;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * IK分词器主类

@@ -26,9 +26,6 @@
  */
 package org.wltea.analyzer.lucene;
 
-import java.io.IOException;
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
@@ -37,6 +34,9 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  * IK分词器 Lucene Tokenizer适配器类
@@ -80,7 +80,7 @@ public final class IKTokenizer extends Tokenizer {
 		if(nextLexeme != null){
 			//将Lexeme转成Attributes
 			//设置词元文本
-			termAtt.append(nextLexeme.getLexemeText());
+			termAtt.append(nextLexeme.getLexemeText().toLowerCase());
 			//设置词元长度
 			termAtt.setLength(nextLexeme.getLength());
 			//设置词元位移

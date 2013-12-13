@@ -24,19 +24,15 @@
  */
 package org.wltea.analyzer.query;
 
+import org.apache.lucene.index.Term;
+import org.apache.lucene.search.*;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.util.BytesRef;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.util.BytesRef;
 
 /**
  * IK简易查询表达式解析 
@@ -66,7 +62,7 @@ public class IKQueryExpressionParser {
 	 */
 	public Query parseExp(String expression , boolean quickMode){
 		Query lucenceQuery = null;
-		if(expression != null && !"".equals(expression.trim())){
+		if(expression != null && !"".equals(expression)){
 			try{
 				//文法解析
 				this.splitElements(expression);
