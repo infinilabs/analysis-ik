@@ -59,7 +59,7 @@ public final class IKSegmenter {
 	public IKSegmenter(Reader input , Settings settings, Environment environment){
 		this.input = input;
 		this.cfg = new Configuration(environment);
-        this.useSmart = settings.get("use_smart", "true").equals("true");
+        this.useSmart = settings.get("use_smart", "false").equals("true");
         this.init();
 	}
 	
