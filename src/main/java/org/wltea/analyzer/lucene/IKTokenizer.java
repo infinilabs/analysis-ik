@@ -80,7 +80,7 @@ public final class IKTokenizer extends Tokenizer {
 		if(nextLexeme != null){
 			//将Lexeme转成Attributes
 			//设置词元文本
-			termAtt.append(nextLexeme.getLexemeText().toLowerCase());
+			termAtt.append(nextLexeme.getLexemeText());
 			//设置词元长度
 			termAtt.setLength(nextLexeme.getLength());
 			//设置词元位移

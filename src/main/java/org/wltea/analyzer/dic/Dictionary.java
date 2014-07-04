@@ -119,7 +119,7 @@ public class Dictionary {
 			for(String word : words){
 				if (word != null) {
 					//批量加载词条到主内存词典中
-					singleton._MainDict.fillSegment(word.trim().toLowerCase().toCharArray());
+					singleton._MainDict.fillSegment(word.trim().toCharArray());
 				}
 			}
 		}
@@ -133,7 +133,7 @@ public class Dictionary {
 			for(String word : words){
 				if (word != null) {
 					//批量屏蔽词条
-					singleton._MainDict.disableSegment(word.trim().toLowerCase().toCharArray());
+					singleton._MainDict.disableSegment(word.trim().toCharArray());
 				}
 			}
 		}
@@ -152,7 +152,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray , int begin, int length){
-        return singleton._MainDict.match(String.valueOf(charArray).toLowerCase().toCharArray(), begin, length);
+        return singleton._MainDict.match(charArray, begin, length);
 	}
 	
 	/**
@@ -160,7 +160,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray , int begin, int length){
-		return singleton._QuantifierDict.match(String.valueOf(charArray).toLowerCase().toCharArray(), begin, length);
+		return singleton._QuantifierDict.match(charArray, begin, length);
 	}
 	
 	
@@ -179,7 +179,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray , int begin, int length){			
-		return singleton._StopWords.match(String.valueOf(charArray).toLowerCase().toCharArray(), begin, length).isMatch();
+		return singleton._StopWords.match(charArray, begin, length).isMatch();
 	}	
 	
 	/**
@@ -205,7 +205,7 @@ public class Dictionary {
 			do {
 				theWord = br.readLine();
 				if (theWord != null && !"".equals(theWord.trim())) {
-					_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+					_MainDict.fillSegment(theWord.trim().toCharArray());
 				}
 			} while (theWord != null);
 			
@@ -255,7 +255,7 @@ public class Dictionary {
 						theWord = br.readLine();
                         if (theWord != null && !"".equals(theWord.trim())) {
 							//加载扩展词典数据到主内存词典中
-							_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+							_MainDict.fillSegment(theWord.trim().toCharArray());
 						}
 					} while (theWord != null);
 					
@@ -298,7 +298,7 @@ public class Dictionary {
             do {
                 theWord = br.readLine();
                 if (theWord != null && !"".equals(theWord.trim())) {
-                    _StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+                    _StopWords.fillSegment(theWord.trim().toCharArray());
                 }
             } while (theWord != null);
 
@@ -342,7 +342,7 @@ public class Dictionary {
 						theWord = br.readLine();
 						if (theWord != null && !"".equals(theWord.trim())) {
 							//加载扩展停止词典数据到内存中
-                            _StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+                            _StopWords.fillSegment(theWord.trim().toCharArray());
 						}
 					} while (theWord != null);
 					
@@ -383,7 +383,7 @@ public class Dictionary {
 			do {
 				theWord = br.readLine();
 				if (theWord != null && !"".equals(theWord.trim())) {
-					_QuantifierDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+					_QuantifierDict.fillSegment(theWord.trim().toCharArray());
 				}
 			} while (theWord != null);
 			
@@ -438,7 +438,6 @@ public class Dictionary {
             }
         }
     }
-
 
 
     private void loadSuffixDict(){
