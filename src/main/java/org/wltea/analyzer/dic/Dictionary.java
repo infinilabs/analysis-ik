@@ -80,7 +80,7 @@ public class Dictionary {
 	 * 该方法提供了一个在应用加载阶段就初始化字典的手段
 	 * @return Dictionary
 	 */
-	public static Dictionary initial(Configuration cfg){
+	public static synchronized Dictionary initial(Configuration cfg){
 		if(singleton == null){
 			synchronized(Dictionary.class){
 				if(singleton == null){
