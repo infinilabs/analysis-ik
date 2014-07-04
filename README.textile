@@ -3,10 +3,12 @@ IK Analysis for ElasticSearch
 
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
+Tokenizer: `ik`
 
 Version
 -------------
- master                      | 0.0.0 -> master
+ master                      | 1.2.1 -> master
+ 1.2.7                       | 1.2.1
  1.2.6                       | 1.0.0
  1.2.5                       | 0.90.2
  1.2.3                       | 0.90.2
