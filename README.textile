@@ -30,8 +30,8 @@ Java and .NET applications. Take a look at YourKit's leading software products:
 Install
 -------------
 you can download this plugin from RTF project(https://github.com/medcl/elasticsearch-rtf)
-https://github.com/medcl/elasticsearch-rtf/tree/master/elasticsearch/plugins/analysis-ik
-https://github.com/medcl/elasticsearch-rtf/tree/master/elasticsearch/config/ik
+https://github.com/medcl/elasticsearch-rtf/tree/master/plugins/analysis-ik
+https://github.com/medcl/elasticsearch-rtf/tree/master/config/ik
 
 <del>also remember to download the dict files,unzip these dict file into your elasticsearch's config folder,such as: your-es-root/config/ik</del>
 
