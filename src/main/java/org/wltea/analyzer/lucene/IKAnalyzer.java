@@ -28,6 +28,7 @@ import java.io.Reader;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
+import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 
@@ -66,8 +67,8 @@ public final class IKAnalyzer extends Analyzer{
 		this.useSmart = useSmart;
 	}
 
-    Settings settings;
-    Environment environment;
+    Settings settings=ImmutableSettings.EMPTY;
+    Environment environment=new Environment();
 
     public IKAnalyzer(Settings indexSetting,Settings settings, Environment environment) {
         super();
