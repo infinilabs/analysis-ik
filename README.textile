@@ -7,7 +7,8 @@ Tokenizer: `ik`
 
 Version
 -------------
- master                      | 1.2.1 -> master
+ master                      | 1.3.2 -> master
+ 1.2.8                       | 1.3.2
  1.2.7                       | 1.2.1
  1.2.6                       | 1.0.0
  1.2.5                       | 0.90.2
