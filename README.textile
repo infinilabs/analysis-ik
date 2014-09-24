@@ -59,9 +59,9 @@ https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnaly
 	 <!--用户可以在这里配置自己的扩展停止词字典-->
 	<entry key="ext_stopwords">custom/ext_stopword.dic</entry> 
  	<!--用户可以在这里配置远程扩展字典 -->
-	<entry key="ext_dict">location</entry> 
+	<entry key="remote_ext_dict">location</entry> 
  	<!--用户可以在这里配置远程扩展停止词字典-->
-	<entry key="ext_stopwords">location</entry> 
+	<entry key="remote_ext_stopwords">location</entry> 
 </properties>
 
 </pre>
