@@ -17,7 +17,9 @@ public class Configuration {
 
 	private static String FILE_NAME = "ik/IKAnalyzer.cfg.xml";
 	private static final String EXT_DICT = "ext_dict";
+	private static final String REMOTE_EXT_DICT = "remote_ext_dict";
 	private static final String EXT_STOP = "ext_stopwords";
+	private static final String REMOTE_EXT_STOP = "remote_ext_stopwords";
     private static ESLogger logger = null;
 	private Properties props;
     private Environment environment;
@@ -64,6 +66,24 @@ public class Configuration {
 		}		
 		return extDictFiles;		
 	}
+    
+    public  List<String> getRemoteExtDictionarys(){
+		List<String> remoteExtDictFiles = new ArrayList<String>(2);
+		String remoteExtDictCfg = props.getProperty(REMOTE_EXT_DICT);
+		if(remoteExtDictCfg != null){
+
+			String[] filePaths = remoteExtDictCfg.split(";");
+			if(filePaths != null){
+				for(String filePath : filePaths){
+					if(filePath != null && !"".equals(filePath.trim())){
+						remoteExtDictFiles.add(filePath);
+
+					}
+				}
+			}
+		}		
+		return remoteExtDictFiles;		
+	}
 
 	public List<String> getExtStopWordDictionarys(){
 		List<String> extStopWordDictFiles = new ArrayList<String>(2);
@@ -82,6 +102,24 @@ public class Configuration {
 			}
 		}		
 		return extStopWordDictFiles;		
+	}
+	
+	public  List<String> getRemoteExtStopWordDictionarys(){
+		List<String> remoteExtStopWordDictFiles = new ArrayList<String>(2);
+		String remoteExtStopWordDictCfg = props.getProperty(REMOTE_EXT_STOP);
+		if(remoteExtStopWordDictCfg != null){
+
+			String[] filePaths = remoteExtStopWordDictCfg.split(";");
+			if(filePaths != null){
+				for(String filePath : filePaths){
+					if(filePath != null && !"".equals(filePath.trim())){
+						remoteExtStopWordDictFiles.add(filePath);
+
+					}
+				}
+			}
+		}		
+		return remoteExtStopWordDictFiles;		
 	}
 
     public File getDictRoot() {
