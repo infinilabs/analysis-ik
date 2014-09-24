@@ -51,6 +51,13 @@
             <version>${elasticsearch.version}</version>
             <scope>compile</scope>
         </dependency>
+        
+        <dependency>
+	     <groupId>org.apache.httpcomponents</groupId>
+              <artifactId>httpclient</artifactId>
+	     <version>4.3.5</version>
+	     <scope>compile</scope>
+	</dependency>
 
         <dependency>
             <groupId>log4j</groupId>

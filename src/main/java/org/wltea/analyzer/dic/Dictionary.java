@@ -25,11 +25,18 @@
  */
 package org.wltea.analyzer.dic;
 
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.cfg.Configuration;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -92,6 +99,17 @@ public class Dictionary {
                     singleton.loadSuffixDict();
                     singleton.loadPrepDict();
                     singleton.loadStopWordDict();
+                    
+                  //建立监控线程
+                    for(String location:cfg.getRemoteExtDictionarys()){
+                        Thread monitor = new Thread(new Monitor(location));
+                	monitor.start();
+                    }
+                    for(String location:cfg.getRemoteExtStopWordDictionarys()){
+                        Thread monitor = new Thread(new Monitor(location));
+                	monitor.start();
+                    }
+                    
                     return singleton;
 				}
 			}
@@ -224,6 +242,8 @@ public class Dictionary {
 		}
 		//加载扩展词典
 		this.loadExtDict();
+		//加载远程自定义词库
+		this.loadRemoteExtDict();
 	}	
 	
 	/**
@@ -274,6 +294,76 @@ public class Dictionary {
 			}
 		}		
 	}
+	
+	
+	/**
+	 * 加载远程扩展词典到主词库表
+	 */
+	private void loadRemoteExtDict(){
+		List<String> remoteExtDictFiles  = configuration.getRemoteExtDictionarys();
+		for(String location:remoteExtDictFiles){
+			logger.info("[Dict Loading]" + location);
+			List<String> lists = getRemoteWords(location);
+			//如果找不到扩展的字典，则忽略
+			if(lists == null){
+				logger.error("[Dict Loading]"+location+"加载失败");
+				continue;
+			}
+			for(String theWord:lists){
+				if (theWord != null && !"".equals(theWord.trim())) {
+					//加载扩展词典数据到主内存词典中
+					logger.info(theWord);
+					_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+				}
+			}
+		}
+		
+	}
+	
+	/**
+	 * 从远程服务器上下载自定义词条
+	 */
+	private static List<String> getRemoteWords(String location){
+		
+		List<String> buffer = new ArrayList<String>();
+		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10*1000)
+				.setConnectTimeout(10*1000).setSocketTimeout(60*1000).build();
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		CloseableHttpResponse response;
+		BufferedReader in;
+		HttpGet get = new HttpGet(location);
+		get.setConfig(rc);
+		try {
+			response = httpclient.execute(get);
+			if(response.getStatusLine().getStatusCode()==200){
+				
+				String charset = "UTF-8";
+				//获取编码，默认为utf-8
+				if(response.getEntity().getContentType().getValue().contains("charset=")){
+					String contentType=response.getEntity().getContentType().getValue();
+					charset=contentType.substring(contentType.lastIndexOf("=")+1);
+				}
+				in = new BufferedReader(new InputStreamReader(response.getEntity().getContent(),charset));
+				String line ;
+				while((line = in.readLine())!=null){
+					buffer.add(line);
+				}
+				in.close();
+				response.close();
+				return buffer;
+			}
+			response.close();
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return buffer;
+	}
+	
+	
 	
 	/**
 	 * 加载用户扩展的停止词词典
@@ -360,7 +450,28 @@ public class Dictionary {
 					}
 				}
 			}
-		}		
+		}
+		
+		//加载远程停用词典
+		List<String> remoteExtStopWordDictFiles  = configuration.getRemoteExtStopWordDictionarys();
+		for(String location:remoteExtStopWordDictFiles){
+			logger.info("[Dict Loading]" + location);
+			List<String> lists = getRemoteWords(location);
+			//如果找不到扩展的字典，则忽略
+			if(lists == null){
+				logger.error("[Dict Loading]"+location+"加载失败");
+				continue;
+			}
+			for(String theWord:lists){
+				if (theWord != null && !"".equals(theWord.trim())) {
+					//加载远程词典数据到主内存中
+					logger.info(theWord);
+					_StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+				}
+			}
+		}
+		
+		
 	}
 	
 	/**
@@ -511,6 +622,11 @@ public class Dictionary {
             }
         }
     }
-
-	
+    
+    public void reLoadMainDict(){
+    	logger.info("重新加载词典...");
+	loadMainDict();
+	loadStopWordDict();
+    }
+    
 }

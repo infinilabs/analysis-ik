@@ -1,6 +1,11 @@
 IK Analysis for ElasticSearch
 ==================================
 
+更新说明：
+	对于使用es集群，用ik作为分词插件，经常会修改自定义词典，增加远程加载，每次更新都会重新加载词典，不必重启es服务。
+
+
+
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
 Tokenizer: `ik`
@@ -52,7 +57,11 @@ https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnaly
 	<!--用户可以在这里配置自己的扩展字典 -->
 	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic</entry> 	
 	 <!--用户可以在这里配置自己的扩展停止词字典-->
-	<entry key="ext_stopwords">custom/ext_stopword.dic</entry> 	
+	<entry key="ext_stopwords">custom/ext_stopword.dic</entry> 
+ 	<!--用户可以在这里配置远程扩展字典 -->
+	<entry key="remote_ext_dict">location</entry> 
+ 	<!--用户可以在这里配置远程扩展停止词字典-->
+	<entry key="remote_ext_stopwords">location</entry> 
 </properties>
 
 </pre>
