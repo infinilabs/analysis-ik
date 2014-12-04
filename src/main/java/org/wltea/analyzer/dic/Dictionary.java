@@ -25,6 +25,20 @@
  */
 package org.wltea.analyzer.dic;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -34,11 +48,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.cfg.Configuration;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * 词典管理类,单子模式
@@ -69,13 +78,18 @@ public class Dictionary {
 	 */
 	private Configuration configuration;
     private ESLogger logger=null;
+    
+    private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+    
     public static final String PATH_DIC_MAIN = "ik/main.dic";
     public static final String PATH_DIC_SURNAME = "ik/surname.dic";
     public static final String PATH_DIC_QUANTIFIER = "ik/quantifier.dic";
     public static final String PATH_DIC_SUFFIX = "ik/suffix.dic";
     public static final String PATH_DIC_PREP = "ik/preposition.dic";
     public static final String PATH_DIC_STOP = "ik/stopword.dic";
+    
     private Dictionary(){
+    	
         logger = Loggers.getLogger("ik-analyzer");
     }
 
@@ -100,17 +114,16 @@ public class Dictionary {
                     singleton.loadPrepDict();
                     singleton.loadStopWordDict();
                     
-                  //建立监控线程
-                    for(String location:cfg.getRemoteExtDictionarys()){
-                        Thread monitor = new Thread(new Monitor(location));
-                	monitor.start();
-                    }
-                    for(String location:cfg.getRemoteExtStopWordDictionarys()){
-                        Thread monitor = new Thread(new Monitor(location));
-                	monitor.start();
-                    }
-                    
-                    return singleton;
+	                //建立监控线程
+	                for(String location:cfg.getRemoteExtDictionarys()){
+	                	//10 秒是初始延迟可以修改的  60是间隔时间  单位秒
+	            		pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+	                }
+	                for(String location:cfg.getRemoteExtStopWordDictionarys()){
+	            		pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+	                }
+	                    
+	                return singleton;
 				}
 			}
 		}

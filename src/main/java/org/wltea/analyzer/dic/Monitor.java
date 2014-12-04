@@ -2,15 +2,11 @@ package org.wltea.analyzer.dic;
 
 import java.io.IOException;
 
-import org.apache.http.Header;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.wltea.analyzer.help.Sleep;
-import org.wltea.analyzer.help.Sleep.Type;
 
 public class Monitor implements Runnable {
 	
@@ -44,53 +40,49 @@ public class Monitor implements Runnable {
 	 */
 	
 	public void run() {
+		
 		//超时设置
 		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10*1000)
 				.setConnectTimeout(10*1000).setSocketTimeout(15*1000).build();
-		while (true) {
-			HttpHead head = new HttpHead(location);
-			head.setConfig(rc);
+		
+		HttpHead head = new HttpHead(location);
+		head.setConfig(rc);
+		
+		//设置请求头
+		if (last_modified != null) {
+			head.setHeader("If-Modified-Since", last_modified);
+		}
+		if (eTags != null) {
+			head.setHeader("If-None-Match", eTags);
+		}
+		
+		CloseableHttpResponse response = null;
+		try {
 			
-			//设置请求头
-			if (last_modified != null) {
-				head.setHeader("If-Modified-Since", last_modified);
-			}
-			if (eTags != null) {
-				head.setHeader("If-None-Match", eTags);
-			}
+			response = httpclient.execute(head);
 			
-			CloseableHttpResponse response = null;
-			try {
-				response = httpclient.execute(head);
-				
-				//返回304 Not Modified，词库未更新
-				if(response.getStatusLine().getStatusCode()==304){
-					continue;
-				}else if(response.getStatusLine().getStatusCode()==200){
-				
-					if (!response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified)
-						||!response.getLastHeader("ETags").getValue().equalsIgnoreCase(eTags)) {
-	
-						// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-						Dictionary.getSingleton().reLoadMainDict();
-						last_modified = response.getLastHeader("Last-Modified")==null?null:response.getLastHeader("Last-Modified").getValue();
-						eTags = response.getLastHeader("ETags")==null?null:response.getLastHeader("ETags").getValue();
-					}
+			//返回200 才做操作
+			if(response.getStatusLine().getStatusCode()==200){
+			
+				if (!response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified)
+					||!response.getLastHeader("ETags").getValue().equalsIgnoreCase(eTags)) {
+
+					// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
+					Dictionary.getSingleton().reLoadMainDict();
+					last_modified = response.getLastHeader("Last-Modified")==null?null:response.getLastHeader("Last-Modified").getValue();
+					eTags = response.getLastHeader("ETags")==null?null:response.getLastHeader("ETags").getValue();
 				}
-				
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				response.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}finally{
-				try {
-					response.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				Sleep.sleep(Type.SEC, 60);
 			}
-		}	
+		}
 	}
 	
 }
