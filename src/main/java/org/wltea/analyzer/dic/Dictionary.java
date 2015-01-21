@@ -638,8 +638,13 @@ public class Dictionary {
     
     public void reLoadMainDict(){
     	logger.info("重新加载词典...");
-	loadMainDict();
-	loadStopWordDict();
+		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
+		Dictionary tmpDict = new Dictionary();
+		tmpDict.loadMainDict();
+		tmpDict.loadStopWordDict();
+		_MainDict = tmpDict._MainDict;
+		_StopWords = tmpDict._StopWords;
+		logger.info("重新加载词典完毕...");
     }
     
 }
