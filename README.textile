@@ -223,6 +223,25 @@ here is the query result
 
 have fun.
 
+热更新IK分词使用方法
+----------
+目前该插件支持热更新IK分词，通过上文在ik配置文件中提到的如下配置
+
+<pre>
+ 	<!--用户可以在这里配置远程扩展字典 -->
+	<entry key="remote_ext_dict">location</entry>
+ 	<!--用户可以在这里配置远程扩展停止词字典-->
+	<entry key="remote_ext_stopwords">location</entry>
+</pre>
+
+其中`location`是指一个url，比如`http://yoursite.com/getCustomDict`，该请求只需满足一下两点即可完成分词热更新。
+
+1. 该http请求需要返回两个头部，一个是`Last-Modified`，一个是`ETags`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
+
+2. 该http请求返回的内容格式是一行一个分词，换行符用`\n`即可。
+
+满足上面两点要求就可以实现热更新分词了，不需要重启es实例。
+
 
 常见问题：
 -------------
