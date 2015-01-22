@@ -9,7 +9,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
 public class Monitor implements Runnable {
-	
+
 	private static CloseableHttpClient httpclient = HttpClients.createDefault();
 	/*
 	 * 上次更改时间
@@ -40,7 +40,7 @@ public class Monitor implements Runnable {
 	 */
 	
 	public void run() {
-		
+
 		//超时设置
 		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10*1000)
 				.setConnectTimeout(10*1000).setSocketTimeout(15*1000).build();
@@ -72,13 +72,17 @@ public class Monitor implements Runnable {
 					last_modified = response.getLastHeader("Last-Modified")==null?null:response.getLastHeader("Last-Modified").getValue();
 					eTags = response.getLastHeader("ETags")==null?null:response.getLastHeader("ETags").getValue();
 				}
+			}else{
+				Dictionary.logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
 			}
-			
+
 		} catch (Exception e) {
-			e.printStackTrace();
+			Dictionary.logger.error("remote_ext_dict {} error!",e , location);
 		}finally{
 			try {
-				response.close();
+				if (response != null) {
+					response.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
