@@ -77,7 +77,7 @@ public class Dictionary {
 	 * 配置对象
 	 */
 	private Configuration configuration;
-    private ESLogger logger=null;
+    public static ESLogger logger=Loggers.getLogger("ik-analyzer");
     
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
     
@@ -89,8 +89,7 @@ public class Dictionary {
     public static final String PATH_DIC_STOP = "ik/stopword.dic";
     
     private Dictionary(){
-    	
-        logger = Loggers.getLogger("ik-analyzer");
+
     }
 
 	/**
@@ -367,11 +366,11 @@ public class Dictionary {
 			}
 			response.close();
 		} catch (ClientProtocolException e) {
-			e.printStackTrace();
+			logger.error( "getRemoteWords {} error" , e , location);
 		} catch (IllegalStateException e) {
-			e.printStackTrace();
+			logger.error( "getRemoteWords {} error" , e , location );
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error( "getRemoteWords {} error" , e , location );
 		}
 		return buffer;
 	}
@@ -638,8 +637,14 @@ public class Dictionary {
     
     public void reLoadMainDict(){
     	logger.info("重新加载词典...");
-	loadMainDict();
-	loadStopWordDict();
+		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
+		Dictionary tmpDict = new Dictionary();
+		tmpDict.configuration = getSingleton().configuration;
+		tmpDict.loadMainDict();
+		tmpDict.loadStopWordDict();
+		_MainDict = tmpDict._MainDict;
+		_StopWords = tmpDict._StopWords;
+		logger.info("重新加载词典完毕...");
     }
     
 }
