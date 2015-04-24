@@ -12,7 +12,8 @@ Tokenizer: `ik`
 
 Version
 -------------
- master                      | 1.4.0 -> master
+ master                      | 1.5.0 -> master
+ 1.3.0                       | 1.5.0
  1.2.9                       | 1.4.0
  1.2.8                       | 1.3.2
  1.2.7                       | 1.2.1
@@ -247,3 +248,11 @@ have fun.
 -------------
 1.自定义词典为什么没有生效？
 请确保你的扩展词典的文本格式为UTF8编码
+
+2.如何手动安装，以 1.3.0 為例？（参考：https://github.com/medcl/elasticsearch-analysis-ik/issues/46）
+
+`git clone https://github.com/medcl/elasticsearch-analysis-ik`
+`cd elasticsearch-analysis-ik`
+`mvn compile`
+`mvn package`
+`plugin --install analysis-ik --url file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-1.3.0.zip`
