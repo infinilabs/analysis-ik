@@ -31,7 +31,7 @@
     </parent>
 
     <properties>
-        <elasticsearch.version>1.6.0</elasticsearch.version>
+        <elasticsearch.version>1.6.2</elasticsearch.version>
     </properties>
 
   <repositories>
