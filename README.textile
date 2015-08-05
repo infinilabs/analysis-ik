@@ -2,7 +2,9 @@ IK Analysis for ElasticSearch
 ==================================
 
 更新说明：
-  对于使用es集群，用ik作为分词插件，经常会修改自定义词典，增加远程加载，每次更新都会重新加载词典，不必重启es服务。
+	对于使用es集群，用ik作为分词插件，经常会修改自定义词典，增加远程加载，每次更新都会重新加载词典，不必重启es服务。
+
+
 
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
@@ -24,6 +26,7 @@ Version
  1.1.2                       | 0.19.x
  1.0.0                       | 0.16.2 -> 0.19.0   
 
+
 Thanks
 -------------
 YourKit supports IK Analysis for ElasticSearch project with its full-featured Java Profiler.
@@ -31,6 +34,7 @@ YourKit, LLC is the creator of innovative and intelligent tools for profiling
 Java and .NET applications. Take a look at YourKit's leading software products:
 <a href="http://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a> and
 <a href="http://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET Profiler</a>.
+
 
 Install
 -------------
@@ -49,7 +53,7 @@ https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnaly
 
 <pre>
 
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">  
 <properties>  
 	<comment>IK Analyzer 扩展配置</comment>
@@ -68,7 +72,7 @@ https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnaly
 Analysis Configuration (elasticsearch.yml)
 -------------
 
-<pre>
+<Pre>
 index:
   analysis:                   
     analyzer:      
@@ -218,11 +222,12 @@ here is the query result
 
 </pre>
 
+
 have fun.
 
 热更新IK分词使用方法
 ----------
-目前该插件支持热更新 ik 分词，通过上文在 ik 配置文件中提到的如下配置
+目前该插件支持热更新IK分词，通过上文在ik配置文件中提到的如下配置
 
 <pre>
  	<!--用户可以在这里配置远程扩展字典 -->
@@ -231,18 +236,19 @@ have fun.
 	<entry key="remote_ext_stopwords">location</entry>
 </pre>
 
-其中 `location` 是指一个 url，比如 `http://yoursite.com/getCustomDict`，该请求只需满足一下两点即可完成分词热更新。
+其中`location`是指一个url，比如`http://yoursite.com/getCustomDict`，该请求只需满足一下两点即可完成分词热更新。
 
-1. 该 http 请求需要返回两个头部，一个是 `Last-Modified`，一个是 `ETags`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
+1. 该http请求需要返回两个头部，一个是`Last-Modified`，一个是`ETags`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
 
-2. 该 http 请求返回的内容格式是一行一个分词，换行符用 `\n` 即可。
+2. 该http请求返回的内容格式是一行一个分词，换行符用`\n`即可。
 
-满足上面两点要求就可以实现热更新分词了，不需要重启 es 实例。
+满足上面两点要求就可以实现热更新分词了，不需要重启es实例。
+
 
 常见问题：
 -------------
 1.自定义词典为什么没有生效？
-请确保你的扩展词典的文本格式为 UTF8 编码
+请确保你的扩展词典的文本格式为UTF8编码
 
 2.如何手动安装，以 1.3.0 為例？（参考：https://github.com/medcl/elasticsearch-analysis-ik/issues/46）
 
