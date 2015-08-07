@@ -62,7 +62,7 @@ public class Monitor implements Runnable {
 			response = httpclient.execute(head);
 			
 			//返回200 才做操作
-			if(response.getStatusLine().getStatusCode()==200 || response.getStatusLine().getStatusCode()==304){
+			if(response.getStatusLine().getStatusCode()==200){
 			
 				if (!response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified)
 					||!response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags)) {
