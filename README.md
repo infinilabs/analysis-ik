@@ -1,39 +1,34 @@
 IK Analysis for ElasticSearch
-==================================
-
-更新说明：
-  对于使用es集群，用ik作为分词插件，经常会修改自定义词典，增加远程加载，每次更新都会重新加载词典，不必重启es服务。
+=============================
 
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
 Tokenizer: `ik`
 
-Version
--------------
- master                      | 1.5.0 -> master
- 1.4.0                       | 1.6.0
- 1.3.0                       | 1.5.0
- 1.2.9                       | 1.4.0
- 1.2.8                       | 1.3.2
- 1.2.7                       | 1.2.1
- 1.2.6                       | 1.0.0
- 1.2.5                       | 0.90.2
- 1.2.3                       | 0.90.2
- 1.2.0                       | 0.90.0
- 1.1.3                       | 0.20.2
- 1.1.2                       | 0.19.x
- 1.0.0                       | 0.16.2 -> 0.19.0   
+更新：对于使用 ES 集群，用 IK 作为分词插件，经常会修改自定义词典的使用者，可以透过远程加载的方式，每次更新都会重新加载词典，不必重启 ES 服务。
 
-Thanks
--------------
-YourKit supports IK Analysis for ElasticSearch project with its full-featured Java Profiler.
-YourKit, LLC is the creator of innovative and intelligent tools for profiling
-Java and .NET applications. Take a look at YourKit's leading software products:
-<a href="http://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a> and
-<a href="http://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET Profiler</a>.
+Versions
+--------
+
+IK version | ES version
+-----------|-----------
+master | 1.5.0 -> master
+1.4.0 | 1.6.0
+1.3.0 | 1.5.0
+1.2.9 | 1.4.0
+1.2.8 | 1.3.2
+1.2.7 | 1.2.1
+1.2.6 | 1.0.0
+1.2.5 | 0.90.2
+1.2.3 | 0.90.2
+1.2.0 | 0.90.0
+1.1.3 | 0.20.2
+1.1.2 | 0.19.x
+1.0.0 | 0.16.2 -> 0.19.0
 
 Install
--------------
+-------
+
 you can download this plugin from RTF project(https://github.com/medcl/elasticsearch-rtf)
 https://github.com/medcl/elasticsearch-rtf/tree/master/plugins/analysis-ik
 https://github.com/medcl/elasticsearch-rtf/tree/master/config/ik
@@ -42,36 +37,17 @@ https://github.com/medcl/elasticsearch-rtf/tree/master/config/ik
 
 you need a service restart after that!
 
-Dict Configuration (es-root/config/ik/IKAnalyzer.cfg.xml)
+Configuration
 -------------
 
-https://github.com/medcl/elasticsearch-analysis-ik/blob/master/config/ik/IKAnalyzer.cfg.xml
+### Analysis Configuration
 
-<pre>
+#### `elasticsearch.yml`
 
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">  
-<properties>  
-	<comment>IK Analyzer 扩展配置</comment>
-	<!--用户可以在这里配置自己的扩展字典 -->
-	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic</entry> 	
-	 <!--用户可以在这里配置自己的扩展停止词字典-->
-	<entry key="ext_stopwords">custom/ext_stopword.dic</entry> 
- 	<!--用户可以在这里配置远程扩展字典 -->
-	<entry key="remote_ext_dict">location</entry> 
- 	<!--用户可以在这里配置远程扩展停止词字典-->
-	<entry key="remote_ext_stopwords">location</entry> 
-</properties>
-
-</pre>
-
-Analysis Configuration (elasticsearch.yml)
--------------
-
-<pre>
+```yaml
 index:
-  analysis:                   
-    analyzer:      
+  analysis:
+    analyzer:
       ik:
           alias: [ik_analyzer]
           type: org.elasticsearch.index.analysis.IkAnalyzerProvider
@@ -81,30 +57,29 @@ index:
       ik_smart:
           type: ik
           use_smart: true
-</pre>
+```
+
 Or
-<pre>
+
+```yaml
 index.analysis.analyzer.ik.type : "ik"
-</pre>
+```
 
 you can set your prefer segment mode,default `use_smart` is false.
 
-Mapping Configuration
--------------
+### Mapping Configuration
 
-Here is a quick example:
-1.create a index
+#### Quick Example
 
-<pre>
+1. create a index
 
+```bash
 curl -XPUT http://localhost:9200/index
+```
 
-</pre>
+2. create a mapping
 
-2.create a mapping
-
-<pre>
-
+```bash
 curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
     "fulltext": {
@@ -127,33 +102,37 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
         }
     }
 }'
-</pre>
+```
 
-3.index some docs
+3. index some docs
 
-<pre>
-
+```bash
 curl -XPOST http://localhost:9200/index/fulltext/1 -d'
 {"content":"美国留给伊拉克的是个烂摊子吗"}
 '
+```
 
+```bash
 curl -XPOST http://localhost:9200/index/fulltext/2 -d'
 {"content":"公安部：各地校车将享最高路权"}
 '
+```
 
+```bash
 curl -XPOST http://localhost:9200/index/fulltext/3 -d'
 {"content":"中韩渔警冲突调查：韩警平均每天扣1艘中国渔船"}
 '
+```
 
+```bash
 curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 {"content":"中国驻洛杉矶领事馆遭亚裔男子枪击 嫌犯已自首"}
 '
-</pre>
+```
 
-4.query with highlighting
+4. query with highlighting
 
-<pre>
-
+```bash
 curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 {
     "query" : { "term" : { "content" : "中国" }},
@@ -166,12 +145,11 @@ curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
     }
 }
 '
-</pre>
+```
 
-here is the query result
+#### Result
 
-<pre>
-
+```json
 {
     "took": 14,
     "timed_out": false,
@@ -215,39 +193,71 @@ here is the query result
         ]
     }
 }
+```
 
-</pre>
+### Dictionary Configuration
 
-have fun.
+#### `config/ik/IKAnalyzer.cfg.xml`
 
-热更新IK分词使用方法
-----------
-目前该插件支持热更新 ik 分词，通过上文在 ik 配置文件中提到的如下配置
-
-<pre>
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<comment>IK Analyzer 扩展配置</comment>
+	<!--用户可以在这里配置自己的扩展字典 -->
+	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic</entry>
+	 <!--用户可以在这里配置自己的扩展停止词字典-->
+	<entry key="ext_stopwords">custom/ext_stopword.dic</entry>
  	<!--用户可以在这里配置远程扩展字典 -->
 	<entry key="remote_ext_dict">location</entry>
  	<!--用户可以在这里配置远程扩展停止词字典-->
 	<entry key="remote_ext_stopwords">location</entry>
-</pre>
+</properties>
+```
 
-其中 `location` 是指一个 url，比如 `http://yoursite.com/getCustomDict`，该请求只需满足一下两点即可完成分词热更新。
+### 热更新 IK 分词使用方法
 
-1. 该 http 请求需要返回两个头部，一个是 `Last-Modified`，一个是 `ETags`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
+目前该插件支持热更新 IK 分词，通过上文在 IK 配置文件中提到的如下配置
+
+```xml
+ 	<!--用户可以在这里配置远程扩展字典 -->
+	<entry key="remote_ext_dict">location</entry>
+ 	<!--用户可以在这里配置远程扩展停止词字典-->
+	<entry key="remote_ext_stopwords">location</entry>
+```
+
+其中 `location` 是指一个 url，比如 `http://yoursite.com/getCustomDict`，该请求只需满足以下两点即可完成分词热更新。
+
+1. 该 http 请求需要返回两个头部(header)，一个是 `Last-Modified`，一个是 `ETags`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
 
 2. 该 http 请求返回的内容格式是一行一个分词，换行符用 `\n` 即可。
 
-满足上面两点要求就可以实现热更新分词了，不需要重启 es 实例。
+满足上面两点要求就可以实现热更新分词了，不需要重启 ES 实例。
 
-常见问题：
--------------
+have fun.
+
+常见问题
+-------
+
 1.自定义词典为什么没有生效？
+
 请确保你的扩展词典的文本格式为 UTF8 编码
 
 2.如何手动安装，以 1.3.0 為例？（参考：https://github.com/medcl/elasticsearch-analysis-ik/issues/46）
 
-`git clone https://github.com/medcl/elasticsearch-analysis-ik`
-`cd elasticsearch-analysis-ik`
-`mvn compile`
-`mvn package`
-`plugin --install analysis-ik --url file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-1.3.0.zip`
+
+```bash
+git clone https://github.com/medcl/elasticsearch-analysis-ik
+cd elasticsearch-analysis-ik
+mvn compile
+mvn package
+plugin --install analysis-ik --url file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-1.3.0.zip
+```
+
+Thanks
+------
+YourKit supports IK Analysis for ElasticSearch project with its full-featured Java Profiler.
+YourKit, LLC is the creator of innovative and intelligent tools for profiling
+Java and .NET applications. Take a look at YourKit's leading software products:
+<a href="http://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a> and
+<a href="http://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET Profiler</a>.
