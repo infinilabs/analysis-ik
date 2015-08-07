@@ -72,6 +72,9 @@ public class Monitor implements Runnable {
 					last_modified = response.getLastHeader("Last-Modified")==null?null:response.getLastHeader("Last-Modified").getValue();
 					eTags = response.getLastHeader("ETag")==null?null:response.getLastHeader("ETag").getValue();
 				}
+			}else if (response.getStatusLine().getStatusCode()==304) {
+				//没有修改，不做操作
+				//noop
 			}else{
 				Dictionary.logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
 			}
