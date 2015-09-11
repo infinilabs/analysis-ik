@@ -3,6 +3,7 @@ package org.elasticsearch.plugin.analysis.ik;
 import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.index.analysis.IkAnalysisBinderProcessor;
+import org.elasticsearch.index.analysis.IkTokenizerFactory;
 import org.elasticsearch.plugins.AbstractPlugin;
 
 
@@ -22,6 +23,7 @@ public class AnalysisIkPlugin extends AbstractPlugin {
         if (module instanceof AnalysisModule) {
             AnalysisModule analysisModule = (AnalysisModule) module;
             analysisModule.addProcessor(new IkAnalysisBinderProcessor());
+            analysisModule.addTokenizer("ik_tokenizer", IkTokenizerFactory.class);
         }
     }
 }
