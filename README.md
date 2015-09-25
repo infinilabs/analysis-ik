@@ -13,6 +13,7 @@ Versions
 IK version | ES version
 -----------|-----------
 master | 1.5.0 -> master
+1.4.1 | 1.7.2
 1.4.0 | 1.6.0
 1.3.0 | 1.5.0
 1.2.9 | 1.4.0
@@ -298,7 +299,7 @@ git clone https://github.com/medcl/elasticsearch-analysis-ik
 cd elasticsearch-analysis-ik
 mvn compile
 mvn package
-plugin --install analysis-ik --url file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-1.3.0.zip
+copy file  #{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-xxx-jar-with-dependencies.jar to your elasticsearch's folder: plugins/ik
 ```
 
 Thanks
