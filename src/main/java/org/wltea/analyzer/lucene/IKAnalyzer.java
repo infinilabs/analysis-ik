@@ -52,18 +52,18 @@ public final class IKAnalyzer extends Analyzer {
 	 * 
 	 * 默认细粒度切分算法
 	 */
-	/*public IKAnalyzer(){
+	public IKAnalyzer(){
 		this(false);
-	}*/
+	}
 	
 	/**
 	 * IK分词器Lucene Analyzer接口实现类
 	 * 
 	 * @param useSmart 当为true时，分词器进行智能切分
 	 */
-	/*public IKAnalyzer(boolean useSmart){
+	public IKAnalyzer(boolean useSmart){
 		this.useSmart = useSmart;
-	}*/
+	}
 
     Settings settings;
     Environment environment;
