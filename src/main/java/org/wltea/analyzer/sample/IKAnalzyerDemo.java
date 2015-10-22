@@ -33,6 +33,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 /**
@@ -44,7 +46,7 @@ public class IKAnalzyerDemo {
 	
 	public static void main(String[] args){
 		//构建IK分词器，使用smart分词模式
-		Analyzer analyzer = new IKAnalyzer(true);
+		Analyzer analyzer = new IKAnalyzer(Settings.EMPTY, Settings.EMPTY, new Environment(Settings.EMPTY));
 		
 		//获取Lucene的TokenStream对象
 	    TokenStream ts = null;

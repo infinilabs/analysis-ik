@@ -1,15 +1,14 @@
 package org.elasticsearch.plugin.analysis.ik;
 
-import org.elasticsearch.common.inject.Module;
 import org.elasticsearch.index.analysis.AnalysisModule;
 import org.elasticsearch.index.analysis.IkAnalysisBinderProcessor;
-import org.elasticsearch.plugins.AbstractPlugin;
+import org.elasticsearch.plugins.Plugin;
 
 
-public class AnalysisIkPlugin extends AbstractPlugin {
+public class AnalysisIkPlugin extends Plugin {
 
     @Override public String name() {
-        return "analysis-ik";
+        return "ik";
     }
 
 
@@ -17,11 +16,12 @@ public class AnalysisIkPlugin extends AbstractPlugin {
         return "ik analysis";
     }
 
+    /*@Override
+    public Collection<Module> nodeModules() {
+        return super.nodeModules();
+    }*/
 
-    @Override public void processModule(Module module) {
-        if (module instanceof AnalysisModule) {
-            AnalysisModule analysisModule = (AnalysisModule) module;
-            analysisModule.addProcessor(new IkAnalysisBinderProcessor());
-        }
+    public void onModule(AnalysisModule module) {
+        module.addProcessor(new IkAnalysisBinderProcessor());
     }
 }

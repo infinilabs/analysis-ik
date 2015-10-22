@@ -29,7 +29,7 @@ public class Configuration {
 		props = new Properties();
         environment = env;
 
-        File fileConfig= new File(environment.configFile(), FILE_NAME);
+        File fileConfig = new File(environment.configFile().resolve(FILE_NAME).toString());
 
         InputStream input = null;
         try {
@@ -123,6 +123,6 @@ public class Configuration {
 	}
 
     public File getDictRoot() {
-        return environment.configFile();
+        return environment.configFile().toFile();
     }
 }

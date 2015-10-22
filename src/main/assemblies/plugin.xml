@@ -5,6 +5,13 @@
         <format>zip</format>
     </formats>
     <includeBaseDirectory>false</includeBaseDirectory>
+    <files>
+        <file>
+            <source>src/main/resources/plugin-metadata/plugin-descriptor.properties</source>
+            <outputDirectory></outputDirectory>
+            <filtered>true</filtered>
+        </file>
+    </files>
     <dependencySets>
         <dependencySet>
             <outputDirectory>/</outputDirectory>
