@@ -65,13 +65,16 @@ public class Monitor implements Runnable {
 			if(response.getStatusLine().getStatusCode()==200){
 			
 				if (!response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified)
-					||!response.getLastHeader("ETags").getValue().equalsIgnoreCase(eTags)) {
+					||!response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags)) {
 
 					// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 					Dictionary.getSingleton().reLoadMainDict();
 					last_modified = response.getLastHeader("Last-Modified")==null?null:response.getLastHeader("Last-Modified").getValue();
-					eTags = response.getLastHeader("ETags")==null?null:response.getLastHeader("ETags").getValue();
+					eTags = response.getLastHeader("ETag")==null?null:response.getLastHeader("ETag").getValue();
 				}
+			}else if (response.getStatusLine().getStatusCode()==304) {
+				//没有修改，不做操作
+				//noop
 			}else{
 				Dictionary.logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
 			}
