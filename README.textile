@@ -75,10 +75,7 @@ Analysis Configuration (elasticsearch.yml)
 <Pre>
 index:
   analysis:                   
-    analyzer:      
-      ik:
-          alias: [ik_analyzer]
-          type: org.elasticsearch.index.analysis.IkAnalyzerProvider
+    analyzer:
       ik_max_word:
           type: ik
           use_smart: false
