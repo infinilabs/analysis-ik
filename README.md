@@ -256,5 +256,6 @@ have fun.
 `plugin --install analysis-ik --url file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-1.3.0.zip`
 
 3.elasticsearch 2.0.0-rc1手动安装
-```cd $ES-HOME
-./bin/plugin install file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-X.X.X.zip```
+
+`cd $ES-HOME`
+`./bin/plugin install file:///#{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-X.X.X.zip`

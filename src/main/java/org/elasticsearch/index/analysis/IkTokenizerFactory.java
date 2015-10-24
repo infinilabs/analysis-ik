@@ -23,7 +23,6 @@ public class IkTokenizerFactory extends AbstractTokenizerFactory {
     Dictionary.initial(new Configuration(env));
   }
 
-  @Override
   public Tokenizer create() {
 	  return new IKTokenizer(settings, environment);
   }

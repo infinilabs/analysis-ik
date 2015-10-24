@@ -66,7 +66,6 @@ public class IKTokenizer extends Tokenizer {
 	    termAtt = addAttribute(CharTermAttribute.class);
 	    typeAtt = addAttribute(TypeAttribute.class);
         posIncrAtt = addAttribute(PositionIncrementAttribute.class);
-
         _IKImplement = new IKSegmenter(input , settings, environment);
 	}
 

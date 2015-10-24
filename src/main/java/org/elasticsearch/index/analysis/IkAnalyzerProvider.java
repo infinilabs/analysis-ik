@@ -17,10 +17,8 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
     public IkAnalyzerProvider(Index index, @IndexSettings Settings indexSettings, Environment env, @Assisted String name, @Assisted Settings settings) {
         super(index, indexSettings, name, settings);
         Dictionary.initial(new Configuration(env));
-        analyzer = new IKAnalyzer(indexSettings, settings, env);
+        analyzer = new IKAnalyzer(settings, env);
     }
 
-    @Override public IKAnalyzer get() {
-        return this.analyzer;
-    }
+    public IKAnalyzer get() { return this.analyzer; }
 }

@@ -68,9 +68,9 @@ public final class IKAnalyzer extends Analyzer {
     Settings settings;
     Environment environment;
 
-    public IKAnalyzer(Settings indexSetting, Settings settings, Environment environment) {
-        this.settings=settings;
-        this.environment= environment;
+    public IKAnalyzer(Settings settings, Environment environment) {
+        this.settings = settings;
+        this.environment = environment;
     }
 
 	/**

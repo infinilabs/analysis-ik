@@ -1,8 +1,0 @@
-index:
-  analysis:
-    analyzer:
-      ik:
-          alias: [news_analyzer_ik,ik_analyzer]
-          type: org.elasticsearch.index.analysis.IkAnalyzerProvider
-          
-index.analysis.analyzer.default.type : "ik"

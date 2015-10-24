@@ -12,6 +12,12 @@
             <filtered>true</filtered>
         </file>
     </files>
+    <fileSets>
+        <fileSet>
+            <directory>src/main/config</directory>
+            <outputDirectory>config</outputDirectory>
+        </fileSet>
+    </fileSets>
     <dependencySets>
         <dependencySet>
             <outputDirectory>/</outputDirectory>
