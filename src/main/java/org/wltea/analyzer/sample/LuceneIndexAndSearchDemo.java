@@ -25,18 +25,12 @@
  */
 package org.wltea.analyzer.sample;
 
-import java.io.IOException;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.*;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -47,11 +41,9 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
-
-
+import java.io.IOException;
 
 /**
  * 使用IKAnalyzer进行Lucene索引和查询的演示
@@ -86,7 +78,7 @@ public class LuceneIndexAndSearchDemo {
 			directory = new RAMDirectory();	 
 			
 			//配置IndexWriterConfig
-			IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LUCENE_40 , analyzer);
+			IndexWriterConfig iwConfig = new IndexWriterConfig(analyzer);
 			iwConfig.setOpenMode(OpenMode.CREATE_OR_APPEND);
 			iwriter = new IndexWriter(directory , iwConfig);
 			//写入索引
@@ -104,7 +96,7 @@ public class LuceneIndexAndSearchDemo {
 			
 			String keyword = "中文分词工具包";			
 			//使用QueryParser查询分析器构造Query对象
-			QueryParser qp = new QueryParser(Version.LUCENE_40, fieldName,  analyzer);
+			QueryParser qp = new QueryParser(fieldName,  analyzer);
 			qp.setDefaultOperator(QueryParser.AND_OPERATOR);
 			Query query = qp.parse(keyword);
 			System.out.println("Query = " + query);

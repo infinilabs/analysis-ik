@@ -33,6 +33,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 /**

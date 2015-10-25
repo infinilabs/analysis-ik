@@ -57,6 +57,7 @@ public final class IKSegmenter {
 	 * @param input
      */
 	public IKSegmenter(Reader input , Settings settings, Environment environment){
+		//System.out.printf("IKSegmenter %s", settings.getAsMap());
 		this.input = input;
 		this.cfg = new Configuration(environment);
         this.useSmart = settings.get("use_smart", "false").equals("true");
@@ -64,7 +65,7 @@ public final class IKSegmenter {
 	}
 	
 	public IKSegmenter(Reader input){
-		new IKSegmenter(input, null,null);
+		new IKSegmenter(input, null, null);
 	}
 	
 //	/**
