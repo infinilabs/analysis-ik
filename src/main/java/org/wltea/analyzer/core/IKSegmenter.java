@@ -41,8 +41,6 @@ public final class IKSegmenter {
 	
 	//字符窜reader
 	private Reader input;
-	//分词器配置项
-	private Configuration cfg;
 	//分词器上下文
 	private AnalyzeContext context;
 	//分词处理器列表
@@ -56,35 +54,17 @@ public final class IKSegmenter {
 	 * IK分词器构造函数
 	 * @param input
      */
-	public IKSegmenter(Reader input , Settings settings, Environment environment){
+	public IKSegmenter(Reader input ,boolean useSmart){
 		this.input = input;
-		this.cfg = new Configuration(environment);
-        this.useSmart = settings.get("use_smart", "false").equals("true");
+        this.useSmart = useSmart;
         this.init();
 	}
-	
-	public IKSegmenter(Reader input){
-		new IKSegmenter(input, null,null);
-	}
-	
-//	/**
-//	 * IK分词器构造函数
-//	 * @param input
-//	 * @param cfg 使用自定义的Configuration构造分词器
-//	 *
-//	 */
-//	public IKSegmenter(Reader input , Configuration cfg){
-//		this.input = input;
-//		this.cfg = cfg;
-//		this.init();
-//	}
+
 	
 	/**
 	 * 初始化
 	 */
 	private void init(){
-		//初始化词典单例
-		Dictionary.initial(this.cfg);
 		//初始化分词上下文
 		this.context = new AnalyzeContext(useSmart);
 		//加载子分词器

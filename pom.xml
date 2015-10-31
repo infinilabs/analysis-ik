@@ -6,10 +6,21 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.elasticsearch</groupId>
     <artifactId>elasticsearch-analysis-ik</artifactId>
-    <version>1.4.1</version>
+    <version>1.5.0</version>
     <packaging>jar</packaging>
     <description>IK Analyzer for ElasticSearch</description>
     <inceptionYear>2009</inceptionYear>
+
+    <properties>
+        <elasticsearch.version>2.0.0</elasticsearch.version>
+
+        <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
+        <elasticsearch.plugin.classname>org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin</elasticsearch.plugin.classname>
+        <elasticsearch.plugin.jvm>true</elasticsearch.plugin.jvm>
+        <tests.rest.load_packaged>false</tests.rest.load_packaged>
+        <skip.unit.tests>true</skip.unit.tests>
+    </properties>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -17,6 +28,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <scm>
         <connection>scm:git:git@github.com:medcl/elasticsearch-analysis-ik.git</connection>
         <developerConnection>scm:git:git@github.com:medcl/elasticsearch-analysis-ik.git
@@ -29,10 +41,6 @@
         <artifactId>oss-parent</artifactId>
         <version>7</version>
     </parent>
-
-    <properties>
-        <elasticsearch.version>1.7.2</elasticsearch.version>
-    </properties>
 
   <repositories>
         <repository>
@@ -84,11 +92,6 @@
             <version>4.10</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.lucene</groupId>
-            <artifactId>lucene-core</artifactId>
-            <version>4.10.4</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -137,9 +140,6 @@
                             <mainClass>fully.qualified.MainClass</mainClass>
                         </manifest>
                     </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
                 </configuration>
                 <executions>
                     <execution>

@@ -3,15 +3,16 @@
  */
 package org.wltea.analyzer.cfg;
 
+import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.env.Environment;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
 import java.util.Properties;
-
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
-import org.elasticsearch.env.Environment;
 
 public class Configuration {
 
@@ -20,16 +21,18 @@ public class Configuration {
 	private static final String REMOTE_EXT_DICT = "remote_ext_dict";
 	private static final String EXT_STOP = "ext_stopwords";
 	private static final String REMOTE_EXT_STOP = "remote_ext_stopwords";
-    private static ESLogger logger = null;
+    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
 	private Properties props;
     private Environment environment;
 
+	@Inject
     public  Configuration(Environment env){
-        logger = Loggers.getLogger("ik-analyzer");
 		props = new Properties();
         environment = env;
 
-        File fileConfig= new File(environment.configFile(), FILE_NAME);
+
+		File fileConfig= new File(environment.configFile().toFile(), FILE_NAME);
+
 
         InputStream input = null;
         try {
@@ -41,9 +44,9 @@ public class Configuration {
 			try {
 				props.loadFromXML(input);
 			} catch (InvalidPropertiesFormatException e) {
-				e.printStackTrace();
+				logger.error("ik-analyzer", e);
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("ik-analyzer",e);
 			}
 		}
 	}
@@ -123,6 +126,6 @@ public class Configuration {
 	}
 
     public File getDictRoot() {
-        return environment.configFile();
+        return environment.configFile().toFile();
     }
 }

@@ -71,7 +71,7 @@ public class SWMCQueryBuilder {
 	private static List<Lexeme> doAnalyze(String keywords){
 		List<Lexeme> lexemes = new ArrayList<Lexeme>();
 
-		IKSegmenter ikSeg = new IKSegmenter(new StringReader(keywords));
+		IKSegmenter ikSeg = new IKSegmenter(new StringReader(keywords),true);
 		try{
 			Lexeme l = null;
 			while( (l = ikSeg.next()) != null){
@@ -125,7 +125,7 @@ public class SWMCQueryBuilder {
 		}
 
 		//借助lucene queryparser 生成SWMC Query
-		QueryParser qp = new QueryParser(Version.LUCENE_40, fieldName, new StandardAnalyzer(Version.LUCENE_40));
+		QueryParser qp = new QueryParser(fieldName, new StandardAnalyzer());
 		qp.setDefaultOperator(QueryParser.AND_OPERATOR);
 		qp.setAutoGeneratePhraseQueries(true);
 		

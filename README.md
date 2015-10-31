@@ -3,16 +3,15 @@ IK Analysis for ElasticSearch
 
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
-Tokenizer: `ik`
-
-更新：对于使用 ES 集群，用 IK 作为分词插件，经常会修改自定义词典的使用者，可以透过远程加载的方式，每次更新都会重新加载词典，不必重启 ES 服务。
+Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word` 
 
 Versions
 --------
 
 IK version | ES version
 -----------|-----------
-master | 1.5.0 -> master
+master | 2.0.0 -> master
+1.5.0 | 2.0.0
 1.4.1 | 1.7.2
 1.4.0 | 1.6.0
 1.3.0 | 1.5.0
@@ -30,108 +29,42 @@ master | 1.5.0 -> master
 Install
 -------
 
-you can download this plugin from RTF project(https://github.com/medcl/elasticsearch-rtf)
-https://github.com/medcl/elasticsearch-rtf/tree/master/plugins/analysis-ik
-https://github.com/medcl/elasticsearch-rtf/tree/master/config/ik
+1.compile
 
-<del>also remember to download the dict files,unzip these dict file into your elasticsearch's config folder,such as: your-es-root/config/ik</del>
+`mvn package`
 
-you need a service restart after that!
+copy and unzip `target/release/ik**.zip` to `your-es-root/plugins/ik`
 
-Configuration
--------------
+2.config files:
 
-### Analysis Configuration
+download the dict files,unzip these dict file into your elasticsearch's config folder,such as: `your-es-root/config/ik`
 
-#### `elasticsearch.yml`
+3.restart elasticsearch
 
-```yaml
-index:
-  analysis:
-    analyzer:
-      ik:
-          alias: [ik_analyzer]
-          type: org.elasticsearch.index.analysis.IkAnalyzerProvider
-      ik_max_word:
-          type: ik
-          use_smart: false
-      ik_smart:
-          type: ik
-          use_smart: true
-```
+Tips:
 
-Or
+ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合；
 
-```yaml
-index.analysis.analyzer.ik.type : "ik"
-```
+ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”。
 
-#### 以上两种配置方式的区别：
-
-1、第二种方式，只定义了一个名为 ik 的 analyzer，其 use_smart 采用默认值 false
-
-2、第一种方式，定义了三个 analyzer，分别为：ik、ik_max_word、ik_smart，其中 ik_max_word 和 ik_smart 是基于 ik 这个 analyzer 定义的，并各自明确设置了 use_smart 的不同值。
-
-3、其实，ik_max_word 等同于 ik。ik_max_word 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合；而 ik_smart 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”。
-
-因此，建议，在设置 mapping 时，用 ik 这个 analyzer，以尽可能地被搜索条件匹配到。
-
-不过，如果你想将 /index_name/_analyze 这个 RESTful API 做为分词器用，用来提取某段文字中的主题词，则建议使用 ik_smart 这个 analyzer：
-
-```
-POST /hailiang/_analyze?analyzer=ik_smart HTTP/1.1
-Host: localhost:9200
-Cache-Control: no-cache
-
-中华人民共和国国歌
-```
-
-返回值：
-
-```json
-{
-  "tokens" : [ {
-    "token" : "中华人民共和国",
-    "start_offset" : 0,
-    "end_offset" : 7,
-    "type" : "CN_WORD",
-    "position" : 1
-  }, {
-    "token" : "国歌",
-    "start_offset" : 7,
-    "end_offset" : 9,
-    "type" : "CN_WORD",
-    "position" : 2
-  } ]
-}
-```
-
-另外，可以在 elasticsearch.yml 里加上如下一行，设置默认的 analyzer 为 ik：
-
-```yaml
-index.analysis.analyzer.default.type : "ik"
-```
-
-
-### Mapping Configuration
 
 #### Quick Example
 
-1. create a index
+1.create a index
 
 ```bash
 curl -XPUT http://localhost:9200/index
 ```
 
-2. create a mapping
+2.create a mapping
 
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
     "fulltext": {
              "_all": {
-            "indexAnalyzer": "ik",
-            "searchAnalyzer": "ik",
+            "indexAnalyzer": "ik_max_word",
+            "searchAnalyzer": "ik_max_word",
             "term_vector": "no",
             "store": "false"
         },
@@ -140,8 +73,8 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
                 "type": "string",
                 "store": "no",
                 "term_vector": "with_positions_offsets",
-                "indexAnalyzer": "ik",
-                "searchAnalyzer": "ik",
+                "indexAnalyzer": "ik_max_word",
+                "searchAnalyzer": "ik_max_word",
                 "include_in_all": "true",
                 "boost": 8
             }
@@ -150,7 +83,7 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 }'
 ```
 
-3. index some docs
+3.index some docs
 
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/1 -d'
@@ -176,7 +109,7 @@ curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 '
 ```
 
-4. query with highlighting
+4.query with highlighting
 
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
@@ -193,7 +126,7 @@ curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 '
 ```
 
-#### Result
+Result
 
 ```json
 {
@@ -257,7 +190,7 @@ curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
  	<!--用户可以在这里配置远程扩展字典 -->
 	<entry key="remote_ext_dict">location</entry>
  	<!--用户可以在这里配置远程扩展停止词字典-->
-	<entry key="remote_ext_stopwords">location</entry>
+	<entry key="remote_ext_stopwords">http://xxx.com/xxx.dic</entry>
 </properties>
 ```
 

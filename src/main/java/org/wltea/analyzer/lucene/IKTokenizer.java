@@ -66,14 +66,14 @@ public final class IKTokenizer extends Tokenizer {
 	 * Lucene 4.0 Tokenizer适配器类构造函数
 	 * @param in
      */
-	public IKTokenizer(Reader in , Settings settings, Environment environment){
-	    super(in);
+	public IKTokenizer(boolean useSmart){
+	    super();
 	    offsetAtt = addAttribute(OffsetAttribute.class);
 	    termAtt = addAttribute(CharTermAttribute.class);
 	    typeAtt = addAttribute(TypeAttribute.class);
         posIncrAtt = addAttribute(PositionIncrementAttribute.class);
 
-        _IKImplement = new IKSegmenter(input , settings, environment);
+        _IKImplement = new IKSegmenter(input,useSmart);
 	}
 
 	/* (non-Javadoc)
@@ -95,7 +95,6 @@ public final class IKTokenizer extends Tokenizer {
 			//设置词元长度
 			termAtt.setLength(nextLexeme.getLength());
 			//设置词元位移
-//			offsetAtt.setOffset(nextLexeme.getBeginPosition(), nextLexeme.getEndPosition());
             offsetAtt.setOffset(correctOffset(nextLexeme.getBeginPosition()), correctOffset(nextLexeme.getEndPosition()));
 
             //记录分词的最后位置

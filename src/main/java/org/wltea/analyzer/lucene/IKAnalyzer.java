@@ -24,13 +24,8 @@
  */
 package org.wltea.analyzer.lucene;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
 
 /**
  * IK分词器，Lucene Analyzer接口实现
@@ -39,8 +34,8 @@ import org.elasticsearch.env.Environment;
 public final class IKAnalyzer extends Analyzer{
 	
 	private boolean useSmart;
-	
-	public boolean useSmart() {
+
+    public boolean useSmart() {
 		return useSmart;
 	}
 
@@ -54,35 +49,26 @@ public final class IKAnalyzer extends Analyzer{
 	 * 默认细粒度切分算法
 	 */
 	public IKAnalyzer(){
-		this(false);
 	}
-	
-	/**
+
+    /**
 	 * IK分词器Lucene Analyzer接口实现类
 	 * 
 	 * @param useSmart 当为true时，分词器进行智能切分
 	 */
 	public IKAnalyzer(boolean useSmart){
 		super();
-		this.useSmart = useSmart;
+        this.useSmart = useSmart;
 	}
 
-    Settings settings=ImmutableSettings.EMPTY;
-    Environment environment=new Environment();
-
-    public IKAnalyzer(Settings indexSetting,Settings settings, Environment environment) {
-        super();
-        this.settings=settings;
-        this.environment= environment;
-    }
 
 	/**
 	 * 重载Analyzer接口，构造分词组件
 	 */
 	@Override
-	protected TokenStreamComponents createComponents(String fieldName, final Reader in) {
-		Tokenizer _IKTokenizer = new IKTokenizer(in , settings, environment);
+	protected TokenStreamComponents createComponents(String fieldName) {
+        Tokenizer _IKTokenizer = new IKTokenizer(useSmart);
 		return new TokenStreamComponents(_IKTokenizer);
-	}
+    }
 
 }
