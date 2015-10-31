@@ -63,8 +63,8 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
     "fulltext": {
              "_all": {
-            "indexAnalyzer": "ik_max_word",
-            "searchAnalyzer": "ik_max_word",
+            "analyzer": "ik_max_word",
+            "search_analyzer": "ik_max_word",
             "term_vector": "no",
             "store": "false"
         },
@@ -73,8 +73,8 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
                 "type": "string",
                 "store": "no",
                 "term_vector": "with_positions_offsets",
-                "indexAnalyzer": "ik_max_word",
-                "searchAnalyzer": "ik_max_word",
+                "analyzer": "ik_max_word",
+                "search_analyzer": "ik_max_word",
                 "include_in_all": "true",
                 "boost": 8
             }
