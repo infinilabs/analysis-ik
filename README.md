@@ -224,7 +224,7 @@ have fun.
 
 请确保你的扩展词典的文本格式为 UTF8 编码
 
-2.如何手动安装，以 1.3.0 為例？（参考：https://github.com/medcl/elasticsearch-analysis-ik/issues/46）
+2.如何手动安装，以 1.3.0 為例？（参考：https://github.com/medcl/elasticsearch-analysis-ik/issues/46 ）
 
 
 ```bash
