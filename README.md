@@ -33,7 +33,7 @@ Install
 
 `mvn package`
 
-copy and unzip `target/release/ik**.zip` to `your-es-root/plugins/ik`
+copy and unzip `target/releases/elasticsearch-analysis-ik-{version}.zip` to `your-es-root/plugins/ik`
 
 2.config files:
 
