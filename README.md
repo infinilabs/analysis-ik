@@ -3,7 +3,7 @@ IK Analysis for ElasticSearch
 
 The IK Analysis plugin integrates Lucene IK analyzer into elasticsearch, support customized dictionary.
 
-Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word` 
+Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
 
 Versions
 --------
@@ -35,9 +35,28 @@ Install
 
 copy and unzip `target/release/ik**.zip` to `your-es-root/plugins/ik`
 
+For example, if you use Ubuntu 14.04 LTS, please unzip to `/usr/share/elasticsearch/plugins/ik/`
+
 2.config files:
 
 download the dict files,unzip these dict file into your elasticsearch's config folder,such as: `your-es-root/config/ik`
+
+For example, if you use Ubuntu 14.04 LTS, please copy `./config/ik/` to `/etc/elasticsearch/ik/` (There are dict files and config file in it.)
+
+If you use elasticsearch version 1.7.3 or older, you need to add these setting in `/etc/elasticsearch/elasticsearch.yml`
+```shell
+index:
+  analysis:
+    analyzer:
+      ik:
+          alias: [news_analyzer_ik,ik_analyzer]
+          type: org.elasticsearch.index.analysis.IkAnalyzerProvider
+
+index.analysis.analyzer.default.type : "ik"
+```
+
+another method:
+If you don't need any setting in your elasticsearch service, you could copy `./config/` to `/etc/elasticsearch/` directly. (NOT recommended!)
 
 3.restart elasticsearch
 
