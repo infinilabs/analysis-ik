@@ -4,7 +4,6 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.Index;
-import org.elasticsearch.index.settings.IndexSettings;
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.lucene.IKAnalyzer;
@@ -14,7 +13,7 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
     private boolean useSmart=false;
 
     @Inject
-    public IkAnalyzerProvider(Index index, @IndexSettings Settings indexSettings,Environment env, String name, Settings settings) {
+    public IkAnalyzerProvider(Index index, Settings indexSettings,Environment env, String name, Settings settings) {
         super(index, indexSettings, name, settings);
         Dictionary.initial(new Configuration(env));
         useSmart = settings.get("use_smart", "false").equals("true");
