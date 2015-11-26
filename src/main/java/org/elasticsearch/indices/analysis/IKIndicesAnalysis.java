@@ -25,15 +25,15 @@ public class IKIndicesAnalysis extends AbstractComponent {
         super(settings);
         this.useSmart = settings.get("use_smart", "false").equals("true");
         indicesAnalysisService.analyzerProviderFactories().put("ik",
-                new PreBuiltAnalyzerProviderFactory("ik", AnalyzerScope.INDICES,
+                new PreBuiltAnalyzerProviderFactory("ik", AnalyzerScope.GLOBAL,
                         new IKAnalyzer(useSmart)));
 
         indicesAnalysisService.analyzerProviderFactories().put("ik_smart",
-                new PreBuiltAnalyzerProviderFactory("ik_smart", AnalyzerScope.INDICES,
+                new PreBuiltAnalyzerProviderFactory("ik_smart", AnalyzerScope.GLOBAL,
                         new IKAnalyzer(true)));
 
         indicesAnalysisService.analyzerProviderFactories().put("ik_max_word",
-                new PreBuiltAnalyzerProviderFactory("ik_max_word", AnalyzerScope.INDICES,
+                new PreBuiltAnalyzerProviderFactory("ik_max_word", AnalyzerScope.GLOBAL,
                         new IKAnalyzer(false)));
 
         indicesAnalysisService.tokenizerFactories().put("ik",
