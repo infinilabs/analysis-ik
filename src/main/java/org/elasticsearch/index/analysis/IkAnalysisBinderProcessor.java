@@ -18,6 +18,6 @@ public class IkAnalysisBinderProcessor extends AnalysisModule.AnalysisBinderProc
 
     @Override
     public void processTokenizers(TokenizersBindings tokenizersBindings) {
-        tokenizersBindings.processTokenizer("ik_tokenizer", IkTokenizerFactory.class);
+        tokenizersBindings.processTokenizer("ik", IkTokenizerFactory.class);
     }
 }
