@@ -43,13 +43,7 @@ public class AnalysisIkPlugin extends Plugin {
         return Collections.<Module>singletonList(new IKIndicesAnalysisModule());
     }
 
-    public static class ConfiguredExampleModule extends AbstractModule {
-        @Override
-        protected void configure() {
-        }
-    }
-
-    public void onModule(AnalysisModule module) {
-        module.addProcessor(new IkAnalysisBinderProcessor());
-    }
+//    public void onModule(AnalysisModule module) {
+//        module.addProcessor(new IkAnalysisBinderProcessor());
+//    }
 }
