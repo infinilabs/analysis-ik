@@ -32,6 +32,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -45,6 +46,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.cfg.Configuration;
@@ -220,11 +222,11 @@ public class Dictionary {
 		_MainDict = new DictSegment((char)0);
 
 		//读取主词典文件
-        File file= new File(configuration.getDictRoot(), Dictionary.PATH_DIC_MAIN);
+		Path file = PathUtils.get(configuration.getDictRoot(), Dictionary.PATH_DIC_MAIN);
 
         InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -269,9 +271,9 @@ public class Dictionary {
 			for(String extDictName : extDictFiles){
 				//读取扩展词典文件
                 logger.info("[Dict Loading]" + extDictName);
-                File file=new File(configuration.getDictRoot(), extDictName);
+				Path file = PathUtils.get(configuration.getDictRoot(), extDictName);
                 try {
-                    is = new FileInputStream(file);
+                    is = new FileInputStream(file.toFile());
                 } catch (FileNotFoundException e) {
                     logger.error("ik-analyzer",e);
                 }
@@ -385,11 +387,11 @@ public class Dictionary {
         _StopWords = new DictSegment((char)0);
 
         //读取主词典文件
-        File file= new File(configuration.getDictRoot(), Dictionary.PATH_DIC_STOP);
+		Path file = PathUtils.get(configuration.getDictRoot(), Dictionary.PATH_DIC_STOP);
 
         InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -427,9 +429,9 @@ public class Dictionary {
                 logger.info("[Dict Loading]" + extStopWordDictName);
 
                 //读取扩展词典文件
-                file=new File(configuration.getDictRoot(), extStopWordDictName);
+                file=PathUtils.get(configuration.getDictRoot(), extStopWordDictName);
                 try {
-                    is = new FileInputStream(file);
+                    is = new FileInputStream(file.toFile());
                 } catch (FileNotFoundException e) {
                     logger.error("ik-analyzer",e);
                 }
@@ -493,10 +495,10 @@ public class Dictionary {
 		//建立一个量词典实例
 		_QuantifierDict = new DictSegment((char)0);
 		//读取量词词典文件
-        File file=new File(configuration.getDictRoot(),Dictionary.PATH_DIC_QUANTIFIER);
+		Path file = PathUtils.get(configuration.getDictRoot(), Dictionary.PATH_DIC_QUANTIFIER);
         InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
             logger.error("ik-analyzer",e);
         }
@@ -529,10 +531,10 @@ public class Dictionary {
     private void loadSurnameDict(){
 
         _SurnameDict = new DictSegment((char)0);
-        File file=new File(configuration.getDictRoot(),Dictionary.PATH_DIC_SURNAME);
+		Path file = PathUtils.get(configuration.getDictRoot(), Dictionary.PATH_DIC_SURNAME);
         InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
             logger.error("ik-analyzer",e);
         }
@@ -566,10 +568,10 @@ public class Dictionary {
     private void loadSuffixDict(){
 
         _SuffixDict = new DictSegment((char)0);
-        File file=new File(configuration.getDictRoot(),Dictionary.PATH_DIC_SUFFIX);
+		Path file = PathUtils.get(configuration.getDictRoot(), Dictionary.PATH_DIC_SUFFIX);
         InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
             logger.error("ik-analyzer",e);
         }
@@ -602,10 +604,10 @@ public class Dictionary {
     private void loadPrepDict(){
 
         _PrepDict = new DictSegment((char)0);
-        File file=new File(configuration.getDictRoot(),Dictionary.PATH_DIC_PREP);
+		Path file = PathUtils.get(configuration.getDictRoot(), Dictionary.PATH_DIC_PREP);
         InputStream is = null;
         try {
-            is = new FileInputStream(file);
+            is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
             logger.error("ik-analyzer",e);
         }

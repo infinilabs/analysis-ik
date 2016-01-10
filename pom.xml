@@ -6,10 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.elasticsearch</groupId>
     <artifactId>elasticsearch-analysis-ik</artifactId>
-    <version>1.6.2</version>
+    <version>1.7.0</version>
     <packaging>jar</packaging>
     <description>IK Analyzer for ElasticSearch</description>
-    <inceptionYear>2009</inceptionYear>
+    <inceptionYear>2011</inceptionYear>
 
     <properties>
         <elasticsearch.version>2.1.1</elasticsearch.version>
