@@ -270,7 +270,7 @@ public class Dictionary {
 			InputStream is = null;
 			for(String extDictName : extDictFiles){
 				//读取扩展词典文件
-                logger.info("[Dict Loading]" + extDictName);
+                logger.info("[Dict Loading] " + extDictName);
 				Path file = PathUtils.get(configuration.getDictRoot(), extDictName);
                 try {
                     is = new FileInputStream(file.toFile());
@@ -316,11 +316,11 @@ public class Dictionary {
 	private void loadRemoteExtDict(){
 		List<String> remoteExtDictFiles  = configuration.getRemoteExtDictionarys();
 		for(String location:remoteExtDictFiles){
-			logger.info("[Dict Loading]" + location);
+			logger.info("[Dict Loading] " + location);
 			List<String> lists = getRemoteWords(location);
 			//如果找不到扩展的字典，则忽略
 			if(lists == null){
-				logger.error("[Dict Loading]"+location+"加载失败");
+				logger.error("[Dict Loading] "+location+"加载失败");
 				continue;
 			}
 			for(String theWord:lists){
@@ -426,7 +426,7 @@ public class Dictionary {
 		if(extStopWordDictFiles != null){
 			is = null;
 			for(String extStopWordDictName : extStopWordDictFiles){
-                logger.info("[Dict Loading]" + extStopWordDictName);
+                logger.info("[Dict Loading] " + extStopWordDictName);
 
                 //读取扩展词典文件
                 file=PathUtils.get(configuration.getDictRoot(), extStopWordDictName);
@@ -469,11 +469,11 @@ public class Dictionary {
 		//加载远程停用词典
 		List<String> remoteExtStopWordDictFiles  = configuration.getRemoteExtStopWordDictionarys();
 		for(String location:remoteExtStopWordDictFiles){
-			logger.info("[Dict Loading]" + location);
+			logger.info("[Dict Loading] " + location);
 			List<String> lists = getRemoteWords(location);
 			//如果找不到扩展的字典，则忽略
 			if(lists == null){
-				logger.error("[Dict Loading]"+location+"加载失败");
+				logger.error("[Dict Loading] "+location+"加载失败");
 				continue;
 			}
 			for(String theWord:lists){
