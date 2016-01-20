@@ -14,9 +14,11 @@
     <properties>
         <elasticsearch.version>2.1.1</elasticsearch.version>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
+        <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml
+        </elasticsearch.assembly.descriptor>
         <elasticsearch.plugin.name>elasticsearch-analysis-ik</elasticsearch.plugin.name>
-        <elasticsearch.plugin.classname>org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin</elasticsearch.plugin.classname>
+        <elasticsearch.plugin.classname>org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin
+        </elasticsearch.plugin.classname>
         <elasticsearch.plugin.jvm>true</elasticsearch.plugin.jvm>
         <tests.rest.load_packaged>false</tests.rest.load_packaged>
         <skip.unit.tests>true</skip.unit.tests>
@@ -43,12 +45,16 @@
         <version>7</version>
     </parent>
 
-  <repositories>
+    <repositories>
         <repository>
             <id>oss.sonatype.org</id>
             <name>OSS Sonatype</name>
-            <releases><enabled>true</enabled></releases>
-            <snapshots><enabled>true</enabled></snapshots>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
             <url>http://oss.sonatype.org/content/repositories/releases/</url>
         </repository>
     </repositories>
@@ -60,12 +66,19 @@
             <version>${elasticsearch.version}</version>
             <scope>compile</scope>
         </dependency>
-        
+
         <dependency>
-	     <groupId>org.apache.httpcomponents</groupId>
-              <artifactId>httpclient</artifactId>
-	     <version>4.4.1</version>
-	</dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.4.1</version>
+        </dependency>
+
+        <!-- pinyin -->
+        <dependency>
+            <groupId>com.belerweb</groupId>
+            <artifactId>pinyin4j</artifactId>
+            <version>2.5.0</version>
+        </dependency>
 
         <dependency>
             <groupId>log4j</groupId>
