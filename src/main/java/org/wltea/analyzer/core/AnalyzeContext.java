@@ -308,11 +308,18 @@ class AnalyzeContext {
             case Lexeme.TYPE_CNCHAR:
                 String[] pinyins = PinyinUtil.convertToSpellPolyphonic(lexeme.getLexemeText(), false);
                 String[] pinyinsFirstLetter = PinyinUtil.convertToSpellPolyphonic(lexeme.getLexemeText(), true);
+                if (pinyins == null) break;
                 int start = pinyins.length;
                 pinyins = Arrays.copyOf(pinyins, pinyins.length + pinyinsFirstLetter.length);
                 System.arraycopy(pinyinsFirstLetter, 0, pinyins, start, pinyinsFirstLetter.length);
                 for (String pinyin : pinyins) {
-                    Lexeme lastLexeme = results.getLast();
+                    pinyin = pinyin.toLowerCase();
+                    Lexeme lastLexeme = null;
+                    try {
+                        lastLexeme = results.getLast();
+                    } catch (NoSuchElementException e) {
+                        break;
+                    }
                     Lexeme lexemePinyin = new Lexeme(0, lastLexeme.getEndPosition(), pinyin.length(), Lexeme.TYPE_CNPINYIN);
                     lexemePinyin.setLexemeText(pinyin);
                     System.arraycopy(pinyin.toCharArray(), 0, this.segmentBuff, lastLexeme.getEndPosition(), pinyin.length());
