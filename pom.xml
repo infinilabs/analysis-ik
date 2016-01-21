@@ -55,7 +55,7 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-            <url>http://oss.sonatype.org/content/repositories/releases/</url>
+            <url>http://build.tqmall.com/nexus/content/repositories/releases/</url>
         </repository>
     </repositories>
 

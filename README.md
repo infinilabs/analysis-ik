@@ -1,3 +1,8 @@
+#TQMALL IK Analysis for ElasticSearch
+Fork from https://github.com/medcl/elasticsearch-analysis-ik
+
+Add support for chinese spell(The Pinyin).
+
 IK Analysis for ElasticSearch
 =============================
 
