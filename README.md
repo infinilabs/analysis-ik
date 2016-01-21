@@ -1,4 +1,6 @@
-#TQMALL IK Analysis for ElasticSearch
+TQMALL IK Analysis for ElasticSearch
+====================================
+
 Fork from https://github.com/medcl/elasticsearch-analysis-ik
 
 Add support for chinese spell(The Pinyin).
@@ -15,6 +17,7 @@ Versions
 
 IK version | ES version
 -----------|-----------
+2.1.1-mine | 2.1.1 -> master(淘汽版本)
 master | 2.1.1 -> master
 1.7.0 | 2.1.1
 1.6.1 | 2.1.0
