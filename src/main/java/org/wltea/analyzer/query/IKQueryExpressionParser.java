@@ -28,6 +28,8 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.BytesRef;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -44,7 +46,9 @@ import java.util.Stack;
  *
  */
 public class IKQueryExpressionParser {
-	
+
+    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+    
 	//public static final String LUCENE_SPECIAL_CHAR = "&&||-()':={}[],";
 	
 	private List<Element> elements = new ArrayList<Element>();
@@ -705,7 +709,7 @@ public class IKQueryExpressionParser {
 		//String ikQueryExp = "newsTitle:'的两款《魔兽世界》插件Bigfoot和月光宝盒'";
 		String ikQueryExp = "(id='ABcdRf' && date:{'20010101','20110101'} && keyword:'魔兽中国') || (content:'KSHT-KSH-A001-18'  || ulr='www.ik.com') - name:'林良益'";
 		Query result = parser.parseExp(ikQueryExp , true);
-		System.out.println(result);
+        logger.info(result.toString());
 
 	}	
 	

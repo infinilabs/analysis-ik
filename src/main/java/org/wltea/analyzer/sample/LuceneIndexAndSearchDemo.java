@@ -48,6 +48,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 
@@ -61,7 +63,8 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
  *
  */
 public class LuceneIndexAndSearchDemo {
-	
+
+    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
 	
 	/**
 	 * 模拟：
@@ -107,16 +110,16 @@ public class LuceneIndexAndSearchDemo {
 			QueryParser qp = new QueryParser(fieldName,  analyzer);
 			qp.setDefaultOperator(QueryParser.AND_OPERATOR);
 			Query query = qp.parse(keyword);
-			System.out.println("Query = " + query);
+			logger.info("Query = " + query);
 			
 			//搜索相似度最高的5条记录
 			TopDocs topDocs = isearcher.search(query , 5);
-			System.out.println("命中：" + topDocs.totalHits);
+            logger.info("命中：" + topDocs.totalHits);
 			//输出结果
 			ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 			for (int i = 0; i < topDocs.totalHits; i++){
 				Document targetDoc = isearcher.doc(scoreDocs[i].doc);
-				System.out.println("内容：" + targetDoc.toString());
+                logger.info("内容：" + targetDoc.toString());
 			}			
 			
 		} catch (CorruptIndexException e) {
