@@ -1,6 +1,12 @@
 package org.wltea.analyzer.help;
 
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+
 public class Sleep {
+    
+    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+    
 	public enum Type{MSEC,SEC,MIN,HOUR};
 	public static void sleep(Type type,int num){
 		try {
@@ -22,7 +28,7 @@ public class Sleep {
 					return;
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		}
 	}
 	

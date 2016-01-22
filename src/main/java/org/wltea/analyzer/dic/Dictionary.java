@@ -60,6 +60,7 @@ public class Dictionary {
 	/*
 	 * 词典单子实例
 	 */
+
 	private static Dictionary singleton;
 
     private DictSegment _MainDict;
@@ -228,7 +229,7 @@ public class Dictionary {
         try {
             is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
         
 		try {
@@ -393,7 +394,7 @@ public class Dictionary {
         try {
             is = new FileInputStream(file.toFile());
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
 
         try {
