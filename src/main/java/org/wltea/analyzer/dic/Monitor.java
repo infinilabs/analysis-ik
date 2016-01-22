@@ -7,9 +7,12 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 
 public class Monitor implements Runnable {
 
+    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
 	private static CloseableHttpClient httpclient = HttpClients.createDefault();
 	/*
 	 * 上次更改时间
@@ -87,7 +90,7 @@ public class Monitor implements Runnable {
 					response.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+                logger.error(e.getMessage(), e);
 			}
 		}
 	}

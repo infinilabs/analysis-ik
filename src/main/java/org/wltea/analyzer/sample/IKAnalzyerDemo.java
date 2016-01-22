@@ -33,6 +33,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 /**
@@ -41,7 +43,9 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
  *
  */
 public class IKAnalzyerDemo {
-	
+    
+    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+    
 	public static void main(String[] args){
 		//构建IK分词器，使用smart分词模式
 		Analyzer analyzer = new IKAnalyzer(true);
@@ -69,14 +73,14 @@ public class IKAnalzyerDemo {
 			ts.end();   // Perform end-of-stream operations, e.g. set the final offset.
 
 		} catch (IOException e) {
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		} finally {
 			//释放TokenStream的所有资源
 			if(ts != null){
 		      try {
 				ts.close();
 		      } catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 		      }
 			}
 	    }

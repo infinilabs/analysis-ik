@@ -34,6 +34,8 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
 
@@ -45,6 +47,8 @@ import org.wltea.analyzer.core.Lexeme;
  */
 public class SWMCQueryBuilder {
 
+    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+    
 	/**
 	 * 生成SWMCQuery
 	 * @param fieldName
@@ -78,7 +82,7 @@ public class SWMCQueryBuilder {
 				lexemes.add(l);
 			}
 		}catch(IOException e){
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		}
 		return lexemes;
 	}
@@ -135,7 +139,7 @@ public class SWMCQueryBuilder {
 				Query q = qp.parse(keywordBuffer_Short.toString());
 				return q;
 			} catch (ParseException e) {
-				e.printStackTrace();
+                logger.error(e.getMessage(), e);
 			}
 			
 		}else{
@@ -145,7 +149,7 @@ public class SWMCQueryBuilder {
 					Query q = qp.parse(keywordBuffer.toString());
 					return q;
 				} catch (ParseException e) {
-					e.printStackTrace();
+                    logger.error(e.getMessage(), e);
 				}
 			}
 		}

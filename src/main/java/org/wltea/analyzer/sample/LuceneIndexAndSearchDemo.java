@@ -48,6 +48,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 
@@ -61,7 +63,8 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
  *
  */
 public class LuceneIndexAndSearchDemo {
-	
+
+    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
 	
 	/**
 	 * 模拟：
@@ -120,13 +123,13 @@ public class LuceneIndexAndSearchDemo {
 			}			
 			
 		} catch (CorruptIndexException e) {
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		} catch (LockObtainFailedException e) {
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		} catch (IOException e) {
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		} catch (ParseException e) {
-			e.printStackTrace();
+            logger.error(e.getMessage(), e);
 		} finally{
 			if(ireader != null){
 				try {
@@ -139,7 +142,7 @@ public class LuceneIndexAndSearchDemo {
 				try {
 					directory.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+                    logger.error(e.getMessage(), e);
 				}
 			}
 		}
