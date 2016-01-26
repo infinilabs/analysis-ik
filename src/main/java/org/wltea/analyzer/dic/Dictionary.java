@@ -297,10 +297,8 @@ public class Dictionary {
                     logger.error("ik-analyzer",e);
                 }finally{
 					try {
-						if(is != null){
-		                    is.close();
-		                    is = null;
-						}
+						is.close();
+						is = null;
 					} catch (IOException e) {
                         logger.error("ik-analyzer",e);
                     }
@@ -318,11 +316,14 @@ public class Dictionary {
 		for(String location:remoteExtDictFiles){
 			logger.info("[Dict Loading] " + location);
 			List<String> lists = getRemoteWords(location);
+			
+			/** Redundant Nullcheck as the list is initialized in the getRemoteWords method
 			//如果找不到扩展的字典，则忽略
 			if(lists == null){
 				logger.error("[Dict Loading] "+location+"加载失败");
 				continue;
-			}
+			}*/
+			
 			for(String theWord:lists){
 				if (theWord != null && !"".equals(theWord.trim())) {
 					//加载扩展词典数据到主内存词典中
@@ -455,10 +456,8 @@ public class Dictionary {
 					
 				}finally{
 					try {
-						if(is != null){
-		                    is.close();
-		                    is = null;
-						}
+						is.close();
+						is = null;
 					} catch (IOException e) {
                         logger.error("ik-analyzer",e);
 					}
@@ -471,11 +470,14 @@ public class Dictionary {
 		for(String location:remoteExtStopWordDictFiles){
 			logger.info("[Dict Loading] " + location);
 			List<String> lists = getRemoteWords(location);
+			
+			/** Redundant Nullcheck as the list is initialized in the getRemoteWords method
 			//如果找不到扩展的字典，则忽略
 			if(lists == null){
 				logger.error("[Dict Loading] "+location+"加载失败");
 				continue;
-			}
+			}*/
+			
 			for(String theWord:lists){
 				if (theWord != null && !"".equals(theWord.trim())) {
 					//加载远程词典数据到主内存中
@@ -554,10 +556,8 @@ public class Dictionary {
             logger.error("ik-analyzer",e);
         }finally{
             try {
-                if(is != null){
-                    is.close();
-                    is = null;
-                }
+				is.close();
+				is = null;
             } catch (IOException e) {
                 logger.error("ik-analyzer",e);
             }
