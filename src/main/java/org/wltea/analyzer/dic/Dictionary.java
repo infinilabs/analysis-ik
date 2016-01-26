@@ -103,29 +103,28 @@ public class Dictionary {
 	 * @return Dictionary
 	 */
 	public static synchronized Dictionary initial(Configuration cfg){
-		if(singleton == null){
-			synchronized(Dictionary.class){
-				if(singleton == null){
-					singleton = new Dictionary();
-                    singleton.configuration=cfg;
-                    singleton.loadMainDict();
-                    singleton.loadSurnameDict();
-                    singleton.loadQuantifierDict();
-                    singleton.loadSuffixDict();
-                    singleton.loadPrepDict();
-                    singleton.loadStopWordDict();
-                    
-	                //建立监控线程
-	                for(String location:cfg.getRemoteExtDictionarys()){
-	                	//10 秒是初始延迟可以修改的  60是间隔时间  单位秒
-	            		pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
-	                }
-	                for(String location:cfg.getRemoteExtStopWordDictionarys()){
-	            		pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
-	                }
-	                    
-	                return singleton;
+		
+		synchronized(Dictionary.class){
+			if(singleton == null){
+				singleton = new Dictionary();
+				singleton.configuration=cfg;
+				singleton.loadMainDict();
+				singleton.loadSurnameDict();
+				singleton.loadQuantifierDict();
+				singleton.loadSuffixDict();
+				singleton.loadPrepDict();
+				singleton.loadStopWordDict();
+				
+				//建立监控线程
+				for(String location:cfg.getRemoteExtDictionarys()){
+					//10 秒是初始延迟可以修改的  60是间隔时间  单位秒
+					pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
 				}
+				for(String location:cfg.getRemoteExtStopWordDictionarys()){
+					pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+				}
+				
+				return singleton;
 			}
 		}
 		return singleton;
