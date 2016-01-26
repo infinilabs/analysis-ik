@@ -1,6 +1,12 @@
 package org.wltea.analyzer.help;
 
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
+
 public class Sleep {
+
+    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+    
 	public enum Type{MSEC,SEC,MIN,HOUR};
 	public static void sleep(Type type,int num){
 		try {
@@ -18,7 +24,7 @@ public class Sleep {
 					Thread.sleep(num*60*60*1000);
 					return;
 				default:
-					System.err.println("输入类型错误，应为MSEC,SEC,MIN,HOUR之一");
+                    logger.error("输入类型错误，应为MSEC,SEC,MIN,HOUR之一");
 					return;
 			}
 		} catch (InterruptedException e) {
