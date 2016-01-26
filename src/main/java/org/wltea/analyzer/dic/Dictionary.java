@@ -26,6 +26,7 @@
 package org.wltea.analyzer.dic;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -230,9 +231,9 @@ public class Dictionary {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        
+		BufferedReader br = null;
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+			br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
 			String theWord = null;
 			do {
 				theWord = br.readLine();
@@ -245,14 +246,8 @@ public class Dictionary {
             logger.error("ik-analyzer",e);
 
         }finally{
-			try {
-				if(is != null){
-                    is.close();
-                    is = null;
-				}
-			} catch (IOException e) {
-                logger.error("ik-analyzer",e);
-			}
+			closeStream(br);
+			closeStream(is);
 		}
 		//加载扩展词典
 		this.loadExtDict();
@@ -282,8 +277,9 @@ public class Dictionary {
 				if(is == null){
 					continue;
 				}
+				BufferedReader br = null;
 				try {
-					BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+					br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
 					String theWord = null;
 					do {
 						theWord = br.readLine();
@@ -296,14 +292,8 @@ public class Dictionary {
 				} catch (IOException e) {
                     logger.error("ik-analyzer",e);
                 }finally{
-					try {
-						if(is != null){
-		                    is.close();
-		                    is = null;
-						}
-					} catch (IOException e) {
-                        logger.error("ik-analyzer",e);
-                    }
+					closeStream(br);
+					closeStream(is);
 				}
 			}
 		}		
@@ -396,8 +386,9 @@ public class Dictionary {
             e.printStackTrace();
         }
 
+		BufferedReader br = null;
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+            br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
             String theWord = null;
             do {
                 theWord = br.readLine();
@@ -410,14 +401,8 @@ public class Dictionary {
             logger.error("ik-analyzer",e);
 
         }finally{
-            try {
-                if(is != null){
-                    is.close();
-                    is = null;
-                }
-            } catch (IOException e) {
-                logger.error("ik-analyzer",e);
-            }
+            closeStream(br);
+            closeStream(is);
         }
 
 
@@ -440,7 +425,7 @@ public class Dictionary {
 					continue;
 				}
 				try {
-					BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+					br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
 					String theWord = null;
 					do {
 						theWord = br.readLine();
@@ -454,14 +439,8 @@ public class Dictionary {
                     logger.error("ik-analyzer",e);
 					
 				}finally{
-					try {
-						if(is != null){
-		                    is.close();
-		                    is = null;
-						}
-					} catch (IOException e) {
-                        logger.error("ik-analyzer",e);
-					}
+					closeStream(br);
+					closeStream(is);
 				}
 			}
 		}
@@ -502,8 +481,10 @@ public class Dictionary {
         } catch (FileNotFoundException e) {
             logger.error("ik-analyzer",e);
         }
+
+		BufferedReader br = null;
 		try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+			br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
 			String theWord = null;
 			do {
 				theWord = br.readLine();
@@ -516,14 +497,8 @@ public class Dictionary {
 			logger.error("Quantifier Dictionary loading exception.");
 			
 		}finally{
-			try {
-				if(is != null){
-                    is.close();
-                    is = null;
-				}
-			} catch (IOException e) {
-                logger.error("ik-analyzer",e);
-			}
+			closeStream(br);
+			closeStream(is);
 		}
 	}
 
@@ -578,9 +553,11 @@ public class Dictionary {
         if(is == null){
             throw new RuntimeException("Suffix Dictionary not found!!!");
         }
+
+		BufferedReader br = null;
         try {
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+            br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
             String theWord;
             do {
                 theWord = br.readLine();
@@ -591,12 +568,8 @@ public class Dictionary {
         } catch (IOException e) {
             logger.error("ik-analyzer",e);
         }finally{
-            try {
-                is.close();
-                is = null;
-            } catch (IOException e) {
-                logger.error("ik-analyzer",e);
-            }
+            closeStream(br);
+            closeStream(is);
         }
     }
 
@@ -614,9 +587,11 @@ public class Dictionary {
         if(is == null){
             throw new RuntimeException("Preposition Dictionary not found!!!");
         }
+
+		BufferedReader br = null;
         try {
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
+            br = new BufferedReader(new InputStreamReader(is , "UTF-8"), 512);
             String theWord;
             do {
                 theWord = br.readLine();
@@ -628,12 +603,8 @@ public class Dictionary {
         } catch (IOException e) {
             logger.error("ik-analyzer",e);
         }finally{
-            try {
-                is.close();
-                is = null;
-            } catch (IOException e) {
-                logger.error("ik-analyzer",e);
-            }
+            closeStream(br);
+            closeStream(is);
         }
     }
     
@@ -648,5 +619,15 @@ public class Dictionary {
 		_StopWords = tmpDict._StopWords;
 		logger.info("重新加载词典完毕...");
     }
+    
+    private void closeStream(Closeable closeableStream){
+		if(closeableStream != null){
+			try {
+				closeableStream.close();
+			} catch (IOException e) {
+				logger.error("ik-analyzer",e);
+			}
+		}
+	}
     
 }
