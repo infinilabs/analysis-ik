@@ -1,7 +1,7 @@
 /**
  * IK 中文分词  版本 5.0.1
  * IK Analyzer release 5.0.1
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,8 +20,8 @@
  * 源代码由林良益(linliangyi2005@gmail.com)提供
  * 版权声明 2012，乌龙茶工作室
  * provided by Linliangyi and copyright 2012 by Oolong studio
- * 
- * 
+ *
+ *
  */
 package org.wltea.analyzer.sample;
 
@@ -44,47 +44,47 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
  */
 public class IKAnalzyerDemo {
 
-    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
-    
+	public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+
 	public static void main(String[] args){
 		//构建IK分词器，使用smart分词模式
 		Analyzer analyzer = new IKAnalyzer(true);
-		
+
 		//获取Lucene的TokenStream对象
-	    TokenStream ts = null;
+		TokenStream ts = null;
 		try {
 			ts = analyzer.tokenStream("myfield", new StringReader("WORLD ,.. html DATA</html>HELLO"));
 //			ts = analyzer.tokenStream("myfield", new StringReader("这是一个中文分词的例子，你可以直接运行它！IKAnalyer can analysis english text too"));
 			//获取词元位置属性
-		    OffsetAttribute  offset = ts.addAttribute(OffsetAttribute.class); 
-		    //获取词元文本属性
-		    CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
-		    //获取词元文本属性
-		    TypeAttribute type = ts.addAttribute(TypeAttribute.class);
-		    
-		    
-		    //重置TokenStream（重置StringReader）
-			ts.reset(); 
+			OffsetAttribute  offset = ts.addAttribute(OffsetAttribute.class);
+			//获取词元文本属性
+			CharTermAttribute term = ts.addAttribute(CharTermAttribute.class);
+			//获取词元文本属性
+			TypeAttribute type = ts.addAttribute(TypeAttribute.class);
+
+
+			//重置TokenStream（重置StringReader）
+			ts.reset();
 			//迭代获取分词结果
 			while (ts.incrementToken()) {
-			  logger.info(offset.startOffset() + " - " + offset.endOffset() + " : " + term.toString() + " | " + type.type());
+				System.out.println(offset.startOffset() + " - " + offset.endOffset() + " : " + term.toString() + " | " + type.type());
 			}
 			//关闭TokenStream（关闭StringReader）
 			ts.end();   // Perform end-of-stream operations, e.g. set the final offset.
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		} finally {
 			//释放TokenStream的所有资源
 			if(ts != null){
-		      try {
-				ts.close();
-		      } catch (IOException e) {
-				e.printStackTrace();
-		      }
+				try {
+					ts.close();
+				} catch (IOException e) {
+					logger.error(e.getMessage(), e);
+				}
 			}
-	    }
-		
+		}
+
 	}
 
 }

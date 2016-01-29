@@ -5,8 +5,8 @@ import org.elasticsearch.common.logging.Loggers;
 
 public class Sleep {
 
-    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
-    
+	public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+
 	public enum Type{MSEC,SEC,MIN,HOUR};
 	public static void sleep(Type type,int num){
 		try {
@@ -24,13 +24,13 @@ public class Sleep {
 					Thread.sleep(num*60*60*1000);
 					return;
 				default:
-                    logger.error("输入类型错误，应为MSEC,SEC,MIN,HOUR之一");
+					System.err.println("输入类型错误，应为MSEC,SEC,MIN,HOUR之一");
 					return;
 			}
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 	}
-	
-	
+
+
 }

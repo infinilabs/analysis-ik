@@ -7,8 +7,12 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 
 public class Monitor implements Runnable {
+
+	public static ESLogger logger= Loggers.getLogger("ik-analyzer");
 
 	private static CloseableHttpClient httpclient = HttpClients.createDefault();
 	/*
@@ -19,12 +23,12 @@ public class Monitor implements Runnable {
 	 * 资源属性
 	 */
 	private String eTags;
-	
+
 	/*
 	 * 请求地址
 	 */
-	private String location; 
-	
+	private String location;
+
 	public Monitor(String location) {
 		this.location = location;
 		this.last_modified = null;
@@ -38,16 +42,16 @@ public class Monitor implements Runnable {
 	 * 	④如果有变化，重新加载词典
 	 *  ⑤休眠1min，返回第①步
 	 */
-	
+
 	public void run() {
 
 		//超时设置
 		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10*1000)
 				.setConnectTimeout(10*1000).setSocketTimeout(15*1000).build();
-		
+
 		HttpHead head = new HttpHead(location);
 		head.setConfig(rc);
-		
+
 		//设置请求头
 		if (last_modified != null) {
 			head.setHeader("If-Modified-Since", last_modified);
@@ -55,17 +59,17 @@ public class Monitor implements Runnable {
 		if (eTags != null) {
 			head.setHeader("If-None-Match", eTags);
 		}
-		
+
 		CloseableHttpResponse response = null;
 		try {
-			
+
 			response = httpclient.execute(head);
-			
+
 			//返回200 才做操作
 			if(response.getStatusLine().getStatusCode()==200){
-			
+
 				if (!response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified)
-					||!response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags)) {
+						||!response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags)) {
 
 					// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 					Dictionary.getSingleton().reLoadMainDict();
@@ -87,9 +91,9 @@ public class Monitor implements Runnable {
 					response.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 			}
 		}
 	}
-	
+
 }
