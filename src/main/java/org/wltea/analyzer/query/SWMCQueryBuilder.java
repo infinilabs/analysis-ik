@@ -45,6 +45,9 @@ import org.wltea.analyzer.core.Lexeme;
  */
 public class SWMCQueryBuilder {
 
+	private SWMCQueryBuilder() {
+	}
+
 	/**
 	 * 生成SWMCQuery
 	 * @param fieldName

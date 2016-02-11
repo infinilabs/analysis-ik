@@ -65,7 +65,10 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
 public class LuceneIndexAndSearchDemo {
 
     public static ESLogger logger= Loggers.getLogger("ik-analyzer");
-	
+
+	private LuceneIndexAndSearchDemo() {
+	}
+
 	/**
 	 * 模拟：
 	 * 创建一个单条记录的索引，并对其进行搜索

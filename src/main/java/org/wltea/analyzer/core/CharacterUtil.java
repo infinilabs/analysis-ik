@@ -40,8 +40,10 @@ class CharacterUtil {
 	public static final int CHAR_CHINESE = 0X00000004;
 	
 	public static final int CHAR_OTHER_CJK = 0X00000008;
-	
-	
+
+	private CharacterUtil() {
+	}
+
 	/**
 	 * 识别字符类型
 	 * @param input
