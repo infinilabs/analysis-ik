@@ -47,7 +47,7 @@ import java.util.Stack;
  */
 public class IKQueryExpressionParser {
 
-    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+    public static final ESLogger logger= Loggers.getLogger("ik-analyzer");
     
 	//public static final String LUCENE_SPECIAL_CHAR = "&&||-()':={}[],";
 	

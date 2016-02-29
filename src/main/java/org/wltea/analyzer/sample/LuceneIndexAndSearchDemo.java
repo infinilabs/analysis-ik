@@ -64,7 +64,7 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
  */
 public class LuceneIndexAndSearchDemo {
 
-    public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+    public static final ESLogger logger= Loggers.getLogger("ik-analyzer");
 	
 	/**
 	 * 模拟：

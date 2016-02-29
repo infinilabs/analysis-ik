@@ -79,7 +79,7 @@ public class Dictionary {
 	 * 配置对象
 	 */
 	private Configuration configuration;
-    public static ESLogger logger=Loggers.getLogger("ik-analyzer");
+    public static final ESLogger logger=Loggers.getLogger("ik-analyzer");
     
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
     
