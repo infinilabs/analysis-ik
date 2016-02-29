@@ -155,14 +155,12 @@ class LetterSegmenter implements ISegmenter {
 		}
 		
 		//判断缓冲区是否已经读完
-		if(context.isBufferConsumed()){
-			if(this.start != -1 && this.end != -1){
-				//缓冲以读完，输出词元
-				Lexeme newLexeme = new Lexeme(context.getBufferOffset() , this.start , this.end - this.start + 1 , Lexeme.TYPE_LETTER);
-				context.addLexeme(newLexeme);
-				this.start = -1;
-				this.end = -1;
-			}
+		if(context.isBufferConsumed() && (this.start != -1 && this.end != -1)){
+            //缓冲以读完，输出词元
+            Lexeme newLexeme = new Lexeme(context.getBufferOffset() , this.start , this.end - this.start + 1 , Lexeme.TYPE_LETTER);
+            context.addLexeme(newLexeme);
+            this.start = -1;
+            this.end = -1;
 		}
 		
 		//判断是否锁定缓冲区
@@ -203,14 +201,12 @@ class LetterSegmenter implements ISegmenter {
 		}
 		
 		//判断缓冲区是否已经读完
-		if(context.isBufferConsumed()){
-			if(this.englishStart != -1 && this.englishEnd != -1){
-				//缓冲以读完，输出词元
-				Lexeme newLexeme = new Lexeme(context.getBufferOffset() , this.englishStart , this.englishEnd - this.englishStart + 1 , Lexeme.TYPE_ENGLISH);
-				context.addLexeme(newLexeme);
-				this.englishStart = -1;
-				this.englishEnd= -1;
-			}
+		if(context.isBufferConsumed() && (this.englishStart != -1 && this.englishEnd != -1)){
+            //缓冲以读完，输出词元
+            Lexeme newLexeme = new Lexeme(context.getBufferOffset() , this.englishStart , this.englishEnd - this.englishStart + 1 , Lexeme.TYPE_ENGLISH);
+            context.addLexeme(newLexeme);
+            this.englishStart = -1;
+            this.englishEnd= -1;
 		}	
 		
 		//判断是否锁定缓冲区
@@ -254,14 +250,12 @@ class LetterSegmenter implements ISegmenter {
 		}
 		
 		//判断缓冲区是否已经读完
-		if(context.isBufferConsumed()){
-			if(this.arabicStart != -1 && this.arabicEnd != -1){
-				//生成已切分的词元
-				Lexeme newLexeme = new Lexeme(context.getBufferOffset() ,  this.arabicStart , this.arabicEnd - this.arabicStart + 1 , Lexeme.TYPE_ARABIC);
-				context.addLexeme(newLexeme);
-				this.arabicStart = -1;
-				this.arabicEnd = -1;
-			}
+		if(context.isBufferConsumed() && (this.arabicStart != -1 && this.arabicEnd != -1)){
+            //生成已切分的词元
+            Lexeme newLexeme = new Lexeme(context.getBufferOffset() ,  this.arabicStart , this.arabicEnd - this.arabicStart + 1 , Lexeme.TYPE_ARABIC);
+            context.addLexeme(newLexeme);
+            this.arabicStart = -1;
+            this.arabicEnd = -1;
 		}
 		
 		//判断是否锁定缓冲区

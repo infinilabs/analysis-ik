@@ -127,14 +127,12 @@ class CN_QuantifierSegmenter implements ISegmenter{
 		}
 		
 		//缓冲区已经用完，还有尚未输出的数词
-		if(context.isBufferConsumed()){
-			if(nStart != -1 && nEnd != -1){
-				//输出数词
-				outputNumLexeme(context);
-				//重置头尾指针
-				nStart = -1;
-				nEnd = -1;
-			}
+		if(context.isBufferConsumed() && (nStart != -1 && nEnd != -1)){
+			//输出数词
+			outputNumLexeme(context);
+			//重置头尾指针
+			nStart = -1;
+			nEnd = -1;
 		}	
 	}
 	
@@ -216,10 +214,9 @@ class CN_QuantifierSegmenter implements ISegmenter{
 			//找到一个相邻的数词
 			if(!context.getOrgLexemes().isEmpty()){
 				Lexeme l = context.getOrgLexemes().peekLast();
-				if(Lexeme.TYPE_CNUM == l.getLexemeType() ||  Lexeme.TYPE_ARABIC == l.getLexemeType()){
-					if(l.getBegin() + l.getLength() == context.getCursor()){
-						return true;
-					}
+				if((Lexeme.TYPE_CNUM == l.getLexemeType() ||  Lexeme.TYPE_ARABIC == l.getLexemeType())
+					&& (l.getBegin() + l.getLength() == context.getCursor())){
+					return true;
 				}
 			}
 		}
