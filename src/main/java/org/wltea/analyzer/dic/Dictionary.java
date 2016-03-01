@@ -25,21 +25,6 @@
  */
 package org.wltea.analyzer.dic;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -50,6 +35,15 @@ import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.cfg.Configuration;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 词典管理类,单子模式
@@ -137,6 +131,7 @@ public class Dictionary {
 	 */
 	public static Dictionary getSingleton(){
 		if(singleton == null){
+//			Dictionary.initial(new Configuration(null));
 			throw new IllegalStateException("词典尚未初始化，请先调用initial方法");
 		}
 		return singleton;

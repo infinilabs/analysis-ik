@@ -25,9 +25,6 @@
  */
 package org.wltea.analyzer.sample;
 
-import java.io.IOException;
-import java.io.StringReader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
@@ -36,6 +33,9 @@ import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.lucene.IKAnalyzer;
+
+import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * 使用IKAnalyzer进行分词的演示
@@ -48,12 +48,12 @@ public class IKAnalzyerDemo {
     
 	public static void main(String[] args){
 		//构建IK分词器，使用smart分词模式
-		Analyzer analyzer = new IKAnalyzer(true);
+		Analyzer analyzer = new IKAnalyzer(true,true);
 		
 		//获取Lucene的TokenStream对象
 	    TokenStream ts = null;
 		try {
-			ts = analyzer.tokenStream("myfield", new StringReader("WORLD ,.. html DATA</html>HELLO"));
+			ts = analyzer.tokenStream("myfield", new StringReader("刘一波WORLD ,.. html DATA</html>HELLO"));
 //			ts = analyzer.tokenStream("myfield", new StringReader("这是一个中文分词的例子，你可以直接运行它！IKAnalyer can analysis english text too"));
 			//获取词元位置属性
 		    OffsetAttribute  offset = ts.addAttribute(OffsetAttribute.class); 

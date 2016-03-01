@@ -20,11 +20,11 @@ import org.wltea.analyzer.lucene.IKTokenizer;
  */
 public class IKIndicesAnalysis extends AbstractComponent {
 
-    private boolean useSmart=false;
+    private boolean useSmart = false;
 
     @Inject
     public IKIndicesAnalysis(final Settings settings,
-                                   IndicesAnalysisService indicesAnalysisService,Environment env) {
+                             IndicesAnalysisService indicesAnalysisService, Environment env) {
         super(settings);
         Dictionary.initial(new Configuration(env));
 
@@ -41,6 +41,10 @@ public class IKIndicesAnalysis extends AbstractComponent {
         indicesAnalysisService.analyzerProviderFactories().put("ik_max_word",
                 new PreBuiltAnalyzerProviderFactory("ik_max_word", AnalyzerScope.GLOBAL,
                         new IKAnalyzer(false)));
+
+        indicesAnalysisService.analyzerProviderFactories().put("ik_max_word_pinyin",
+                new PreBuiltAnalyzerProviderFactory("ik_max_word_pinyin", AnalyzerScope.GLOBAL,
+                        new IKAnalyzer(false, true)));
 
         indicesAnalysisService.tokenizerFactories().put("ik",
                 new PreBuiltTokenizerFactoryFactory(new TokenizerFactory() {
@@ -78,6 +82,18 @@ public class IKIndicesAnalysis extends AbstractComponent {
                     @Override
                     public Tokenizer create() {
                         return new IKTokenizer(false);
+                    }
+                }));
+        indicesAnalysisService.tokenizerFactories().put("ik_max_word_pinyin",
+                new PreBuiltTokenizerFactoryFactory(new TokenizerFactory() {
+                    @Override
+                    public String name() {
+                        return "ik_max_word_pinyin";
+                    }
+
+                    @Override
+                    public Tokenizer create() {
+                        return new IKTokenizer(false, true);
                     }
                 }));
     }

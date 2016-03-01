@@ -11,7 +11,6 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
@@ -130,6 +129,7 @@ public class Configuration {
 	}
 
     public String getDictRoot() {
+//		return "/Users/yiboliu/code/elasticsearch-analysis-ik/config/";
 		return PathUtils.get(
 				new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent(),"config")
 				.toAbsolutePath().toString();
