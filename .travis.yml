@@ -1,10 +1,11 @@
 language: java
-script: mvn package
+script: mvn clean package
 deploy:
   provider: releases
   api_key:
-    secure: ST488KfF0hjHv3PDU5wX5JqXd7mTb9IjgqC0GyugNhyEWu7pIy5uGo3pv7ymchQoy/LtZwK92C2hNjrDR9Tmy4l4CQtbkLnXsHrSAcm1tEFAFOL9wRJEWitOsNMboYlLRF6Q2vSc42laLB1gtkB4m0qwf7QinnRC9+lo7MC66761CoQcVoux1e3kTjtIcev++Vso3SYxtM3YUHVIaBq4lMr4tTRlu/wUbdLulZRWkrQcbii+P5aOAQJwOj0AW99FSqOM15WF16byL/ojrq9jaw8mhtPmSuRE4ZsmcMUdG7lVsiV+T1/9RxiiBiQz0U2O2W4t8BDA2/8R/LUOC+9TX5DhcgHobdv4+WLTFK+ibMzM8LarIOzyOq/aRd/DmROSOsGcB8xQC73s6Iiu3sPnPHIQA0LXM14Kxqf6xITck7OCG0hqaW9zmhP/zbaeNoVC4/ldO0ewKk8kFZRZGX3XeEyTAEudAeAJoxRgvY9UUIz9Mrc86vhlZuVB9YhkbpKvf/4bdBgL4UjT7d4MOdxAkjYfcasbOPgfdz6nxTr+Ds/SMT8IoyoRD7CTDprjCVm3hQuyIKjDNSMUz8gc/QAwzw7J2uz96/HvKCqCryRV88NI4BnqzpVdgJlHM7AbFHgIv29owICc0CoTtiH52HssLI6Y78oEJ3WCycGGU7QQHuQ=
+    secure: llxJZlRYBIWINl5XI42RpEe+jTxlmSP6MX+oTNZa4oFjEeN9Kdd1G8+S3HSIhCc31RoF/2zeNsM9OehRi1O6bweNSQ9vjlKZQPD8FYcHaHpYW0U7h/OMbEeC794fAghm9ZsmOTNymdvbAXL14nJTrwOW9W8VqoZT9Jx7Ejad63Y=
+  file: target/releases/elasticsearch-analysis-ik-*.zip
   file_glob: true
-  file: "target/releases/elasticsearch-analysis-ik-*.zip"
   on:
+    repo: medcl/elasticsearch-analysis-ik
     tags: true
