@@ -7,3 +7,4 @@
 .DS_Store
 *.iml
 \.*
+!.travis.yml
