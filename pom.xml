@@ -12,7 +12,7 @@
     <inceptionYear>2011</inceptionYear>
 
     <properties>
-        <elasticsearch.version>2.2.0</elasticsearch.version>
+        <elasticsearch.version>2.2.1</elasticsearch.version>
         <maven.compiler.target>1.7</maven.compiler.target>
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
         <elasticsearch.plugin.name>elasticsearch-analysis-ik</elasticsearch.plugin.name>
