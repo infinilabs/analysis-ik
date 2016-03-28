@@ -1,4 +1,4 @@
-IK Analysis for ElasticSearch
+IK Analysis for Elasticsearch
 =============================
 
 The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.

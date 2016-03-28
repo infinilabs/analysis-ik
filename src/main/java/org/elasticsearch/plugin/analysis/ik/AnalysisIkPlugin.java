@@ -37,5 +37,8 @@ public class AnalysisIkPlugin extends Plugin {
     public Collection<Module> nodeModules() {
         return Collections.<Module>singletonList(new IKIndicesAnalysisModule());
     }
+    public void onModule(AnalysisModule module) {
+        module.addProcessor(new IkAnalysisBinderProcessor());
+    }
 
 }
