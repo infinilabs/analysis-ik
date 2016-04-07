@@ -37,6 +37,10 @@ Install
 
 copy and unzip `target/releases/elasticsearch-analysis-ik-{version}.zip` to `your-es-root/plugins/ik`
 
+**for ES > 2.0**
+
+`bin/plugin install file:/path/to/elasticsearch-analysis-ik-{version}.zip`
+
 
 2.restart elasticsearch
 
