@@ -1,7 +1,7 @@
 /**
  * IK 中文分词  版本 5.0
  * IK Analyzer release 5.0
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,7 +20,7 @@
  * 源代码由林良益(linliangyi2005@gmail.com)提供
  * 版权声明 2012，乌龙茶工作室
  * provided by Linliangyi and copyright 2012 by Oolong studio
- * 
+ *
  */
 package org.wltea.analyzer.query;
 
@@ -34,6 +34,8 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.core.IKSegmenter;
 import org.wltea.analyzer.core.Lexeme;
 
@@ -44,6 +46,8 @@ import org.wltea.analyzer.core.Lexeme;
  *
  */
 public class SWMCQueryBuilder {
+
+	public static ESLogger logger= Loggers.getLogger("ik-analyzer");
 
 	/**
 	 * 生成SWMCQuery
@@ -62,7 +66,7 @@ public class SWMCQueryBuilder {
 		Query _SWMCQuery = getSWMCQuery(fieldName , lexemes , quickMode);
 		return _SWMCQuery;
 	}
-	
+
 	/**
 	 * 分词切分，并返回结链表
 	 * @param keywords
@@ -78,16 +82,16 @@ public class SWMCQueryBuilder {
 				lexemes.add(l);
 			}
 		}catch(IOException e){
-			e.printStackTrace();
+			logger.error(e.getMessage(), e);
 		}
 		return lexemes;
 	}
-	
-	
+
+
 	/**
 	 * 根据分词结果生成SWMC搜索
 	 * @param fieldName
-//	 * @param pathOption
+	//	 * @param pathOption
 	 * @param quickMode
 	 * @return
 	 */
@@ -100,7 +104,7 @@ public class SWMCQueryBuilder {
 		int lastLexemeLength = 0;
 		//记录最后词元结束位置
 		int lastLexemeEnd = -1;
-		
+
 		int shortCount = 0;
 		int totalCount = 0;
 		for(Lexeme l : lexemes){
@@ -110,15 +114,15 @@ public class SWMCQueryBuilder {
 				keywordBuffer_Short.append(' ').append(l.getLexemeText());
 				shortCount += l.getLength();
 			}
-			
+
 			if(lastLexemeLength == 0){
-				keywordBuffer.append(l.getLexemeText());				
+				keywordBuffer.append(l.getLexemeText());
 			}else if(lastLexemeLength == 1 && l.getLength() == 1
 					&& lastLexemeEnd == l.getBeginPosition()){//单字位置相邻，长度为一，合并)
 				keywordBuffer.append(l.getLexemeText());
 			}else{
 				keywordBuffer.append(' ').append(l.getLexemeText());
-				
+
 			}
 			lastLexemeLength = l.getLength();
 			lastLexemeEnd = l.getEndPosition();
@@ -128,16 +132,16 @@ public class SWMCQueryBuilder {
 		QueryParser qp = new QueryParser(fieldName, new StandardAnalyzer());
 		qp.setDefaultOperator(QueryParser.AND_OPERATOR);
 		qp.setAutoGeneratePhraseQueries(true);
-		
+
 		if(quickMode && (shortCount * 1.0f / totalCount) > 0.5f){
 			try {
 				//System.out.println(keywordBuffer.toString());
 				Query q = qp.parse(keywordBuffer_Short.toString());
 				return q;
 			} catch (ParseException e) {
-				e.printStackTrace();
+				logger.error(e.getMessage(), e);
 			}
-			
+
 		}else{
 			if(keywordBuffer.length() > 0){
 				try {
@@ -145,7 +149,7 @@ public class SWMCQueryBuilder {
 					Query q = qp.parse(keywordBuffer.toString());
 					return q;
 				} catch (ParseException e) {
-					e.printStackTrace();
+					logger.error(e.getMessage(), e);
 				}
 			}
 		}
