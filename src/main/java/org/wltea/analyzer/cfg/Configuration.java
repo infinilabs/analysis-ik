@@ -4,14 +4,12 @@
 package org.wltea.analyzer.cfg;
 
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
@@ -34,11 +32,11 @@ public class Configuration {
 		props = new Properties();
 		environment = env;
 
-		Path fileConfig = PathUtils.get(getDictRoot(), FILE_NAME);
+		Path configFile = environment.configFile().resolve(FILE_NAME);
 
 		InputStream input = null;
 		try {
-			input = new FileInputStream(fileConfig.toFile());
+			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
 			logger.error("ik-analyzer", e);
 		}
@@ -62,7 +60,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = PathUtils.get("ik", filePath.trim());
+						Path file = environment.configFile().resolve(filePath.trim());
 						extDictFiles.add(file.toString());
 
 					}
@@ -99,7 +97,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = PathUtils.get("ik", filePath.trim());
+						Path file = environment.configFile().resolve(filePath.trim());
 						extStopWordDictFiles.add(file.toString());
 
 					}
@@ -125,12 +123,5 @@ public class Configuration {
 			}
 		}
 		return remoteExtStopWordDictFiles;
-	}
-
-	public String getDictRoot() {
-		return PathUtils
-				.get(new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-						.getParent(), "config")
-				.toAbsolutePath().toString();
 	}
 }
