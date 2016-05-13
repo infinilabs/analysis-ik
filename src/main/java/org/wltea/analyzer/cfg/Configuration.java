@@ -7,7 +7,6 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.env.Environment;
-import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -18,12 +17,14 @@ import java.util.Properties;
 
 public class Configuration {
 
-	private static String FILE_NAME = "ik/IKAnalyzer.cfg.xml";
+	private static String PLUGIN_NAME = "analysis-ik";
+	private static String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private static final String EXT_DICT = "ext_dict";
 	private static final String REMOTE_EXT_DICT = "remote_ext_dict";
 	private static final String EXT_STOP = "ext_stopwords";
 	private static final String REMOTE_EXT_STOP = "remote_ext_stopwords";
 	private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+	private Path conf_dir;
 	private Properties props;
 	private Environment environment;
 
@@ -31,8 +32,9 @@ public class Configuration {
 	public Configuration(Environment env) {
 		props = new Properties();
 		environment = env;
+		conf_dir = environment.configFile().resolve(PLUGIN_NAME);
 
-		Path configFile = environment.configFile().resolve(FILE_NAME);
+		Path configFile = conf_dir.resolve(FILE_NAME);
 
 		InputStream input = null;
 		try {
@@ -60,7 +62,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = environment.configFile().resolve(filePath.trim());
+						Path file = conf_dir.resolve(filePath.trim());
 						extDictFiles.add(file.toString());
 
 					}
@@ -97,7 +99,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = environment.configFile().resolve(filePath.trim());
+						Path file = conf_dir.resolve(filePath.trim());
 						extStopWordDictFiles.add(file.toString());
 
 					}
