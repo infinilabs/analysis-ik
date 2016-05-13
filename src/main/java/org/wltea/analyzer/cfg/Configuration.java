@@ -4,9 +4,11 @@
 package org.wltea.analyzer.cfg;
 
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.env.Environment;
+import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -125,5 +127,9 @@ public class Configuration {
 			}
 		}
 		return remoteExtStopWordDictFiles;
+	}
+
+	public String getDictRoot() {
+		return conf_dir.toAbsolutePath().toString();
 	}
 }
