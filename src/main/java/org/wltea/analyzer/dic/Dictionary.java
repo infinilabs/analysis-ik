@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -81,12 +82,12 @@ public class Dictionary {
 
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
-	public static final String PATH_DIC_MAIN = "ik/main.dic";
-	public static final String PATH_DIC_SURNAME = "ik/surname.dic";
-	public static final String PATH_DIC_QUANTIFIER = "ik/quantifier.dic";
-	public static final String PATH_DIC_SUFFIX = "ik/suffix.dic";
-	public static final String PATH_DIC_PREP = "ik/preposition.dic";
-	public static final String PATH_DIC_STOP = "ik/stopword.dic";
+	public static final String PATH_DIC_MAIN = "main.dic";
+	public static final String PATH_DIC_SURNAME = "surname.dic";
+	public static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
+	public static final String PATH_DIC_SUFFIX = "suffix.dic";
+	public static final String PATH_DIC_PREP = "preposition.dic";
+	public static final String PATH_DIC_STOP = "stopword.dic";
 
 	private Dictionary() {
 

@@ -42,7 +42,17 @@ public class Configuration {
 		try {
 			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
-			logger.error("ik-analyzer", e);
+			conf_dir = this.getConfigInPluginDir();
+			configFile = conf_dir.resolve(FILE_NAME);
+			try {
+				input = new FileInputStream(configFile.toFile());
+			} catch (FileNotFoundException ex) {
+				// We should report origin exception
+				logger.error("ik-analyzer", e);
+			}
+			if (input != null) {
+				logger.warn("ik-analyzer", "Put config in PluginDir is deprecated! Please put it in config dir");
+			}
 		}
 		if (input != null) {
 			try {
@@ -64,8 +74,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = conf_dir.resolve(filePath.trim());
-						extDictFiles.add(file.toString());
+						extDictFiles.add(filePath.trim());
 
 					}
 				}
@@ -101,8 +110,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = conf_dir.resolve(filePath.trim());
-						extStopWordDictFiles.add(file.toString());
+						extStopWordDictFiles.add(filePath.trim());
 
 					}
 				}
@@ -132,4 +140,17 @@ public class Configuration {
 	public String getDictRoot() {
 		return conf_dir.toAbsolutePath().toString();
 	}
+
+	/*
+	 * get config dir in plugin dir
+	 *
+	 * @deprecated this method is just for compatibility, will removed in v2.0
+	 */
+	private Path getConfigInPluginDir() {
+		return PathUtils
+				.get(new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+						.getParent(), "config", "ik")
+				.toAbsolutePath();
+	}
+
 }
