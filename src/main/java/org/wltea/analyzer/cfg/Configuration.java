@@ -19,7 +19,6 @@ import java.util.Properties;
 
 public class Configuration {
 
-	private static String PLUGIN_NAME = "analysis-ik";
 	private static String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private static final String EXT_DICT = "ext_dict";
 	private static final String REMOTE_EXT_DICT = "remote_ext_dict";
@@ -34,7 +33,7 @@ public class Configuration {
 	public Configuration(Environment env) {
 		props = new Properties();
 		environment = env;
-		conf_dir = environment.configFile().resolve(PLUGIN_NAME);
+		conf_dir = environment.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
 
 		Path configFile = conf_dir.resolve(FILE_NAME);
 
