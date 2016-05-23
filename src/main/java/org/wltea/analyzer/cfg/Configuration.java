@@ -26,6 +26,7 @@ public class Configuration {
 	private static final String EXT_STOP = "ext_stopwords";
 	private static final String REMOTE_EXT_STOP = "remote_ext_stopwords";
 	private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+	private Path conf_dir;
 	private Properties props;
 	private Environment environment;
 
@@ -34,13 +35,21 @@ public class Configuration {
 		props = new Properties();
 		environment = env;
 
-		Path fileConfig = PathUtils.get(getDictRoot(), FILE_NAME);
+		conf_dir = environment.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		Path configFile = conf_dir.resolve(FILE_NAME);
 
 		InputStream input = null;
 		try {
-			input = new FileInputStream(fileConfig.toFile());
+			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
-			logger.error("ik-analyzer", e);
+			conf_dir = this.getConfigInPluginDir();
+			configFile = conf_dir.resolve(FILE_NAME);
+			try {
+				input = new FileInputStream(configFile.toFile());
+			} catch (FileNotFoundException ex) {
+				// We should report origin exception
+				logger.error("ik-analyzer", e);
+			}
 		}
 		if (input != null) {
 			try {
@@ -128,9 +137,13 @@ public class Configuration {
 	}
 
 	public String getDictRoot() {
+		return conf_dir.toAbsolutePath().toString();
+	}
+
+	private Path getConfigInPluginDir() {
 		return PathUtils
 				.get(new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
 						.getParent(), "config")
-				.toAbsolutePath().toString();
+				.toAbsolutePath();
 	}
 }
