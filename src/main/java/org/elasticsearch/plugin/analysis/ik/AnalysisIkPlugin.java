@@ -24,8 +24,10 @@ import static java.rmi.Naming.bind;
 
 public class AnalysisIkPlugin extends Plugin {
 
+	public static String PLUGIN_NAME = "analysis-ik";
+
     @Override public String name() {
-        return "analysis-ik";
+        return PLUGIN_NAME;
     }
 
 

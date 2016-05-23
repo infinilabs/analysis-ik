@@ -11,7 +11,6 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
@@ -20,118 +19,137 @@ import java.util.Properties;
 
 public class Configuration {
 
-	private static String FILE_NAME = "ik/IKAnalyzer.cfg.xml";
+	private static String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private static final String EXT_DICT = "ext_dict";
 	private static final String REMOTE_EXT_DICT = "remote_ext_dict";
 	private static final String EXT_STOP = "ext_stopwords";
 	private static final String REMOTE_EXT_STOP = "remote_ext_stopwords";
-    private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+	private static ESLogger logger = Loggers.getLogger("ik-analyzer");
+	private Path conf_dir;
 	private Properties props;
-    private Environment environment;
+	private Environment environment;
 
 	@Inject
-    public  Configuration(Environment env){
+	public Configuration(Environment env) {
 		props = new Properties();
-        environment = env;
+		environment = env;
+		conf_dir = environment.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
 
+		Path configFile = conf_dir.resolve(FILE_NAME);
 
-		Path fileConfig = PathUtils.get(getDictRoot(), FILE_NAME);
-
-
-        InputStream input = null;
-        try {
-            input = new FileInputStream(fileConfig.toFile());
-        } catch (FileNotFoundException e) {
-            logger.error("ik-analyzer",e);
-        }
-        if(input != null){
+		InputStream input = null;
+		try {
+			input = new FileInputStream(configFile.toFile());
+		} catch (FileNotFoundException e) {
+			conf_dir = this.getConfigInPluginDir();
+			configFile = conf_dir.resolve(FILE_NAME);
+			try {
+				input = new FileInputStream(configFile.toFile());
+			} catch (FileNotFoundException ex) {
+				// We should report origin exception
+				logger.error("ik-analyzer", e);
+			}
+			if (input != null) {
+				logger.warn("ik-analyzer", "Put config in PluginDir is deprecated! Please put it in config dir");
+			}
+		}
+		if (input != null) {
 			try {
 				props.loadFromXML(input);
 			} catch (InvalidPropertiesFormatException e) {
 				logger.error("ik-analyzer", e);
 			} catch (IOException e) {
-				logger.error("ik-analyzer",e);
+				logger.error("ik-analyzer", e);
 			}
 		}
 	}
 
-    public  List<String> getExtDictionarys(){
+	public List<String> getExtDictionarys() {
 		List<String> extDictFiles = new ArrayList<String>(2);
 		String extDictCfg = props.getProperty(EXT_DICT);
-		if(extDictCfg != null){
+		if (extDictCfg != null) {
 
 			String[] filePaths = extDictCfg.split(";");
-			if(filePaths != null){
-				for(String filePath : filePaths){
-					if(filePath != null && !"".equals(filePath.trim())){
-						Path file = PathUtils.get("ik", filePath.trim());
-						extDictFiles.add(file.toString());
+			if (filePaths != null) {
+				for (String filePath : filePaths) {
+					if (filePath != null && !"".equals(filePath.trim())) {
+						extDictFiles.add(filePath.trim());
 
 					}
 				}
 			}
-		}		
-		return extDictFiles;		
+		}
+		return extDictFiles;
 	}
-    
-    public  List<String> getRemoteExtDictionarys(){
+
+	public List<String> getRemoteExtDictionarys() {
 		List<String> remoteExtDictFiles = new ArrayList<String>(2);
 		String remoteExtDictCfg = props.getProperty(REMOTE_EXT_DICT);
-		if(remoteExtDictCfg != null){
+		if (remoteExtDictCfg != null) {
 
 			String[] filePaths = remoteExtDictCfg.split(";");
-			if(filePaths != null){
-				for(String filePath : filePaths){
-					if(filePath != null && !"".equals(filePath.trim())){
+			if (filePaths != null) {
+				for (String filePath : filePaths) {
+					if (filePath != null && !"".equals(filePath.trim())) {
 						remoteExtDictFiles.add(filePath);
 
 					}
 				}
 			}
-		}		
-		return remoteExtDictFiles;		
+		}
+		return remoteExtDictFiles;
 	}
 
-	public List<String> getExtStopWordDictionarys(){
+	public List<String> getExtStopWordDictionarys() {
 		List<String> extStopWordDictFiles = new ArrayList<String>(2);
 		String extStopWordDictCfg = props.getProperty(EXT_STOP);
-		if(extStopWordDictCfg != null){
-			
+		if (extStopWordDictCfg != null) {
+
 			String[] filePaths = extStopWordDictCfg.split(";");
-			if(filePaths != null){
-				for(String filePath : filePaths){
-					if(filePath != null && !"".equals(filePath.trim())){
-						Path file = PathUtils.get("ik", filePath.trim());
-						extStopWordDictFiles.add(file.toString());
+			if (filePaths != null) {
+				for (String filePath : filePaths) {
+					if (filePath != null && !"".equals(filePath.trim())) {
+						extStopWordDictFiles.add(filePath.trim());
 
 					}
 				}
 			}
-		}		
-		return extStopWordDictFiles;		
+		}
+		return extStopWordDictFiles;
 	}
-	
-	public  List<String> getRemoteExtStopWordDictionarys(){
+
+	public List<String> getRemoteExtStopWordDictionarys() {
 		List<String> remoteExtStopWordDictFiles = new ArrayList<String>(2);
 		String remoteExtStopWordDictCfg = props.getProperty(REMOTE_EXT_STOP);
-		if(remoteExtStopWordDictCfg != null){
+		if (remoteExtStopWordDictCfg != null) {
 
 			String[] filePaths = remoteExtStopWordDictCfg.split(";");
-			if(filePaths != null){
-				for(String filePath : filePaths){
-					if(filePath != null && !"".equals(filePath.trim())){
+			if (filePaths != null) {
+				for (String filePath : filePaths) {
+					if (filePath != null && !"".equals(filePath.trim())) {
 						remoteExtStopWordDictFiles.add(filePath);
 
 					}
 				}
 			}
 		}
-		return remoteExtStopWordDictFiles;		
+		return remoteExtStopWordDictFiles;
 	}
 
-    public String getDictRoot() {
-		return PathUtils.get(
-				new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent(),"config")
-				.toAbsolutePath().toString();
-    }
+	public String getDictRoot() {
+		return conf_dir.toAbsolutePath().toString();
+	}
+
+	/*
+	 * get config dir in plugin dir
+	 *
+	 * @deprecated this method is just for compatibility, will removed in v2.0
+	 */
+	private Path getConfigInPluginDir() {
+		return PathUtils
+				.get(new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
+						.getParent(), "config", "ik")
+				.toAbsolutePath();
+	}
+
 }
