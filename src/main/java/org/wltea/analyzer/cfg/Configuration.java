@@ -40,11 +40,13 @@ public class Configuration {
 
 		InputStream input = null;
 		try {
+			logger.info("try load config from {}", configFile);
 			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
 			conf_dir = this.getConfigInPluginDir();
 			configFile = conf_dir.resolve(FILE_NAME);
 			try {
+				logger.info("try load config from {}", configFile);
 				input = new FileInputStream(configFile.toFile());
 			} catch (FileNotFoundException ex) {
 				// We should report origin exception
