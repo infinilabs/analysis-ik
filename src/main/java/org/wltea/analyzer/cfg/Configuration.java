@@ -20,7 +20,7 @@ import java.util.Properties;
 
 public class Configuration {
 
-	private static String FILE_NAME = "ik/IKAnalyzer.cfg.xml";
+	private static String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private static final String EXT_DICT = "ext_dict";
 	private static final String REMOTE_EXT_DICT = "remote_ext_dict";
 	private static final String EXT_STOP = "ext_stopwords";
@@ -73,7 +73,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = PathUtils.get("ik", filePath.trim());
+						Path file = PathUtils.get(filePath.trim());
 						extDictFiles.add(file.toString());
 
 					}
@@ -110,7 +110,7 @@ public class Configuration {
 			if (filePaths != null) {
 				for (String filePath : filePaths) {
 					if (filePath != null && !"".equals(filePath.trim())) {
-						Path file = PathUtils.get("ik", filePath.trim());
+						Path file = PathUtils.get(filePath.trim());
 						extStopWordDictFiles.add(file.toString());
 
 					}
