@@ -169,7 +169,8 @@ Result
 
 ### Dictionary Configuration
 
-#### `plugins/elasticsearch-analysis-ik-*/config/ik/IKAnalyzer.cfg.xml`
+`IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/config/IKAnalyzer.cfg.xml`
+or `{plugins}/elasticsearch-analysis-ik-*/config/IKAnalyzer.cfg.xml`
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
