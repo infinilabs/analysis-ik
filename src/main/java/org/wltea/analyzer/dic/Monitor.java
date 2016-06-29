@@ -68,8 +68,8 @@ public class Monitor implements Runnable {
 			//返回200 才做操作
 			if(response.getStatusLine().getStatusCode()==200){
 
-				if (!response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified)
-						||!response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags)) {
+				if (((response.getLastHeader("Last-Modified")!=null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
+						||((response.getLastHeader("ETag")!=null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
 
 					// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 					Dictionary.getSingleton().reLoadMainDict();
