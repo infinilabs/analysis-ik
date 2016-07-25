@@ -10,17 +10,16 @@ import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
-@Deprecated
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {
     private final IKAnalyzer analyzer;
-    private boolean useSmart=false;
 
     @Inject
     public IkAnalyzerProvider(Index index, IndexSettingsService indexSettingsService, Environment env, @Assisted String name, @Assisted Settings settings) {
         super(index, indexSettingsService.getSettings(), name, settings);
-        Dictionary.initial(new Configuration(env));
-        useSmart = settings.get("use_smart", "false").equals("true");
-        analyzer=new IKAnalyzer(useSmart);
+
+        Configuration configuration=new Configuration(env,settings);
+
+        analyzer=new IKAnalyzer(configuration);
     }
 
     @Override public IKAnalyzer get() {

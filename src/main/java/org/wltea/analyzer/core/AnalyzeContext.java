@@ -32,6 +32,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
+import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
 
 /**
@@ -72,12 +73,11 @@ class AnalyzeContext {
     private Map<Integer , LexemePath> pathMap;    
     //最终分词结果集
     private LinkedList<Lexeme> results;
-    private boolean useSmart;
 	//分词器配置项
-//	private Configuration cfg;
+	private Configuration cfg;
 
-    public AnalyzeContext(boolean useSmart){
-        this.useSmart = useSmart;
+    public AnalyzeContext(Configuration configuration){
+        this.cfg = configuration;
     	this.segmentBuff = new char[BUFF_SIZE];
     	this.charTypes = new int[BUFF_SIZE];
     	this.buffLocker = new HashSet<String>();
@@ -139,7 +139,7 @@ class AnalyzeContext {
      */
     void initCursor(){
     	this.cursor = 0;
-    	this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor]);
+    	this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor],cfg.isEnableLowercase());
     	this.charTypes[this.cursor] = CharacterUtil.identifyCharType(this.segmentBuff[this.cursor]);
     }
     
@@ -151,7 +151,7 @@ class AnalyzeContext {
     boolean moveCursor(){
     	if(this.cursor < this.available - 1){
     		this.cursor++;
-        	this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor]);
+        	this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor],cfg.isEnableLowercase());
         	this.charTypes[this.cursor] = CharacterUtil.identifyCharType(this.segmentBuff[this.cursor]);
     		return true;
     	}else{
@@ -345,7 +345,7 @@ class AnalyzeContext {
 	 */
 	private void compound(Lexeme result){
 
-		if(!this.useSmart){
+		if(!this.cfg.isUseSmart()){
 			return ;
 		}
    		//数量词合并处理

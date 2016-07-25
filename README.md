@@ -230,7 +230,12 @@ mvn compile
 mvn package
 ```
 
-copy & unzip file  #{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-*.zip to your elasticsearch's folder: plugins/ik
+拷贝和解压release下的文件: #{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-*.zip 到你的 elasticsearch 插件目录, 如: plugins/ik
+重启elasticsearch
+
+3.分词测试失败
+请在某个索引下调用analyze接口测试,而不是直接调用analyze接口
+如:http://localhost:9200/your_index/_analyze?text=中华人民共和国MN&tokenizer=my_ik
 
 
 Thanks

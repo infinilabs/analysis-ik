@@ -23,10 +23,7 @@
  */
 package org.wltea.analyzer.core;
 
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
-import org.wltea.analyzer.dic.Dictionary;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -47,16 +44,16 @@ public final class IKSegmenter {
 	private List<ISegmenter> segmenters;
 	//分词歧义裁决器
 	private IKArbitrator arbitrator;
-    private  boolean useSmart = false;
+    private  Configuration configuration;
 	
 
 	/**
 	 * IK分词器构造函数
 	 * @param input
      */
-	public IKSegmenter(Reader input ,boolean useSmart){
+	public IKSegmenter(Reader input ,Configuration configuration){
 		this.input = input;
-        this.useSmart = useSmart;
+        this.configuration = configuration;
         this.init();
 	}
 
@@ -66,7 +63,7 @@ public final class IKSegmenter {
 	 */
 	private void init(){
 		//初始化分词上下文
-		this.context = new AnalyzeContext(useSmart);
+		this.context = new AnalyzeContext(configuration);
 		//加载子分词器
 		this.segmenters = this.loadSegmenters();
 		//加载歧义裁决器
@@ -127,7 +124,7 @@ public final class IKSegmenter {
 				}
 			}
 			//对分词进行歧义处理
-			this.arbitrator.process(context, useSmart);
+			this.arbitrator.process(context, configuration.isUseSmart());
 			//将分词结果输出到结果集，并处理未切分的单个CJK字符
 			context.outputToResult();
 			//记录本次分词的缓冲区位移

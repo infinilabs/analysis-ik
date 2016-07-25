@@ -26,6 +26,7 @@ package org.wltea.analyzer.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
+import org.wltea.analyzer.cfg.Configuration;
 
 /**
  * IK分词器，Lucene Analyzer接口实现
@@ -33,15 +34,7 @@ import org.apache.lucene.analysis.Tokenizer;
  */
 public final class IKAnalyzer extends Analyzer{
 	
-	private boolean useSmart;
-
-    public boolean useSmart() {
-		return useSmart;
-	}
-
-	public void setUseSmart(boolean useSmart) {
-		this.useSmart = useSmart;
-	}
+	private Configuration configuration;
 
 	/**
 	 * IK分词器Lucene  Analyzer接口实现类
@@ -54,11 +47,11 @@ public final class IKAnalyzer extends Analyzer{
     /**
 	 * IK分词器Lucene Analyzer接口实现类
 	 * 
-	 * @param useSmart 当为true时，分词器进行智能切分
+	 * @param configuration IK配置
 	 */
-	public IKAnalyzer(boolean useSmart){
+	public IKAnalyzer(Configuration configuration){
 		super();
-        this.useSmart = useSmart;
+        this.configuration = configuration;
 	}
 
 
@@ -67,7 +60,7 @@ public final class IKAnalyzer extends Analyzer{
 	 */
 	@Override
 	protected TokenStreamComponents createComponents(String fieldName) {
-        Tokenizer _IKTokenizer = new IKTokenizer(useSmart);
+        Tokenizer _IKTokenizer = new IKTokenizer(configuration);
 		return new TokenStreamComponents(_IKTokenizer);
     }
 

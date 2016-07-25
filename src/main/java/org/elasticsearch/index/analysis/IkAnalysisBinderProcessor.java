@@ -1,7 +1,6 @@
 package org.elasticsearch.index.analysis;
 
 
-@Deprecated
 public class IkAnalysisBinderProcessor extends AnalysisModule.AnalysisBinderProcessor {
 
 

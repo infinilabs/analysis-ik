@@ -8,25 +8,18 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.Index;
 import org.elasticsearch.index.settings.IndexSettingsService;
 import org.wltea.analyzer.cfg.Configuration;
-import org.wltea.analyzer.dic.Dictionary;
 import org.wltea.analyzer.lucene.IKTokenizer;
 
-@Deprecated
 public class IkTokenizerFactory extends AbstractTokenizerFactory {
-  private final Settings settings;
-  private boolean useSmart=false;
+  private Configuration configuration;
 
   @Inject
   public IkTokenizerFactory(Index index, IndexSettingsService indexSettingsService,Environment env, @Assisted String name, @Assisted Settings settings) {
 	  super(index, indexSettingsService.getSettings(), name, settings);
-      this.settings=settings;
-	  Dictionary.initial(new Configuration(env));
+	  configuration=new Configuration(env,settings);
   }
-
 
   @Override
   public Tokenizer create() {
-    this.useSmart = settings.get("use_smart", "false").equals("true");
-
-    return new IKTokenizer(useSmart);  }
+      return new IKTokenizer(configuration);  }
 }

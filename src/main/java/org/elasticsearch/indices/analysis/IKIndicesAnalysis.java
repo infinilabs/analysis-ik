@@ -3,6 +3,7 @@ package org.elasticsearch.indices.analysis;
 import org.apache.lucene.analysis.Tokenizer;
 import org.elasticsearch.common.component.AbstractComponent;
 import org.elasticsearch.common.inject.Inject;
+import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.analysis.AnalyzerScope;
@@ -26,21 +27,20 @@ public class IKIndicesAnalysis extends AbstractComponent {
     public IKIndicesAnalysis(final Settings settings,
                                    IndicesAnalysisService indicesAnalysisService,Environment env) {
         super(settings);
-        Dictionary.initial(new Configuration(env));
-
-        this.useSmart = settings.get("use_smart", "false").equals("true");
+        final Configuration configuration=new Configuration(env,settings).setUseSmart(false);
+        final Configuration smartConfiguration=new Configuration(env,settings).setUseSmart(true);
 
         indicesAnalysisService.analyzerProviderFactories().put("ik",
                 new PreBuiltAnalyzerProviderFactory("ik", AnalyzerScope.GLOBAL,
-                        new IKAnalyzer(useSmart)));
+                        new IKAnalyzer(configuration)));
 
         indicesAnalysisService.analyzerProviderFactories().put("ik_smart",
                 new PreBuiltAnalyzerProviderFactory("ik_smart", AnalyzerScope.GLOBAL,
-                        new IKAnalyzer(true)));
+                        new IKAnalyzer(smartConfiguration)));
 
         indicesAnalysisService.analyzerProviderFactories().put("ik_max_word",
                 new PreBuiltAnalyzerProviderFactory("ik_max_word", AnalyzerScope.GLOBAL,
-                        new IKAnalyzer(false)));
+                        new IKAnalyzer(configuration)));
 
         indicesAnalysisService.tokenizerFactories().put("ik",
                 new PreBuiltTokenizerFactoryFactory(new TokenizerFactory() {
@@ -51,7 +51,7 @@ public class IKIndicesAnalysis extends AbstractComponent {
 
                     @Override
                     public Tokenizer create() {
-                        return new IKTokenizer(false);
+                        return new IKTokenizer(configuration);
                     }
                 }));
 
@@ -64,7 +64,7 @@ public class IKIndicesAnalysis extends AbstractComponent {
 
                     @Override
                     public Tokenizer create() {
-                        return new IKTokenizer(true);
+                        return new IKTokenizer(smartConfiguration);
                     }
                 }));
 
@@ -77,7 +77,7 @@ public class IKIndicesAnalysis extends AbstractComponent {
 
                     @Override
                     public Tokenizer create() {
-                        return new IKTokenizer(false);
+                        return new IKTokenizer(configuration);
                     }
                 }));
     }
