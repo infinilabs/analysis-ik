@@ -10,7 +10,8 @@ Versions
 
 IK version | ES version
 -----------|-----------
-master | 2.3.5 -> master
+master | 5.x -> master
+5.0.0-alpha5 | 5.0.0-alpha5
 1.9.5 | 2.3.5
 1.9.4 | 2.3.4
 1.9.3 | 2.3.3
@@ -237,6 +238,12 @@ mvn package
 3.分词测试失败
 请在某个索引下调用analyze接口测试,而不是直接调用analyze接口
 如:http://localhost:9200/your_index/_analyze?text=中华人民共和国MN&tokenizer=my_ik
+
+Changes
+
+*5.0.0*
+
+- 移除名为 ik analyzer和tokenizer,请分别使用 ik_smart 和 ik_max_word
 
 
 Thanks
