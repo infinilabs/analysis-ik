@@ -66,9 +66,7 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
         },
         "properties": {
             "content": {
-                "type": "string",
-                "store": "no",
-                "term_vector": "with_positions_offsets",
+                "type": "text",
                 "analyzer": "ik_max_word",
                 "search_analyzer": "ik_max_word",
                 "include_in_all": "true",
@@ -110,7 +108,7 @@ curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 {
-    "query" : { "term" : { "content" : "中国" }},
+    "query" : { "match" : { "content" : "中国" }},
     "highlight" : {
         "pre_tags" : ["<tag1>", "<tag2>"],
         "post_tags" : ["</tag1>", "</tag2>"],
