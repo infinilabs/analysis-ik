@@ -29,6 +29,10 @@ Install
 
 1.compile
 
+checkout ik version respective to your elasticsearch version
+
+`git checkout tags/{version}`
+
 `mvn package`
 
 copy and unzip `target/releases/elasticsearch-analysis-ik-{version}.zip` to `your-es-root/plugins/ik`
@@ -225,6 +229,7 @@ have fun.
 ```bash
 git clone https://github.com/medcl/elasticsearch-analysis-ik
 cd elasticsearch-analysis-ik
+git checkout tags/{version}
 mvn clean
 mvn compile
 mvn package
