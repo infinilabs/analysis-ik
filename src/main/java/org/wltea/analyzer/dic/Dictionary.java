@@ -45,10 +45,11 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.common.io.PathUtils;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.cfg.Configuration;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * 词典管理类,单子模式
@@ -76,7 +77,8 @@ public class Dictionary {
 	 * 配置对象
 	 */
 	private Configuration configuration;
-	public static ESLogger logger = Loggers.getLogger("ik-analyzer");
+
+	private static final Logger logger = ESLoggerFactory.getLogger(Monitor.class.getName());
 
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
