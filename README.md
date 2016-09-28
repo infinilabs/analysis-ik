@@ -11,7 +11,7 @@ Versions
 IK version | ES version
 -----------|-----------
 master | 5.x -> master
-5.0.0-alpha5 | 5.0.0-alpha5
+5.0.0-beta1 | 5.0.0-beta1
 1.9.5 | 2.3.5
 1.9.4 | 2.3.4
 1.9.3 | 2.3.3
@@ -241,7 +241,7 @@ Changes
 
 *5.0.0*
 
-- 移除名为 ik analyzer和tokenizer,请分别使用 ik_smart 和 ik_max_word
+- 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
 
 
 Thanks
