@@ -242,8 +242,9 @@ mvn package
 请在某个索引下调用analyze接口测试,而不是直接调用analyze接口
 如:http://localhost:9200/your_index/_analyze?text=中华人民共和国MN&tokenizer=my_ik
 
-Changes
 
+Changes
+------
 *5.0.0*
 
 - 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
