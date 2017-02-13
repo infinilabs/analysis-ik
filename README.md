@@ -10,8 +10,8 @@ Versions
 
 IK version | ES version
 -----------|-----------
-master | 2.4.0 -> master
-1.10.3 | 2.4.3
+master | 2.4.x -> master
+1.10.4 | 2.4.4
 1.9.5 | 2.3.5
 1.9.4 | 2.3.4
 1.9.3 | 2.3.3
