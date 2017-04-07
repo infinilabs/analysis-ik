@@ -11,6 +11,7 @@ Versions
 IK version | ES version
 -----------|-----------
 master | 5.x -> master
+5.3.0| 5.3.0
 5.2.2| 5.2.2
 5.1.2| 5.1.2
 1.10.1 | 2.4.1
@@ -26,7 +27,11 @@ master | 5.x -> master
 Install
 -------
 
-1.compile
+1.download or compile
+
+download pre-build package from here: https://github.com/medcl/elasticsearch-analysis-ik/releases
+
+or compiled from the source:
 
 checkout ik version respective to your elasticsearch version
 
