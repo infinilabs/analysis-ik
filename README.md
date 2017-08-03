@@ -56,23 +56,14 @@ curl -XPUT http://localhost:9200/index
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
-    "fulltext": {
-             "_all": {
-            "analyzer": "ik_max_word",
-            "search_analyzer": "ik_max_word",
-            "term_vector": "no",
-            "store": "false"
-        },
         "properties": {
             "content": {
                 "type": "text",
                 "analyzer": "ik_max_word",
-                "search_analyzer": "ik_max_word",
-                "include_in_all": "true",
-                "boost": 8
+                "search_analyzer": "ik_max_word"
             }
         }
-    }
+    
 }'
 ```
 
