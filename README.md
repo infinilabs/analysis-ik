@@ -11,6 +11,7 @@ Versions
 IK version | ES version
 -----------|-----------
 master | 5.x -> master
+5.5.2| 5.5.2
 5.5.1| 5.5.1
 5.4.3| 5.4.3
 5.3.3| 5.3.3
@@ -35,9 +36,9 @@ Install
     
     unzip plugin to folder `your-es-root/plugins/`
 
-* optional 2 - use elasticsearch-plugin to install ( version > v5.5.1 ):
+* optional 2 - use elasticsearch-plugin to install ( version > v5.5.2 ):
 
-    `./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v5.5.1/elasticsearch-analysis-ik-5.5.1.zip`
+    `./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v5.5.2/elasticsearch-analysis-ik-5.5.2.zip`
 
 2.restart elasticsearch
 
