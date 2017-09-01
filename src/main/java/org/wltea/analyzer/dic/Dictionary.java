@@ -772,8 +772,10 @@ public class Dictionary {
 		while ((line = br.readLine()) != null) {
 			words.add(line);
 		}
-		if (buffer.containsAll(words)) {
-			buffer.removeAll(words);
+		for (String str : words) {
+			if (buffer.contains(str)) {
+				buffer.remove(str);
+			}
 		}
 		fr.close();
 		br.close();
