@@ -25,13 +25,7 @@
  */
 package org.wltea.analyzer.dic;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -86,15 +80,17 @@ public class Dictionary {
 	public static final String PATH_DIC_SUFFIX = "suffix.dic";
 	public static final String PATH_DIC_PREP = "preposition.dic";
 	public static final String PATH_DIC_STOP = "stopword.dic";
+	public static final String PATH_DIC_REMOTE = "remote.dic";
 
 	private final static  String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private final static  String EXT_DICT = "ext_dict";
 	private final static  String REMOTE_EXT_DICT = "remote_ext_dict";
 	private final static  String EXT_STOP = "ext_stopwords";
 	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
+	private final static  String REBASE_REMOTE_EXT_DICT = "rebase_remote_ext_dict";
 
-	private Path conf_dir;
-	private Properties props;
+	private static Path conf_dir;
+	private static Properties props;
 
 	private Dictionary(Configuration cfg) {
 		this.configuration = cfg;
@@ -128,7 +124,7 @@ public class Dictionary {
 		}
 	}
 
-	public String getProperty(String key){
+	public static String getProperty(String key){
 		if(props!=null){
 			return props.getProperty(key);
 		}
@@ -137,7 +133,7 @@ public class Dictionary {
 	/**
 	 * 词典初始化 由于IK Analyzer的词典采用Dictionary类的静态方法进行词典初始化
 	 * 只有当Dictionary类被实际调用时，才会开始载入词典， 这将延长首次分词操作的时间 该方法提供了一个在应用加载阶段就初始化字典的手段
-	 * 
+	 *
 	 * @return Dictionary
 	 */
 	public static synchronized Dictionary initial(Configuration cfg) {
@@ -237,14 +233,14 @@ public class Dictionary {
 		return remoteExtStopWordDictFiles;
 	}
 
-	public String getDictRoot() {
+	public static String getDictRoot() {
 		return conf_dir.toAbsolutePath().toString();
 	}
 
 
 	/**
 	 * 获取词典单子实例
-	 * 
+	 *
 	 * @return Dictionary 单例对象
 	 */
 	public static Dictionary getSingleton() {
@@ -257,7 +253,7 @@ public class Dictionary {
 
 	/**
 	 * 批量加载新词条
-	 * 
+	 *
 	 * @param words
 	 *            Collection<String>词条列表
 	 */
@@ -288,7 +284,7 @@ public class Dictionary {
 
 	/**
 	 * 检索匹配主词典
-	 * 
+	 *
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray) {
@@ -297,7 +293,7 @@ public class Dictionary {
 
 	/**
 	 * 检索匹配主词典
-	 * 
+	 *
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
@@ -306,7 +302,7 @@ public class Dictionary {
 
 	/**
 	 * 检索匹配量词词典
-	 * 
+	 *
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
@@ -315,7 +311,7 @@ public class Dictionary {
 
 	/**
 	 * 从已匹配的Hit中直接取出DictSegment，继续向下匹配
-	 * 
+	 *
 	 * @return Hit
 	 */
 	public Hit matchWithHit(char[] charArray, int currentIndex, Hit matchedHit) {
@@ -325,7 +321,7 @@ public class Dictionary {
 
 	/**
 	 * 判断是否是停止词
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
@@ -481,6 +477,10 @@ public class Dictionary {
 				}
 				in.close();
 				response.close();
+				String isRebase = getProperty(REBASE_REMOTE_EXT_DICT);
+				if (isRebase.equals("true")) {
+					return writeRemoteWords(buffer);
+				}
 				return buffer;
 			}
 			response.close();
@@ -759,4 +759,31 @@ public class Dictionary {
 		logger.info("重新加载词典完毕...");
 	}
 
+	/**
+	 * 把远程扩展字典的词备份下来，并放入用户自定义的扩展字典中
+	 */
+	private static List<String> writeRemoteWords(List<String> buffer) throws IOException {
+		Path path = PathUtils.get(getDictRoot(), Dictionary.PATH_DIC_REMOTE);
+		File file = path.toFile();
+		List<String> words = new ArrayList<>();
+		FileReader fr = new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		String line;
+		while ((line = br.readLine()) != null) {
+			words.add(line);
+		}
+		if (buffer.containsAll(words)) {
+			buffer.removeAll(words);
+		}
+		fr.close();
+		br.close();
+		//写入remote.dic中
+		FileWriter fw = new FileWriter(file, true);
+		for (String buf : buffer) {
+			fw.append("\n");
+			fw.append(buf);
+		}
+		fw.close();
+		return buffer;
+	}
 }
