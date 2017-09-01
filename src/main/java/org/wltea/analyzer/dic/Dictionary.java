@@ -763,6 +763,13 @@ public class Dictionary {
 	 * 把远程扩展字典的词备份下来，并放入用户自定义的扩展字典中
 	 */
 	private static List<String> writeRemoteWords(List<String> buffer) throws IOException {
+		if (buffer == null || buffer.size() == 0) {
+			return new ArrayList<>();
+		}
+		Set<String> bufferSet = new HashSet<>(buffer);
+		if (bufferSet.size() == 0) {
+			return new ArrayList<>();
+		}
 		Path path = PathUtils.get(getDictRoot(), Dictionary.PATH_DIC_REMOTE);
 		File file = path.toFile();
 		List<String> words = new ArrayList<>();
@@ -773,19 +780,19 @@ public class Dictionary {
 			words.add(line);
 		}
 		for (String str : words) {
-			if (buffer.contains(str)) {
-				buffer.remove(str);
+			if (bufferSet.contains(str)) {
+				bufferSet.remove(str);
 			}
 		}
 		fr.close();
 		br.close();
 		//写入remote.dic中
 		FileWriter fw = new FileWriter(file, true);
-		for (String buf : buffer) {
+		for (String buf : bufferSet) {
 			fw.append("\n");
 			fw.append(buf);
 		}
 		fw.close();
-		return buffer;
+		return new ArrayList<>(bufferSet);
 	}
 }
