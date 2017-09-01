@@ -5,20 +5,13 @@ package org.wltea.analyzer.cfg;
 
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.io.PathUtils;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.dic.Dictionary;
 
-import java.io.*;
-import java.net.URL;
+import java.io.File;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.InvalidPropertiesFormatException;
-import java.util.List;
-import java.util.Properties;
 
 public class Configuration {
 

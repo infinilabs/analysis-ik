@@ -1,11 +1,11 @@
 package org.wltea.analyzer.help;
 
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
+import org.apache.logging.log4j.Logger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 
 public class Sleep {
 
-	public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+	private static final Logger logger = ESLoggerFactory.getLogger(Sleep.class.getName());
 
 	public enum Type{MSEC,SEC,MIN,HOUR};
 	public static void sleep(Type type,int num){

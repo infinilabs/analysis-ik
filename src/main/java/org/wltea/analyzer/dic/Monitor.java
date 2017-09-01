@@ -7,12 +7,12 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.elasticsearch.common.logging.ESLogger;
-import org.elasticsearch.common.logging.Loggers;
+import org.apache.logging.log4j.Logger;
+import org.elasticsearch.common.logging.ESLoggerFactory;
 
 public class Monitor implements Runnable {
 
-	public static ESLogger logger= Loggers.getLogger("ik-analyzer");
+	private static final Logger logger = ESLoggerFactory.getLogger(Monitor.class.getName());
 
 	private static CloseableHttpClient httpclient = HttpClients.createDefault();
 	/*
@@ -80,11 +80,11 @@ public class Monitor implements Runnable {
 				//没有修改，不做操作
 				//noop
 			}else{
-				Dictionary.logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
+				logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
 			}
 
 		} catch (Exception e) {
-			Dictionary.logger.error("remote_ext_dict {} error!",e , location);
+			logger.error("remote_ext_dict {} error!",e , location);
 		}finally{
 			try {
 				if (response != null) {

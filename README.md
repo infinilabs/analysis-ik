@@ -10,11 +10,14 @@ Versions
 
 IK version | ES version
 -----------|-----------
-master | 2.3.5 -> master
+master | 5.x -> master
+5.5.2| 5.5.2
+5.4.3| 5.4.3
+5.3.3| 5.3.3
+5.2.2| 5.2.2
+5.1.2| 5.1.2
+1.10.1 | 2.4.1
 1.9.5 | 2.3.5
-1.9.4 | 2.3.4
-1.9.3 | 2.3.3
-1.9.0 | 2.3.0
 1.8.1 | 2.2.1
 1.7.0 | 2.1.1
 1.5.0 | 2.0.0
@@ -26,21 +29,18 @@ master | 2.3.5 -> master
 Install
 -------
 
-1.compile
+1.download or compile
 
-`mvn package`
+* optional 1 - download pre-build package from here: https://github.com/medcl/elasticsearch-analysis-ik/releases
+    
+    unzip plugin to folder `your-es-root/plugins/`
 
-copy and unzip `target/releases/elasticsearch-analysis-ik-{version}.zip` to `your-es-root/plugins/ik`
+* optional 2 - use elasticsearch-plugin to install ( version > v5.5.1 ):
 
+    `./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v5.5.1/elasticsearch-analysis-ik-5.5.1.zip`
 
 2.restart elasticsearch
 
-
-Tips:
-
-ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合；
-
-ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”。
 
 
 #### Quick Example
@@ -56,25 +56,14 @@ curl -XPUT http://localhost:9200/index
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 {
-    "fulltext": {
-             "_all": {
-            "analyzer": "ik_max_word",
-            "search_analyzer": "ik_max_word",
-            "term_vector": "no",
-            "store": "false"
-        },
         "properties": {
             "content": {
-                "type": "string",
-                "store": "no",
-                "term_vector": "with_positions_offsets",
+                "type": "text",
                 "analyzer": "ik_max_word",
-                "search_analyzer": "ik_max_word",
-                "include_in_all": "true",
-                "boost": 8
+                "search_analyzer": "ik_max_word"
             }
         }
-    }
+    
 }'
 ```
 
@@ -109,7 +98,7 @@ curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 ```bash
 curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
 {
-    "query" : { "term" : { "content" : "中国" }},
+    "query" : { "match" : { "content" : "中国" }},
     "highlight" : {
         "pre_tags" : ["<tag1>", "<tag2>"],
         "post_tags" : ["</tag1>", "</tag2>"],
@@ -226,6 +215,7 @@ have fun.
 ```bash
 git clone https://github.com/medcl/elasticsearch-analysis-ik
 cd elasticsearch-analysis-ik
+git checkout tags/{version}
 mvn clean
 mvn compile
 mvn package
@@ -237,6 +227,20 @@ mvn package
 3.分词测试失败
 请在某个索引下调用analyze接口测试,而不是直接调用analyze接口
 如:http://localhost:9200/your_index/_analyze?text=中华人民共和国MN&tokenizer=my_ik
+
+
+4. ik_max_word 和 ik_smart 什么区别?
+
+
+ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合；
+
+ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”。
+
+Changes
+------
+*5.0.0*
+
+- 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
 
 
 Thanks
