@@ -32,7 +32,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.Files;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -173,6 +177,30 @@ public class Dictionary {
 		return singleton;
 	}
 
+	private List<String> walkFileTree(List<String> files, Path path) {
+		if (Files.isRegularFile(path)) {
+			files.add(path.toString());
+		} else if (Files.isDirectory(path)) try {
+			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+					files.add(file.toString());
+					return FileVisitResult.CONTINUE;
+				}
+				@Override
+				public FileVisitResult visitFileFailed(Path file, IOException e) {
+					logger.error("[Ext Loading] listing files", e);
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			logger.error("[Ext Loading] listing files", e);
+		} else {
+			logger.warn("[Ext Loading] file not found: " + path);
+		}
+		return files;
+	}
+
 	public List<String> getExtDictionarys() {
 		List<String> extDictFiles = new ArrayList<String>(2);
 		String extDictCfg = getProperty(EXT_DICT);
@@ -181,8 +209,8 @@ public class Dictionary {
 			String[] filePaths = extDictCfg.split(";");
 			for (String filePath : filePaths) {
 				if (filePath != null && !"".equals(filePath.trim())) {
-					Path file = PathUtils.get(filePath.trim());
-					extDictFiles.add(file.toString());
+					Path file = PathUtils.get(getDictRoot(), filePath.trim());
+					walkFileTree(extDictFiles, file);
 
 				}
 			}
@@ -214,8 +242,8 @@ public class Dictionary {
 			String[] filePaths = extStopWordDictCfg.split(";");
 			for (String filePath : filePaths) {
 				if (filePath != null && !"".equals(filePath.trim())) {
-					Path file = PathUtils.get(filePath.trim());
-					extStopWordDictFiles.add(file.toString());
+					Path file = PathUtils.get(getDictRoot(), filePath.trim());
+					walkFileTree(extStopWordDictFiles, file);
 
 				}
 			}
@@ -391,7 +419,7 @@ public class Dictionary {
 			for (String extDictName : extDictFiles) {
 				// 读取扩展词典文件
 				logger.info("[Dict Loading] " + extDictName);
-				Path file = PathUtils.get(getDictRoot(), extDictName);
+				Path file = PathUtils.get(extDictName);
 				try {
 					is = new FileInputStream(file.toFile());
 				} catch (FileNotFoundException e) {
@@ -545,7 +573,7 @@ public class Dictionary {
 				logger.info("[Dict Loading] " + extStopWordDictName);
 
 				// 读取扩展词典文件
-				file = PathUtils.get(getDictRoot(), extStopWordDictName);
+				file = PathUtils.get(extStopWordDictName);
 				try {
 					is = new FileInputStream(file.toFile());
 				} catch (FileNotFoundException e) {
