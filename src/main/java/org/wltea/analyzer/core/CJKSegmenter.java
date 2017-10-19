@@ -73,8 +73,13 @@ class CJKSegmenter implements ISegmenter {
 						this.tmpHits.remove(hit);
 					}					
 				}
-			}			
-			
+			}
+
+			if (CharacterUtil.CHAR_CHINESE == context.getCurrentCharType()) {
+				Lexeme newLexeme = new Lexeme(context.getBufferOffset() , context.getCursor() , 1 , Lexeme.TYPE_CNCHAR);
+				context.addLexeme(newLexeme);
+			}
+
 			//*********************************
 			//再对当前指针位置的字符进行单字匹配
 			Hit singleCharHit = Dictionary.getSingleton().matchInMainDict(context.getSegmentBuff(), context.getCursor(), 1);
