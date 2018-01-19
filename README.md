@@ -11,6 +11,7 @@ Versions
 IK version | ES version
 -----------|-----------
 master | 5.x -> master
+5.6.5 | 5.6.5
 5.6.4| 5.6.4
 5.5.3| 5.5.3
 5.4.3| 5.4.3
