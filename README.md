@@ -57,7 +57,7 @@ curl -XPUT http://localhost:9200/index
 2.create a mapping
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
+curl -XPOST http://localhost:9200/index/fulltext/_mapping -H 'Content-Type:application/json' -d'
 {
         "properties": {
             "content": {
@@ -73,25 +73,25 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 3.index some docs
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/1 -d'
+curl -XPOST http://localhost:9200/index/fulltext/1 -H 'Content-Type:application/json' -d'
 {"content":"美国留给伊拉克的是个烂摊子吗"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/2 -d'
+curl -XPOST http://localhost:9200/index/fulltext/2 -H 'Content-Type:application/json' -d'
 {"content":"公安部：各地校车将享最高路权"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/3 -d'
+curl -XPOST http://localhost:9200/index/fulltext/3 -H 'Content-Type:application/json' -d'
 {"content":"中韩渔警冲突调查：韩警平均每天扣1艘中国渔船"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/4 -d'
+curl -XPOST http://localhost:9200/index/fulltext/4 -H 'Content-Type:application/json' -d'
 {"content":"中国驻洛杉矶领事馆遭亚裔男子枪击 嫌犯已自首"}
 '
 ```
@@ -99,7 +99,7 @@ curl -XPOST http://localhost:9200/index/fulltext/4 -d'
 4.query with highlighting
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/_search  -d'
+curl -XPOST http://localhost:9200/index/fulltext/_search  -H 'Content-Type:application/json' -d'
 {
     "query" : { "match" : { "content" : "中国" }},
     "highlight" : {
@@ -229,7 +229,13 @@ mvn package
 
 3.分词测试失败
 请在某个索引下调用analyze接口测试,而不是直接调用analyze接口
-如:http://localhost:9200/your_index/_analyze?text=中华人民共和国MN&tokenizer=my_ik
+如:
+```bash
+curl -XGET "http://localhost:9200/your_index/_analyze" -H 'Content-Type: application/json' -d'
+{
+   "text":"中华人民共和国MN","tokenizer": "my_ik"
+}'
+```
 
 
 4. ik_max_word 和 ik_smart 什么区别?
