@@ -3,11 +3,15 @@
 <properties>
 	<comment>IK Analyzer 扩展配置</comment>
 	<!--用户可以在这里配置自己的扩展字典 -->
-	<entry key="ext_dict"></entry>
-	 <!--用户可以在这里配置自己的扩展停止词字典-->
-	<entry key="ext_stopwords"></entry>
+	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic;remote.dic</entry>
+	<!--用户可以在这里配置自己的扩展停止词字典-->
+	<entry key="ext_stopwords">custom/ext_stopword.dic</entry>
 	<!--用户可以在这里配置远程扩展字典 -->
 	<!-- <entry key="remote_ext_dict">words_location</entry> -->
 	<!--用户可以在这里配置远程扩展停止词字典-->
 	<!-- <entry key="remote_ext_stopwords">words_location</entry> -->
+	<!--用户可以在这里配置是否把远程扩展字典的内容备份到自己的扩展字典中，默认为false，如果要启用则设置为true
+	注意：如果设置为true，需要修改jre的java.policy文件，给remote.dic加上write权限，具体操作参照该网址
+	http://www.cnblogs.com/yiwangzhibujian/p/6207212.html-->
+	<entry key="rebase_remote_ext_dict">false</entry>
 </properties>
