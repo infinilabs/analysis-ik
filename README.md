@@ -11,6 +11,7 @@ Versions
 IK version | ES version
 -----------|-----------
 master | 6.x -> master
+6.2.2| 6.2.2
 6.2.1| 6.2.1
 6.1.3| 6.1.3
 5.6.4| 5.6.4
@@ -40,7 +41,7 @@ Install
 
 * optional 2 - use elasticsearch-plugin to install ( version > v5.5.1 ):
 
-    `./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.2.1/elasticsearch-analysis-ik-6.2.1.zip`
+    `./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.2.2/elasticsearch-analysis-ik-6.2.2.zip`
 
 2.restart elasticsearch
 
