@@ -38,9 +38,13 @@ Install
     
     unzip plugin to folder `your-es-root/plugins/`
 
-* optional 2 - use elasticsearch-plugin to install ( version > v5.5.1 ):
+* optional 2 - use elasticsearch-plugin to install ( supported from version v5.5.1 ):
 
-    `./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.2.3/elasticsearch-analysis-ik-6.2.3.zip`
+    ```
+    ./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.2.3/elasticsearch-analysis-ik-6.2.3.zip
+    ```
+
+   NOTE: replace `6.2.3` to your own elasticsearch version
 
 2.restart elasticsearch
 
