@@ -12,7 +12,7 @@
     <inceptionYear>2011</inceptionYear>
 
     <properties>
-        <elasticsearch.version>6.2.3</elasticsearch.version>
+        <elasticsearch.version>6.2.4</elasticsearch.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
         <elasticsearch.plugin.name>analysis-ik</elasticsearch.plugin.name>
@@ -21,7 +21,7 @@
         <tests.rest.load_packaged>false</tests.rest.load_packaged>
         <skip.unit.tests>true</skip.unit.tests>
         <gpg.keyname>4E899B30</gpg.keyname>
-        <gpg.useagent>true</gpg.useagent> 
+        <gpg.useagent>true</gpg.useagent>
     </properties>
 
     <licenses>
