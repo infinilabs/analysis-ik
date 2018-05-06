@@ -16,4 +16,5 @@ deploy:
   on:
     repo: medcl/elasticsearch-analysis-ik
     tags: true
+    all_branches: true
 group: deprecated-2017Q4
