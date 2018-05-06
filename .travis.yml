@@ -9,6 +9,7 @@ language: java
 script: mvn clean package
 deploy:
   provider: releases
+  skip_cleanup: true
   api_key:
     secure: llxJZlRYBIWINl5XI42RpEe+jTxlmSP6MX+oTNZa4oFjEeN9Kdd1G8+S3HSIhCc31RoF/2zeNsM9OehRi1O6bweNSQ9vjlKZQPD8FYcHaHpYW0U7h/OMbEeC794fAghm9ZsmOTNymdvbAXL14nJTrwOW9W8VqoZT9Jx7Ejad63Y=
   file: target/releases/elasticsearch-analysis-ik-*.zip
@@ -16,5 +17,5 @@ deploy:
   on:
     repo: medcl/elasticsearch-analysis-ik
     tags: true
-    all_branches: true
+    branch: master
 group: deprecated-2017Q4
