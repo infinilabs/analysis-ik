@@ -8,20 +8,20 @@
     <fileSets>
         <fileSet>
         <directory>${project.basedir}/config</directory>
-            <outputDirectory>elasticsearch/config</outputDirectory>
+            <outputDirectory>config</outputDirectory>
         </fileSet>
     </fileSets>
 
     <files>
         <file>
             <source>${project.basedir}/src/main/resources/plugin-descriptor.properties</source>
-            <outputDirectory>elasticsearch</outputDirectory>
+            <outputDirectory/>
             <filtered>true</filtered>
         </file>
     </files>
     <dependencySets>
         <dependencySet>
-            <outputDirectory>elasticsearch</outputDirectory>
+            <outputDirectory/>
             <useProjectArtifact>true</useProjectArtifact>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
@@ -29,7 +29,7 @@
             </excludes>
         </dependencySet>
         <dependencySet>
-            <outputDirectory>elasticsearch</outputDirectory>
+            <outputDirectory/>
             <useProjectArtifact>true</useProjectArtifact>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <includes>
