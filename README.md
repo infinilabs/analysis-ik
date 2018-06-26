@@ -37,7 +37,9 @@ Install
 
 * optional 1 - download pre-build package from here: https://github.com/medcl/elasticsearch-analysis-ik/releases
 
-    unzip plugin to folder `your-es-root/plugins/`
+    create plugin folder `cd your-es-root/plugins/ && mkdir ik`
+    
+    unzip plugin to folder `your-es-root/plugins/ik`
 
 * optional 2 - use elasticsearch-plugin to install ( supported from version v5.5.1 ):
 
