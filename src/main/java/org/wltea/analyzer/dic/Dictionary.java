@@ -36,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,6 +49,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
@@ -439,10 +442,17 @@ public class Dictionary {
 
 	}
 
+	private static List<String> getRemoteWords(String location) {
+		SpecialPermission.check();
+		return AccessController.doPrivileged((PrivilegedAction<List<String>>) () -> {
+			return getRemoteWordsUnprivileged(location);
+		});
+	}
+
 	/**
 	 * 从远程服务器上下载自定义词条
 	 */
-	private static List<String> getRemoteWords(String location) {
+	private static List<String> getRemoteWordsUnprivileged(String location) {
 
 		List<String> buffer = new ArrayList<String>();
 		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
