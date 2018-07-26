@@ -1,6 +1,8 @@
 package org.wltea.analyzer.dic;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -8,6 +10,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 
 public class Monitor implements Runnable {
@@ -34,6 +37,15 @@ public class Monitor implements Runnable {
 		this.last_modified = null;
 		this.eTags = null;
 	}
+
+	public void run() {
+		SpecialPermission.check();
+		AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+			this.runUnprivileged();
+			return null;
+		});
+	}
+
 	/**
 	 * 监控流程：
 	 *  ①向词库服务器发送Head请求
@@ -43,7 +55,7 @@ public class Monitor implements Runnable {
 	 *  ⑤休眠1min，返回第①步
 	 */
 
-	public void run() {
+	public void runUnprivileged() {
 
 		//超时设置
 		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10*1000)
