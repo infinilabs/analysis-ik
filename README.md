@@ -47,7 +47,7 @@ Install
     ./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.3.0/elasticsearch-analysis-ik-6.3.0.zip
     ```
 
-   NOTE: replace `6.2.3` to your own elasticsearch version
+   NOTE: replace `6.3.0` to your own elasticsearch version
 
 2.restart elasticsearch
 
