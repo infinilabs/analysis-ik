@@ -92,8 +92,10 @@ public class Dictionary {
 	private final static  String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private final static  String EXT_DICT = "ext_dict";
 	private final static  String REMOTE_EXT_DICT = "remote_ext_dict";
+	private final static String REMOTE_OSS_EXT_DICT = "remote_oss_ext_dict";
 	private final static  String EXT_STOP = "ext_stopwords";
 	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
+	private final static String REMOTE_OSS_EXT_STOP = "remote_oss_ext_stop";
 
 	private Path conf_dir;
 	private Properties props;
