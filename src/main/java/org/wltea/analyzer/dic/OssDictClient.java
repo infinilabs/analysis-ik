@@ -1,10 +1,12 @@
 package org.wltea.analyzer.dic;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.List;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -15,12 +17,13 @@ import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.common.logging.Loggers;
-import static java.lang.Thread.sleep;
+
 
 
 public class OssDictClient {
@@ -35,10 +38,9 @@ public class OssDictClient {
     private final String SECURITY_TOKEN = "SecurityToken";
     private final int REFRESH_RETRY_COUNT = 3;
     private boolean isStsOssClient;
-    private ReadWriteLock readWriteLock;
 
-    private final String ECS_RAM_ROLE_KEY = "ecsRamRole";
-    private final String ENDPOINT_KEY = "endpoint";
+    private final String ECS_RAM_ROLE_KEY = "ecs_ram_role";
+    private final String ENDPOINT_KEY = "oss_endpoint";
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
     private final String EXPIRATION = "Expiration";
@@ -54,7 +56,6 @@ public class OssDictClient {
 
     private OssDictClient() {
         this.isStsOssClient = true;
-        this.readWriteLock = new ReentrantReadWriteLock();
         try {
             this.client = createClient();
         } catch (ClientCreateException e) {
@@ -62,162 +63,12 @@ public class OssDictClient {
         }
     }
 
-    public boolean isStsOssClient() {
-        return isStsOssClient;
-    }
-
-    public DeleteObjectsResult deleteObjects(DeleteObjectsRequest deleteObjectsRequest)
-            throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.deleteObjects(deleteObjectsRequest);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client.deleteObjects(deleteObjectsRequest);
-        }
-    }
-
-
-    public boolean doesObjectExist(String bucketName, String key)
-            throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.doesObjectExist(bucketName, key);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client.doesObjectExist(bucketName, key);
-        }
-    }
-
-    public boolean doesBucketExist(String bucketName)
-            throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.doesBucketExist(bucketName);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client.doesBucketExist(bucketName);
-        }
-    }
-
-
-    public ObjectListing listObjects(ListObjectsRequest listObjectsRequest)
-            throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.listObjects(listObjectsRequest);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client.listObjects(listObjectsRequest);
-        }
-    }
-
-
-    public OSSObject getObject(String bucketName, String key)
-            throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.getObject(bucketName, key);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client.getObject(bucketName, key);
-        }
-    }
-
-
-    public PutObjectResult putObject(String bucketName, String key, InputStream input,
-                                     ObjectMetadata metadata) throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.putObject(bucketName, key, input, metadata);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client.putObject(bucketName, key, input, metadata);
-        }
-    }
-
-
-    public void deleteObject(String bucketName, String key)
-            throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                this.client.deleteObject(bucketName, key);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            this.client.deleteObject(bucketName, key);
-        }
-
-    }
-
-
-    public CopyObjectResult copyObject(String sourceBucketName, String sourceKey,
-                                       String destinationBucketName, String destinationKey) throws OSSException, ClientException {
-
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client
-                        .copyObject(sourceBucketName, sourceKey, destinationBucketName, destinationKey);
-            } finally {
-                readWriteLock.readLock().unlock();
-            }
-        } else {
-            return this.client
-                    .copyObject(sourceBucketName, sourceKey, destinationBucketName, destinationKey);
-        }
-    }
-
-    public void refreshStsOssClient() throws ClientCreateException {
-        int retryCount = 0;
-        while (isStsTokenExpired() || isTokenWillExpired()) {
-            retryCount++;
-            if (retryCount > REFRESH_RETRY_COUNT) {
-                logger.error("Can't get valid token after retry {} times", REFRESH_RETRY_COUNT);
-                throw new ClientCreateException("Can't get valid token after retry " + REFRESH_RETRY_COUNT + " times");
-            }
-            this.client = createStsOssClient();
-            try {
-                if (isStsTokenExpired() || isTokenWillExpired()) {
-                    sleep(IN_TOKEN_EXPIRED_MS * 2);
-                }
-            } catch (InterruptedException e) {
-                logger.error("refresh sleep exception", e);
-                throw new ClientCreateException(e);
-            }
-        }
-    }
-
     public void shutdown() {
         if (isStsOssClient) {
-            readWriteLock.writeLock().lock();
-            try {
-                if (null != this.client) {
-                    this.client.shutdown();
-                }
-            } finally {
-                readWriteLock.writeLock().unlock();
+            if (null != this.client) {
+                this.client.shutdown();
             }
+
         } else {
             if (null != this.client) {
                 this.client.shutdown();
@@ -258,16 +109,26 @@ public class OssDictClient {
             String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
 
             String fullECSMetaDataServiceUrl = ECS_METADATA_SERVICE + ecsRamRole;
-            RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10*1000)
-                .setConnectTimeout(10*1000).setSocketTimeout(15*1000).build();
-            HttpHead head = new HttpHead(fullECSMetaDataServiceUrl);
-            head.setConfig(rc);
+            RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
+                .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
+            HttpGet httpGet = new HttpGet(fullECSMetaDataServiceUrl);
+            httpGet.setConfig(rc);
             CloseableHttpResponse response = null;
 
             try {
-                response = httpclient.execute(head);
+                logger.info(String.format("ram role url is %s" , fullECSMetaDataServiceUrl));
+                response = httpclient.execute(httpGet);
                 if(response.getStatusLine().getStatusCode() == 200) {
-                    String jsonStringResponse = response.getEntity().getContentType().getValue();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        response.getEntity().getContent()));
+                    String inputLine;
+                    StringBuffer responseText = new StringBuffer();
+                    while ((inputLine = reader.readLine()) != null) {
+                        responseText.append(inputLine);
+                    }
+                    reader.close();
+                    String jsonStringResponse = responseText.toString();
+                    logger.info(String.format("response is %s" , jsonStringResponse));
                     JSONObject jsonObjectResponse = JSON.parseObject(jsonStringResponse);
                     String accessKeyId = jsonObjectResponse.getString(ACCESS_KEY_ID);
                     String accessKeySecret = jsonObjectResponse.getString(ACCESS_KEY_SECRET);
@@ -294,19 +155,56 @@ public class OssDictClient {
         }
     }
 
+    public ObjectMetadata getDictsMetaData(String endpoint) throws OSSException, ClientException {
+        return this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint));
+    }
 
-    //TODO
-    public OSSObject getDictsObject()
-        throws OSSException, ClientException {
-        if (isStsOssClient) {
-            readWriteLock.readLock().lock();
-            try {
-                return this.client.getObject("", "");
-            } finally {
-                readWriteLock.readLock().unlock();
+
+    public List<String> getDictsObjectContent(String endpoint) throws OSSException, ClientException {
+        return convertInputStreamToListString(this.client.getObject(getBucketName(endpoint), getPrefixKey(endpoint)).getObjectContent());
+    }
+
+
+    private List<String> convertInputStreamToListString(InputStream inputStream) {
+        BufferedReader bufferedReader = null;
+        try {
+            List<String> resultList = new ArrayList<>();
+            bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            String line = "";
+            while((line = bufferedReader.readLine()) != null) {
+                if (line.trim().startsWith("#")) {
+                    continue;
+                }
+                resultList.add(line);
             }
-        } else {
-            return this.client.getObject("", "");
+            return resultList;
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
         }
     }
+
+    private String getBucketName(String endpoint) {
+        if (Strings.isBlank(endpoint) || endpoint.length() < 8) {
+            return null;
+        }
+        int bucketNameIndex = endpoint.indexOf("/", 6);
+        return endpoint.substring(6, bucketNameIndex);
+    }
+
+    private String getPrefixKey(String endpoint) {
+        if (Strings.isBlank(endpoint) || endpoint.length() < 8) {
+            return null;
+        }
+        int bucketNameIndex = endpoint.indexOf("/", 6);
+        return endpoint.substring(bucketNameIndex + 1);
+    }
+
 }

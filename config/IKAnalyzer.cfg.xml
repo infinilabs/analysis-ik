@@ -10,4 +10,11 @@
 	<!-- <entry key="remote_ext_dict">words_location</entry> -->
 	<!--用户可以在这里配置远程扩展停止词字典-->
 	<!-- <entry key="remote_ext_stopwords">words_location</entry> -->
+
+	<!--用户可以在这里配置远程扩展字典 -->
+	<!-- <entry key="remote_oss_ext_dict">oss://endpoint/ik-main.dic</entry> -->
+	<!--用户可以在这里配置远程扩展停止词字典-->
+	<!-- <entry key="remote_oss_ext_stopwords">oss://endpoint/ik-stop.dic</entry> -->
+	<!--用户oss角色名称-->
+	<!-- <entry key="ecs_ram_role">RAMRoleName</entry> -->
 </properties>

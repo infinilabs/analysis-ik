@@ -1,7 +1,11 @@
 package org.wltea.analyzer.dic;
 
 
-import com.aliyun.oss.model.OSSObject;
+import java.util.Date;
+
+import com.aliyun.oss.ClientException;
+import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.ObjectMetadata;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 
@@ -12,14 +16,20 @@ public class OSSMonitor implements Runnable {
 	/**
 	 * 上次更改时间
 	 */
-	private String last_modified;
+	private Date last_modified;
 	/**
 	 * 资源属性
 	 */
 	private String eTags;
 
+	/**
+	 *
+	 */
+	private String endpoint;
 
-	public OSSMonitor() {
+
+	public OSSMonitor(String endpoint) {
+		this.endpoint = endpoint;
 		this.last_modified = null;
 		this.eTags = null;
 	}
@@ -33,11 +43,24 @@ public class OSSMonitor implements Runnable {
 
 	@Override
 	public void run() {
+		OssDictClient ossDictClient = OssDictClient.getInstance();
+		try {
+			ObjectMetadata objectMetadata = ossDictClient.getDictsMetaData(this.endpoint);
+			if (!objectMetadata.getETag().equalsIgnoreCase(eTags) || !objectMetadata.getLastModified().equals(last_modified)) {
+				eTags = objectMetadata.getETag();
+				last_modified = objectMetadata.getLastModified();
+				//reload dict
+				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
+				Dictionary.getSingleton().reLoadMainDict();
+			}
 
-	    OssDictClient ossDictClient = OssDictClient.getInstance();
-	    //TODO 需要判断词典文件是否存在
-	    OSSObject ossObject = ossDictClient.getDictsObject();
-
+		} catch (OSSException e) {
+			if (!e.getErrorCode().equals("404")) {
+				logger.error("get dict from oss failed!", e);
+			}
+		} catch (ClientException e) {
+			logger.error("oss client exception !", e);
+		}
 	}
 
 }

@@ -38,6 +38,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.aliyun.oss.model.OSSObject;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -380,6 +381,9 @@ public class Dictionary {
 		this.loadExtDict();
 		// 加载远程自定义词库
 		this.loadRemoteExtDict();
+
+		// 加载远程OSS自定义词典
+		this.loadRemoteOssExtDict();
 	}
 
 	/**
@@ -450,6 +454,39 @@ public class Dictionary {
 					logger.info(theWord);
 					_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
 				}
+			}
+		}
+
+	}
+
+	/**
+	 * 加载远程OSS扩展词典到主词库表
+     */
+	private void loadRemoteOssExtDict() {
+	    logger.info("[oss dict loading]");
+	    List<String> lists = OssDictClient.getInstance().getDictsObjectContent(props.getProperty(REMOTE_OSS_EXT_DICT));
+		for (String theWord : lists) {
+		    if (theWord != null && !"".equals(theWord.trim())) {
+		        // 加载扩展词典数据到主内存词典中
+				logger.info(theWord);
+				_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+			}
+		}
+
+	}
+
+
+	/**
+	 * 加载远程OSS扩展词典到主词库表
+	 */
+	private void loadRemoteStopOssExtDict() {
+		logger.info("[oss stop dict loading]");
+		List<String> lists = OssDictClient.getInstance().getDictsObjectContent(props.getProperty(REMOTE_OSS_EXT_STOP));
+		for (String theWord : lists) {
+			if (theWord != null && !"".equals(theWord.trim())) {
+				// 加载扩展词典数据到主内存词典中
+				logger.info(theWord);
+				_StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
 			}
 		}
 
@@ -602,6 +639,9 @@ public class Dictionary {
 				}
 			}
 		}
+
+		//加载远程OSS停用词典
+		this.loadRemoteStopOssExtDict();
 
 	}
 
