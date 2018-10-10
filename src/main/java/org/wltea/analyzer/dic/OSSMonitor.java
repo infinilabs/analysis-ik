@@ -1,6 +1,7 @@
 package org.wltea.analyzer.dic;
 
 
+import java.io.IOException;
 import java.util.Date;
 
 import com.aliyun.oss.ClientException;
@@ -46,19 +47,19 @@ public class OSSMonitor implements Runnable {
 		OssDictClient ossDictClient = OssDictClient.getInstance();
 		try {
 			ObjectMetadata objectMetadata = ossDictClient.getDictsMetaData(this.endpoint);
-			if (!objectMetadata.getETag().equalsIgnoreCase(eTags) || !objectMetadata.getLastModified().equals(last_modified)) {
+			if (objectMetadata != null
+				&& (!objectMetadata.getETag().equalsIgnoreCase(eTags) || !objectMetadata.getLastModified().equals(last_modified))) {
 				eTags = objectMetadata.getETag();
 				last_modified = objectMetadata.getLastModified();
 				//reload dict
 				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 				Dictionary.getSingleton().reLoadMainDict();
 			}
-
 		} catch (OSSException e) {
 			if (!e.getErrorCode().equals("404")) {
 				logger.error("get dict from oss failed!", e);
 			}
-		} catch (ClientException e) {
+		} catch (ClientException | IOException e) {
 			logger.error("oss client exception !", e);
 		}
 	}

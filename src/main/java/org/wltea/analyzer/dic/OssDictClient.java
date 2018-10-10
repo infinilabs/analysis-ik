@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -23,8 +24,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.common.logging.Loggers;
-
-
+import org.wltea.analyzer.util.PermissionHelper;
 
 public class OssDictClient {
     private final Logger logger = Loggers.getLogger(OssDictClient.class);
@@ -107,8 +107,12 @@ public class OssDictClient {
 
             String ecsRamRole = Dictionary.getSingleton().getProperty(ECS_RAM_ROLE_KEY);
             String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
-
+            if (Strings.isBlank(ecsRamRole) || Strings.isBlank(endpoint)) {
+                logger.warn(String.format("ecsRamRole or ossEndpoint is null, the ecsRamRole is %s and the ossEndpoint is %s", ecsRamRole, endpoint));
+                return null;
+            }
             String fullECSMetaDataServiceUrl = ECS_METADATA_SERVICE + ecsRamRole;
+
             RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
                 .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
             HttpGet httpGet = new HttpGet(fullECSMetaDataServiceUrl);
@@ -155,13 +159,24 @@ public class OssDictClient {
         }
     }
 
-    public ObjectMetadata getDictsMetaData(String endpoint) throws OSSException, ClientException {
-        return this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint));
+    public ObjectMetadata getDictsMetaData(String endpoint) throws OSSException, ClientException, IOException {
+        if (client == null) {
+            logger.error(String.format("the oss client is null, maybe is not init!"));
+            return null;
+        }
+        return PermissionHelper.doPrivileged(() -> this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint)));
     }
 
 
-    public List<String> getDictsObjectContent(String endpoint) throws OSSException, ClientException {
-        return convertInputStreamToListString(this.client.getObject(getBucketName(endpoint), getPrefixKey(endpoint)).getObjectContent());
+    public List<String> getDictsObjectContent(String endpoint) throws OSSException, ClientException, IOException {
+        if (client == null) {
+            logger.error(String.format("the oss client is null, maybe is not init!"));
+            return Collections.emptyList();
+        }
+        String bucketName = getBucketName(endpoint);
+        String prefixKey = getPrefixKey(endpoint);
+        logger.error(String.format("the oss bucketName is %s, prefixKey is %s", bucketName, prefixKey));
+        return convertInputStreamToListString(PermissionHelper.doPrivileged(() -> this.client.getObject(bucketName, prefixKey).getObjectContent()));
     }
 
 

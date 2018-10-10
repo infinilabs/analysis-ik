@@ -17,4 +17,6 @@
 	<!-- <entry key="remote_oss_ext_stopwords">oss://endpoint/ik-stop.dic</entry> -->
 	<!--用户oss角色名称-->
 	<!-- <entry key="ecs_ram_role">RAMRoleName</entry> -->
+	<!--用户oss endpoint-->
+	<!-- <entry key="oss_endpoint">http://oss-xxxxxx.aliyuncs.com</entry> -->
 </properties>

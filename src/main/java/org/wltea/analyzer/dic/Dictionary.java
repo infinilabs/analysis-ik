@@ -45,6 +45,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
@@ -463,16 +464,22 @@ public class Dictionary {
 	 * 加载远程OSS扩展词典到主词库表
      */
 	private void loadRemoteOssExtDict() {
-	    logger.info("[oss dict loading]");
-	    List<String> lists = OssDictClient.getInstance().getDictsObjectContent(props.getProperty(REMOTE_OSS_EXT_DICT));
-		for (String theWord : lists) {
-		    if (theWord != null && !"".equals(theWord.trim())) {
-		        // 加载扩展词典数据到主内存词典中
-				logger.info(theWord);
-				_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+	    String remoteOssExtDict = props.getProperty(REMOTE_OSS_EXT_DICT);
+	    if (Strings.isNotBlank(remoteOssExtDict)) {
+            logger.info("[oss dict loading]");
+			try {
+				List<String> lists = OssDictClient.getInstance().getDictsObjectContent(remoteOssExtDict);
+				for (String theWord : lists) {
+					if (theWord != null && !"".equals(theWord.trim())) {
+						// 加载扩展词典数据到主内存词典中
+						logger.info(theWord);
+						_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+					}
+				}
+			} catch (IOException e) {
+				logger.error("[oss loading main dict error!]", e);
 			}
-		}
-
+	    }
 	}
 
 
@@ -480,16 +487,23 @@ public class Dictionary {
 	 * 加载远程OSS扩展词典到主词库表
 	 */
 	private void loadRemoteStopOssExtDict() {
-		logger.info("[oss stop dict loading]");
-		List<String> lists = OssDictClient.getInstance().getDictsObjectContent(props.getProperty(REMOTE_OSS_EXT_STOP));
-		for (String theWord : lists) {
-			if (theWord != null && !"".equals(theWord.trim())) {
-				// 加载扩展词典数据到主内存词典中
-				logger.info(theWord);
-				_StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+	    String remoteOssExtStop = props.getProperty(REMOTE_OSS_EXT_STOP);
+	    if (Strings.isNotBlank(remoteOssExtStop)) {
+            logger.info("[oss stop dict loading]");
+			try {
+				List<String> lists = OssDictClient.getInstance().getDictsObjectContent(remoteOssExtStop);
+				for (String theWord : lists) {
+					if (theWord != null && !"".equals(theWord.trim())) {
+						// 加载扩展词典数据到主内存词典中
+						logger.info(theWord);
+						_StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+					}
+				}
+			} catch (IOException e) {
+				logger.error("[oss loading stop dict error!]", e);
 			}
-		}
 
+        }
 	}
 
 	/**
