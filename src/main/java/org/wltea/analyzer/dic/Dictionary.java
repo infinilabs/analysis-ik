@@ -168,6 +168,9 @@ public class Dictionary {
 						for (String location : singleton.getRemoteExtStopWordDictionarys()) {
 							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
 						}
+
+						pool.scheduleAtFixedRate(new OSSMonitor(singleton.getRemoteOSSExtDictionarys()), 10, 60, TimeUnit.SECONDS);
+						pool.scheduleAtFixedRate(new OSSMonitor(singleton.getRemoteOSSExtStopWordDictionarys()), 10, 60, TimeUnit.SECONDS);
 					}
 
 					return singleton;
@@ -225,6 +228,14 @@ public class Dictionary {
 			}
 		}
 		return extStopWordDictFiles;
+	}
+
+	public String getRemoteOSSExtDictionarys() {
+		return props.get(REMOTE_OSS_EXT_DICT).toString();
+	}
+
+	public String getRemoteOSSExtStopWordDictionarys() {
+		return props.get(REMOTE_OSS_EXT_DICT).toString();
 	}
 
 	public List<String> getRemoteExtStopWordDictionarys() {
