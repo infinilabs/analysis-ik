@@ -95,7 +95,7 @@ public class Dictionary {
 	private final static String REMOTE_OSS_EXT_DICT = "remote_oss_ext_dict";
 	private final static  String EXT_STOP = "ext_stopwords";
 	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
-	private final static String REMOTE_OSS_EXT_STOP = "remote_oss_ext_stop";
+	private final static String REMOTE_OSS_EXT_STOP = "remote_oss_ext_stopwords";
 
 	private Path conf_dir;
 	private Properties props;
@@ -233,7 +233,7 @@ public class Dictionary {
 	}
 
 	public String getRemoteOSSExtStopWordDictionarys() {
-		return props.get(REMOTE_OSS_EXT_DICT).toString();
+		return props.get(REMOTE_OSS_EXT_STOP).toString();
 	}
 
 	public List<String> getRemoteExtStopWordDictionarys() {

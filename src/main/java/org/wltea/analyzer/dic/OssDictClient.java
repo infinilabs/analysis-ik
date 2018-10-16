@@ -24,6 +24,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.common.logging.Loggers;
+import org.wltea.analyzer.util.DateHelper;
 import org.wltea.analyzer.util.PermissionHelper;
 
 /**
@@ -39,8 +40,6 @@ public class OssDictClient {
     private final String ACCESS_KEY_ID = "AccessKeyId";
     private final String ACCESS_KEY_SECRET = "AccessKeySecret";
     private final String SECURITY_TOKEN = "SecurityToken";
-    private final int REFRESH_RETRY_COUNT = 3;
-    private boolean isStsOssClient;
 
     private final String ECS_RAM_ROLE_KEY = "ecs_ram_role";
     private final String ENDPOINT_KEY = "oss_endpoint";
@@ -108,12 +107,13 @@ public class OssDictClient {
             HttpGet httpGet = new HttpGet(fullECSMetaDataServiceUrl);
             httpGet.setConfig(rc);
             CloseableHttpResponse response = null;
+            BufferedReader reader = null;
 
             try {
                 logger.info(String.format("ram role url is %s" , fullECSMetaDataServiceUrl));
                 response = httpclient.execute(httpGet);
                 if(response.getStatusLine().getStatusCode() == 200) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                    reader = new BufferedReader(new InputStreamReader(
                         response.getEntity().getContent()));
                     String inputLine;
                     StringBuffer responseText = new StringBuffer();
@@ -128,6 +128,7 @@ public class OssDictClient {
                     String accessKeySecret = jsonObjectResponse.getString(ACCESS_KEY_SECRET);
                     String securityToken = jsonObjectResponse.getString(SECURITY_TOKEN);
                     this.client = new OSSClient(endpoint, accessKeyId, accessKeySecret, securityToken);
+                    stsTokenExpiration = DateHelper.convertStringToDate(jsonObjectResponse.getString(EXPIRATION));
                 } else {
                     logger.info(String.format("get oss ramRole %s , return bad code %d" , ecsRamRole, response.getStatusLine().getStatusCode()));
                 }
@@ -135,6 +136,14 @@ public class OssDictClient {
             } catch (Exception e) {
                 logger.error("get oss ramRole %s error!", ecsRamRole, e);
             } finally {
+
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    logger.error(e.getMessage(), e);
+                }
                 try {
                     if (response != null) {
                         response.close();
@@ -169,7 +178,7 @@ public class OssDictClient {
         }
         String bucketName = getBucketName(endpoint);
         String prefixKey = getPrefixKey(endpoint);
-        logger.error(String.format("the oss bucketName is %s, prefixKey is %s", bucketName, prefixKey));
+        logger.info(String.format("the oss bucketName is %s, prefixKey is %s", bucketName, prefixKey));
         return convertInputStreamToListString(PermissionHelper.doPrivileged(() -> this.client.getObject(bucketName, prefixKey).getObjectContent()));
     }
 
