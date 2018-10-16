@@ -26,6 +26,9 @@ import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.common.logging.Loggers;
 import org.wltea.analyzer.util.PermissionHelper;
 
+/**
+ * @Author nick.wn
+ */
 public class OssDictClient {
     private final Logger logger = Loggers.getLogger(OssDictClient.class);
 
@@ -55,7 +58,6 @@ public class OssDictClient {
     }
 
     private OssDictClient() {
-        this.isStsOssClient = true;
         try {
             this.client = createClient();
         } catch (ClientCreateException e) {
@@ -64,15 +66,8 @@ public class OssDictClient {
     }
 
     public void shutdown() {
-        if (isStsOssClient) {
-            if (null != this.client) {
-                this.client.shutdown();
-            }
-
-        } else {
-            if (null != this.client) {
-                this.client.shutdown();
-            }
+        if (null != this.client) {
+            this.client.shutdown();
         }
     }
 
@@ -97,14 +92,9 @@ public class OssDictClient {
         return in;
     }
 
-    private OSSClient createClient() throws ClientCreateException {
-        return createStsOssClient();
-    }
-
-
-    private synchronized OSSClient createStsOssClient() throws ClientCreateException {
+    private synchronized OSSClient createClient() throws ClientCreateException {
         if (isStsTokenExpired() || isTokenWillExpired()) {
-
+            shutdown();
             String ecsRamRole = Dictionary.getSingleton().getProperty(ECS_RAM_ROLE_KEY);
             String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
             if (Strings.isBlank(ecsRamRole) || Strings.isBlank(endpoint)) {
@@ -159,7 +149,9 @@ public class OssDictClient {
         }
     }
 
-    public ObjectMetadata getDictsMetaData(String endpoint) throws OSSException, ClientException, IOException {
+    public ObjectMetadata getObjectMetaData(String endpoint) throws OSSException, ClientException, IOException {
+        //防止token过期 更新token
+        createClient();
         if (client == null) {
             logger.error(String.format("the oss client is null, maybe is not init!"));
             return null;
@@ -168,7 +160,9 @@ public class OssDictClient {
     }
 
 
-    public List<String> getDictsObjectContent(String endpoint) throws OSSException, ClientException, IOException {
+    public List<String> getObjectContent(String endpoint) throws OSSException, ClientException, IOException {
+        //防止token过期 更新token
+        createClient();
         if (client == null) {
             logger.error(String.format("the oss client is null, maybe is not init!"));
             return Collections.emptyList();

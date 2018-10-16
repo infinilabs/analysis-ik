@@ -26,7 +26,6 @@
 package org.wltea.analyzer.dic;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -38,7 +37,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import com.aliyun.oss.model.OSSObject;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -479,7 +477,7 @@ public class Dictionary {
 	    if (Strings.isNotBlank(remoteOssExtDict)) {
             logger.info("[oss dict loading]");
 			try {
-				List<String> lists = OssDictClient.getInstance().getDictsObjectContent(remoteOssExtDict);
+				List<String> lists = OssDictClient.getInstance().getObjectContent(remoteOssExtDict);
 				for (String theWord : lists) {
 					if (theWord != null && !"".equals(theWord.trim())) {
 						// 加载扩展词典数据到主内存词典中
@@ -502,7 +500,7 @@ public class Dictionary {
 	    if (Strings.isNotBlank(remoteOssExtStop)) {
             logger.info("[oss stop dict loading]");
 			try {
-				List<String> lists = OssDictClient.getInstance().getDictsObjectContent(remoteOssExtStop);
+				List<String> lists = OssDictClient.getInstance().getObjectContent(remoteOssExtStop);
 				for (String theWord : lists) {
 					if (theWord != null && !"".equals(theWord.trim())) {
 						// 加载扩展词典数据到主内存词典中

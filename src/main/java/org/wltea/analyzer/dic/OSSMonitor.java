@@ -46,7 +46,7 @@ public class OSSMonitor implements Runnable {
 	public void run() {
 		OssDictClient ossDictClient = OssDictClient.getInstance();
 		try {
-			ObjectMetadata objectMetadata = ossDictClient.getDictsMetaData(this.endpoint);
+			ObjectMetadata objectMetadata = ossDictClient.getObjectMetaData(this.endpoint);
 			if (objectMetadata != null
 				&& (!objectMetadata.getETag().equalsIgnoreCase(eTags) || !objectMetadata.getLastModified().equals(last_modified))) {
 				eTags = objectMetadata.getETag();
