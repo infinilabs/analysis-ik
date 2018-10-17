@@ -37,6 +37,7 @@ public class OssDictClient {
     private Date stsTokenExpiration;
     private String ECS_METADATA_SERVICE = "http://100.100.100.200/latest/meta-data/ram/security-credentials/";
     private final int IN_TOKEN_EXPIRED_MS = 5000;
+    private final int HTTP_STATUS_CODE_OK = 200;
     private final String ACCESS_KEY_ID = "AccessKeyId";
     private final String ACCESS_KEY_SECRET = "AccessKeySecret";
     private final String SECURITY_TOKEN = "SecurityToken";
@@ -57,11 +58,7 @@ public class OssDictClient {
     }
 
     private OssDictClient() {
-        try {
-            this.client = createClient();
-        } catch (ClientCreateException e) {
-            logger.error("create oss client failed!", e);
-        }
+        this.client = createClient();
     }
 
     public void shutdown() {
@@ -91,8 +88,8 @@ public class OssDictClient {
         return in;
     }
 
-    private synchronized OSSClient createClient() throws ClientCreateException {
-        if (isStsTokenExpired() || isTokenWillExpired()) {
+    private synchronized OSSClient createClient() {
+        if (this.client == null || isStsTokenExpired() || isTokenWillExpired()) {
             shutdown();
             String ecsRamRole = Dictionary.getSingleton().getProperty(ECS_RAM_ROLE_KEY);
             String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
@@ -112,7 +109,7 @@ public class OssDictClient {
             try {
                 logger.info(String.format("ram role url is %s" , fullECSMetaDataServiceUrl));
                 response = httpclient.execute(httpGet);
-                if(response.getStatusLine().getStatusCode() == 200) {
+                if(response.getStatusLine().getStatusCode() == HTTP_STATUS_CODE_OK) {
                     reader = new BufferedReader(new InputStreamReader(
                         response.getEntity().getContent()));
                     String inputLine;
