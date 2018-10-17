@@ -165,7 +165,12 @@ public class OssDictClient {
             logger.error(String.format("the oss client is null, maybe is not init!"));
             return null;
         }
-        return PermissionHelper.doPrivileged(() -> this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint)));
+        String bucketName = getBucketName(endpoint);
+        String prefixKey = getPrefixKey(endpoint);
+        if (exists(bucketName, prefixKey)) {
+            return PermissionHelper.doPrivileged(() -> this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint)));
+        }
+        return null;
     }
 
 
@@ -179,7 +184,10 @@ public class OssDictClient {
         String bucketName = getBucketName(endpoint);
         String prefixKey = getPrefixKey(endpoint);
         logger.info(String.format("the oss bucketName is %s, prefixKey is %s", bucketName, prefixKey));
-        return convertInputStreamToListString(PermissionHelper.doPrivileged(() -> this.client.getObject(bucketName, prefixKey).getObjectContent()));
+        if (exists(bucketName, prefixKey)) {
+            return convertInputStreamToListString(PermissionHelper.doPrivileged(() -> this.client.getObject(bucketName, prefixKey).getObjectContent()));
+        }
+        return Collections.emptyList();
     }
 
 
@@ -207,6 +215,12 @@ public class OssDictClient {
                 }
             }
         }
+    }
+
+
+
+    private boolean exists(String bucketName, String prefixKey) throws IOException {
+        return PermissionHelper.doPrivileged(() -> this.client.doesObjectExist(bucketName, prefixKey));
     }
 
     private String getBucketName(String endpoint) {
