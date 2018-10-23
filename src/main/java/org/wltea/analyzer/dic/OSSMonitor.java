@@ -17,10 +17,6 @@ public class OSSMonitor implements Runnable {
 	private static final Logger logger = ESLoggerFactory.getLogger(OSSMonitor.class.getName());
 
 	/**
-	 * 上次更改时间
-	 */
-	private Date last_modified;
-	/**
 	 * 资源属性
 	 */
 	private String eTags;
@@ -34,7 +30,6 @@ public class OSSMonitor implements Runnable {
 
 	public OSSMonitor(String endpoint) {
 		this.endpoint = endpoint;
-		this.last_modified = null;
 		this.eTags = null;
 	}
 	/**
@@ -50,14 +45,12 @@ public class OSSMonitor implements Runnable {
 		OssDictClient ossDictClient = OssDictClient.getInstance();
 		try {
 			ObjectMetadata objectMetadata = ossDictClient.getObjectMetaData(this.endpoint);
-			if (objectMetadata != null
-				&& (!objectMetadata.getETag().equalsIgnoreCase(eTags) || !objectMetadata.getLastModified().equals(last_modified))) {
+			if (objectMetadata != null && !objectMetadata.getETag().equalsIgnoreCase(eTags)) {
 				//reload dict
 				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 				Dictionary.getSingleton().reLoadMainDict();
 				eTags = objectMetadata.getETag();
-				last_modified = objectMetadata.getLastModified();
-				logger.info(String.format("endpoint is %s, etags is %s, last_modified is %s", this.endpoint, eTags, last_modified));
+				logger.info(String.format("endpoint is %s, etags is %s", this.endpoint, eTags));
 			}
 			if (objectMetadata != null && Strings.isNotBlank(eTags) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
                 String nodeName = AnalysisIkPlugin.clusterService.localNode().getName();
