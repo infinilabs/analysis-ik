@@ -188,6 +188,25 @@ public class OssDictClient {
     }
 
 
+    public void updateObjectUserMetaInfo(String endpoint, String key, String value) throws OSSException, ClientException, IOException {
+        //防止token过期 更新token
+        createClient();
+        if (client == null) {
+            logger.error(String.format("the oss client is null, maybe is not init!"));
+            return ;
+        }
+        String bucketName = getBucketName(endpoint);
+        String prefixKey = getPrefixKey(endpoint);
+        CopyObjectRequest request = new CopyObjectRequest(bucketName, prefixKey, bucketName, prefixKey);
+        ObjectMetadata meta = new ObjectMetadata();
+        // 设置自定义元信息property值为property-value。
+        meta.addUserMetadata(key, value);
+        request.setNewObjectMetadata(meta);
+        //修改元信息。
+        client.copyObject(request);
+    }
+
+
     private List<String> convertInputStreamToListString(InputStream inputStream) {
         BufferedReader bufferedReader = null;
         try {

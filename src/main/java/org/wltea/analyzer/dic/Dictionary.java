@@ -167,10 +167,13 @@ public class Dictionary {
 							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
 						}
 
-						pool.scheduleAtFixedRate(new OSSMonitor(singleton.getRemoteOSSExtDictionarys()), 10, 60, TimeUnit.SECONDS);
-						pool.scheduleAtFixedRate(new OSSMonitor(singleton.getRemoteOSSExtStopWordDictionarys()), 10, 60, TimeUnit.SECONDS);
+						if (singleton.getRemoteOSSExtDictionarys() != null) {
+							pool.scheduleAtFixedRate(new OSSMonitor(singleton.getRemoteOSSExtDictionarys()), 10, 60, TimeUnit.SECONDS);
+						}
+						if (singleton.getRemoteOSSExtStopWordDictionarys() != null) {
+							pool.scheduleAtFixedRate(new OSSMonitor(singleton.getRemoteOSSExtStopWordDictionarys()), 10, 60, TimeUnit.SECONDS);
+						}
 					}
-
 					return singleton;
 				}
 			}
@@ -229,11 +232,17 @@ public class Dictionary {
 	}
 
 	public String getRemoteOSSExtDictionarys() {
-		return props.get(REMOTE_OSS_EXT_DICT).toString();
+		if (props.get(REMOTE_OSS_EXT_DICT) != null) {
+			return props.get(REMOTE_OSS_EXT_DICT).toString();
+		}
+		return null;
 	}
 
 	public String getRemoteOSSExtStopWordDictionarys() {
-		return props.get(REMOTE_OSS_EXT_STOP).toString();
+		if (props.get(REMOTE_OSS_EXT_STOP) != null) {
+			return props.get(REMOTE_OSS_EXT_STOP).toString();
+		}
+		return null;
 	}
 
 	public List<String> getRemoteExtStopWordDictionarys() {

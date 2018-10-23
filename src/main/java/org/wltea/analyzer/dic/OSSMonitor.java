@@ -8,7 +8,9 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.ObjectMetadata;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.Strings;
 import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
 public class OSSMonitor implements Runnable {
 
@@ -27,6 +29,7 @@ public class OSSMonitor implements Runnable {
 	 *
 	 */
 	private String endpoint;
+
 
 
 	public OSSMonitor(String endpoint) {
@@ -49,12 +52,21 @@ public class OSSMonitor implements Runnable {
 			ObjectMetadata objectMetadata = ossDictClient.getObjectMetaData(this.endpoint);
 			if (objectMetadata != null
 				&& (!objectMetadata.getETag().equalsIgnoreCase(eTags) || !objectMetadata.getLastModified().equals(last_modified))) {
-				eTags = objectMetadata.getETag();
-				last_modified = objectMetadata.getLastModified();
 				//reload dict
 				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 				Dictionary.getSingleton().reLoadMainDict();
+				eTags = objectMetadata.getETag();
+				last_modified = objectMetadata.getLastModified();
+				logger.info(String.format("endpoint is %s, etags is %s, last_modified is %s", this.endpoint, eTags, last_modified));
 			}
+			if (objectMetadata != null && Strings.isNotBlank(eTags) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
+                String nodeName = AnalysisIkPlugin.clusterService.localNode().getName();
+			    if (objectMetadata.getUserMetadata() == null || objectMetadata.getUserMetadata().get(nodeName.toLowerCase()) == null
+                        || !objectMetadata.getUserMetadata().get(nodeName.toLowerCase()).equals(eTags)) {
+                        logger.info(String.format("node name is %s and will upload etags to oss file! The eTags is %s", nodeName, eTags));
+                        ossDictClient.updateObjectUserMetaInfo(this.endpoint, nodeName.toLowerCase(), eTags);
+                }
+            }
 		} catch (OSSException e) {
 			if (!e.getErrorCode().equals("404")) {
 				logger.error("get dict from oss failed!", e);
