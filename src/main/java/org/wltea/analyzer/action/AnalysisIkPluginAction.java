@@ -41,17 +41,19 @@ public class AnalysisIkPluginAction extends BaseRestHandler {
     @Inject
     public AnalysisIkPluginAction(final Settings settings, final RestController controller) {
         super(settings);
-        controller.registerHandler(RestRequest.Method.GET,"/hello", this);
+        controller.registerHandler(RestRequest.Method.GET,"/_aliyun_ik_plugin", this);
     }
 
     @Override
     protected RestChannelConsumer prepareRequest(RestRequest request, NodeClient client) throws IOException {
         String who = request.param("who");
         String whoSafe = (who!=null) ? who : "world";
-
+        StringBuilder sb = new StringBuilder();
         if (AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
             logger.info(String.format("node name is : " + AnalysisIkPlugin.clusterService.localNode().getName()));
+            sb.append("node name is : ");
+            sb.append(AnalysisIkPlugin.clusterService.localNode().getName());
         }
-        return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.OK, "Hello, " + whoSafe + "!"));
+        return channel -> channel.sendResponse(new BytesRestResponse(RestStatus.OK, "Hello, " + whoSafe + "!" + " NodeInfo is " + sb.toString()));
     }
 }

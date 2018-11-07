@@ -89,44 +89,11 @@ public class AnalysisIkPlugin extends Plugin implements AnalysisPlugin, ActionPl
 
 
 
-    /*@Override
+    @Override
     public List<RestHandler> getRestHandlers(Settings settings, RestController restController, ClusterSettings clusterSettings,
                                              IndexScopedSettings indexScopedSettings, SettingsFilter settingsFilter, IndexNameExpressionResolver indexNameExpressionResolver,
                                              Supplier<DiscoveryNodes> nodesInCluster) {
         return Arrays.asList(new AnalysisIkPluginAction(settings, restController));
-    }*/
-
-
-    @Override
-    public UnaryOperator<RestHandler> getRestHandlerWrapper(ThreadContext threadContext) {
-        return handler -> new RestAccessLogFilter(handler, threadContext);
     }
 
-    class RestAccessLogFilter implements RestHandler {
-
-        private final RestHandler restHandler;
-        private final ThreadContext threadContext;
-
-        public RestAccessLogFilter(RestHandler restHandler, ThreadContext threadContext) {
-            this.restHandler = restHandler;
-            this.threadContext = threadContext;
-        }
-
-        @Override
-        public void handleRequest(RestRequest request, RestChannel channel, NodeClient client) throws Exception {
-            long startTime = System.nanoTime();
-            System.out.println("this is Before Request");
-            restHandler.handleRequest(request, new AbstractRestChannel(request, channel.detailedErrorsEnabled()) {
-                @Override
-                public void sendResponse(RestResponse response) {
-                    System.out.println("this is After Request  a-1 " + (System.nanoTime() - startTime));
-                    channel.sendResponse(response);
-                    System.out.println("#####finish");
-                    System.out.println("this is After Request " + (System.nanoTime() - startTime));
-                }
-            }, client);
-
-            //System.out.println("this is After Request, cost " + (System.nanoTime() - startTime));
-        }
-    }
 }

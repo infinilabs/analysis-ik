@@ -198,12 +198,14 @@ public class OssDictClient {
         String bucketName = getBucketName(endpoint);
         String prefixKey = getPrefixKey(endpoint);
         CopyObjectRequest request = new CopyObjectRequest(bucketName, prefixKey, bucketName, prefixKey);
-        ObjectMetadata meta = new ObjectMetadata();
-        // 设置自定义元信息property值为property-value。
-        meta.addUserMetadata(key, value);
-        request.setNewObjectMetadata(meta);
-        //修改元信息。
-        client.copyObject(request);
+        if (exists(bucketName, prefixKey)) {
+            ObjectMetadata meta = PermissionHelper.doPrivileged(() -> this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint)));
+            // 设置自定义元信息property值为property-value。
+            meta.addUserMetadata(key, value);
+            request.setNewObjectMetadata(meta);
+            //修改元信息。
+            client.copyObject(request);
+        }
     }
 
 
