@@ -73,8 +73,8 @@ public class OSSMonitor implements Runnable {
 			boolean updateMetaInfo = Dictionary.getSingleton().getProperty(WHETHER_UPDATE_OSS_META_DATA) == null ||
 				!Dictionary.getSingleton().getProperty(WHETHER_UPDATE_OSS_META_DATA).equals("true") ? false : true;
 			if (updateMetaInfo && objectMetadata != null && Strings.isNotBlank(eTag) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
-                String localNodeName = AnalysisIkPlugin.clusterService.localNode().getName().toLowerCase();
-                String ossLocalNodeName = AnalysisIkPlugin.clusterService.state().metaData().clusterUUID().toLowerCase() + "-" + localNodeName;
+                String localNodeName = AnalysisIkPlugin.clusterService.localNode().getName().replace("_", "-").toLowerCase();
+                String ossLocalNodeName = AnalysisIkPlugin.clusterService.state().metaData().clusterUUID().replace("_", "-").toLowerCase() + "-" + localNodeName;
 				if (objectMetadata.getUserMetadata() == null || objectMetadata.getUserMetadata().get(ossLocalNodeName) == null
                         || !objectMetadata.getUserMetadata().get(ossLocalNodeName).equals(eTag)) {
 						ossDictClient.updateObjectUserMetaInfo(this.endpoint, ossLocalNodeName, eTag);
