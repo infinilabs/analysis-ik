@@ -24,6 +24,7 @@ import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 public class OSSMonitor implements Runnable {
 
 	private static final Logger logger = ESLoggerFactory.getLogger(OSSMonitor.class.getName());
+	private final String NODE_NAME_FLAG = "node-name-";
 
 	/**
 	 * 资源属性
@@ -56,7 +57,6 @@ public class OSSMonitor implements Runnable {
 		OssDictClient ossDictClient = OssDictClient.getInstance();
 		try {
 			ObjectMetadata objectMetadata = ossDictClient.getObjectMetaData(this.endpoint);
-			logger.info(String.format("the endpoint is %s", this.endpoint));
 			if (objectMetadata != null && !objectMetadata.getETag().equalsIgnoreCase(eTags)) {
 				//reload dict
 				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
@@ -64,18 +64,19 @@ public class OSSMonitor implements Runnable {
 				eTags = objectMetadata.getETag();
 			}
 			if (objectMetadata != null && Strings.isNotBlank(eTags) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
-                String localNodeName = AnalysisIkPlugin.clusterService.localNode().getName();
-			    if (objectMetadata.getUserMetadata() == null || objectMetadata.getUserMetadata().get(localNodeName.toLowerCase()) == null
-                        || !objectMetadata.getUserMetadata().get(localNodeName.toLowerCase()).equals(eTags)) {
-                        logger.info(String.format("node name is %s and will upload etags to oss file! The eTags is %s", localNodeName, eTags));
+                String localNodeName = AnalysisIkPlugin.clusterService.localNode().getName().toLowerCase();
+                String ossLocalNodeName = NODE_NAME_FLAG + localNodeName;
+				if (objectMetadata.getUserMetadata() == null || objectMetadata.getUserMetadata().get(ossLocalNodeName) == null
+                        || !objectMetadata.getUserMetadata().get(ossLocalNodeName).equals(eTags)) {
+                        logger.info(String.format("node name is %s and will upload etags to oss file! The eTags is %s", ossLocalNodeName, eTags));
                         List<String> otherNodeNameList = new ArrayList<>();
                         for (DiscoveryNode node : AnalysisIkPlugin.clusterService.state().nodes()) {
-							if (!node.getName().equals(localNodeName)) {
-								otherNodeNameList.add(node.getName().toLowerCase());
+							if (!(NODE_NAME_FLAG + node.getName().toLowerCase()).equals(ossLocalNodeName)) {
+								otherNodeNameList.add(NODE_NAME_FLAG + node.getName().toLowerCase());
 							}
 						}
 						AnalysisIkPlugin.clusterService.state().getNodes();
-						ossDictClient.updateObjectUserMetaInfo(this.endpoint, otherNodeNameList, localNodeName.toLowerCase(), eTags);
+						ossDictClient.updateObjectUserMetaInfo(this.endpoint, otherNodeNameList, ossLocalNodeName, eTags);
 			    }
             }
 		} catch (OSSException e) {

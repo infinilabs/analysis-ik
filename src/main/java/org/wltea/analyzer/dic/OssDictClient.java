@@ -51,7 +51,7 @@ public class OssDictClient {
     private final String OSS_ACCESS_KEY_ID = "oss_access_key_id";
     private final String OSS_ACCESS_KEY_SECRET = "oss_access_key_secret";
     private final String NOT_SET = "NOT-SET";
-    private final String NODE_NAME_FLAG = "node-name-";
+    //private final String NODE_NAME_FLAG = "node-name-";
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
     private final String EXPIRATION = "Expiration";
@@ -238,11 +238,11 @@ public class OssDictClient {
             //本地节点用本地节点的值覆盖，其它节点如果获取的元数据中不存在该节点则用NOT-SET覆盖
             Map<String, String> oldMetaData = meta.getUserMetadata();
             for(String nodeName : otherNodeNameList) {
-                if (oldMetaData.get(NODE_NAME_FLAG + nodeName) == null) {
-                    meta.addUserMetadata(NODE_NAME_FLAG + nodeName, NOT_SET);
+                if (oldMetaData.get(nodeName) == null) {
+                    meta.addUserMetadata(nodeName, NOT_SET);
                 }
             }
-            meta.addUserMetadata(NODE_NAME_FLAG + localNodeName, localNodeETags);
+            meta.addUserMetadata(localNodeName, localNodeETags);
             request.setNewObjectMetadata(meta);
             //修改元信息。
             logger.info("add meta data " + meta.getUserMetadata());
