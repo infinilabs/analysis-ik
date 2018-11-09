@@ -47,6 +47,8 @@ public class OSSMonitor implements Runnable {
 	 *  ②如果未变化，休眠1min，返回第①步
 	 *  ③如果有变化，重新加载词典
 	 * 	④休眠1min，返回第①步
+	 * 	当节点更新oss词典完毕后 回写该节点的nodeName及当前的etags信息到oss文件的用户自定义元数据信息中
+	 * 	（如果有需要 业务层可以根据获取该oss文件的元数据信息知道哪些节点更新完毕词典）
 	 */
 
 	@Override
