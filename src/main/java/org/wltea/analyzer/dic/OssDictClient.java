@@ -51,7 +51,6 @@ public class OssDictClient {
     private final String OSS_ACCESS_KEY_ID = "oss_access_key_id";
     private final String OSS_ACCESS_KEY_SECRET = "oss_access_key_secret";
     private final String NOT_SET = "NOT-SET";
-    //private final String NODE_NAME_FLAG = "node-name-";
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
     private final String EXPIRATION = "Expiration";
@@ -123,7 +122,6 @@ public class OssDictClient {
             BufferedReader reader = null;
 
             try {
-                logger.info(String.format("ram role url is %s" , fullECSMetaDataServiceUrl));
                 response = httpclient.execute(httpGet);
                 if(response.getStatusLine().getStatusCode() == HTTP_STATUS_CODE_OK) {
                     reader = new BufferedReader(new InputStreamReader(
@@ -135,7 +133,6 @@ public class OssDictClient {
                     }
                     reader.close();
                     String jsonStringResponse = responseText.toString();
-                    logger.info(String.format("response is %s" , jsonStringResponse));
                     JSONObject jsonObjectResponse = JSON.parseObject(jsonStringResponse);
                     String accessKeyId = jsonObjectResponse.getString(ACCESS_KEY_ID);
                     String accessKeySecret = jsonObjectResponse.getString(ACCESS_KEY_SECRET);
@@ -143,7 +140,7 @@ public class OssDictClient {
                     this.client = new OSSClient(endpoint, accessKeyId, accessKeySecret, securityToken);
                     stsTokenExpiration = DateHelper.convertStringToDate(jsonObjectResponse.getString(EXPIRATION));
                 } else {
-                    logger.info(String.format("get oss ramRole %s , return bad code %d" , ecsRamRole, response.getStatusLine().getStatusCode()));
+                    logger.error(String.format("get oss ramRole %s , return bad code %d" , ecsRamRole, response.getStatusLine().getStatusCode()));
                 }
 
             } catch (Exception e) {
@@ -173,7 +170,6 @@ public class OssDictClient {
 
 
     private synchronized OSSClient createAKOssClient() {
-
         String accessKeyId = Dictionary.getSingleton().getProperty(OSS_ACCESS_KEY_ID);
         String secretAccessKey = Dictionary.getSingleton().getProperty(OSS_ACCESS_KEY_SECRET);
         String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
@@ -212,7 +208,6 @@ public class OssDictClient {
         }
         String bucketName = getBucketName(endpoint);
         String prefixKey = getPrefixKey(endpoint);
-        logger.info(String.format("the oss bucketName is %s, prefixKey is %s", bucketName, prefixKey));
         if (exists(bucketName, prefixKey)) {
             return convertInputStreamToListString(PermissionHelper.doPrivileged(() -> this.client.getObject(bucketName, prefixKey).getObjectContent()));
         }
@@ -276,8 +271,6 @@ public class OssDictClient {
             }
         }
     }
-
-
 
     private boolean exists(String bucketName, String prefixKey) throws IOException {
         return PermissionHelper.doPrivileged(() -> this.client.doesObjectExist(bucketName, prefixKey));
