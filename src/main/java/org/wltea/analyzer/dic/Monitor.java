@@ -15,24 +15,30 @@ public class Monitor implements Runnable {
 	private static final Logger logger = ESLoggerFactory.getLogger(Monitor.class.getName());
 
 	private static CloseableHttpClient httpclient = HttpClients.createDefault();
-	/*
+	/**
 	 * 上次更改时间
 	 */
 	private String last_modified;
-	/*
+	/**
 	 * 资源属性
 	 */
 	private String eTags;
 
-	/*
+	/**
 	 * 请求地址
 	 */
 	private String location;
 
-	public Monitor(String location) {
+    /**
+     * 词典类型
+     */
+    private DictType dictType;
+
+	public Monitor(String location, DictType dictType) {
 		this.location = location;
 		this.last_modified = null;
 		this.eTags = null;
+		this.dictType = dictType;
 	}
 	/**
 	 * 监控流程：
@@ -43,6 +49,7 @@ public class Monitor implements Runnable {
 	 *  ⑤休眠1min，返回第①步
 	 */
 
+	@Override
 	public void run() {
 
 		//超时设置
@@ -62,29 +69,31 @@ public class Monitor implements Runnable {
 
 		CloseableHttpResponse response = null;
 		try {
-
-			response = httpclient.execute(head);
-
-			//返回200 才做操作
-			if(response.getStatusLine().getStatusCode()==200){
-
-				if (((response.getLastHeader("Last-Modified")!=null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
+		    response = httpclient.execute(head);
+		    //返回200 才做操作
+			if(response.getStatusLine().getStatusCode()==200) {
+			    if (((response.getLastHeader("Last-Modified")!=null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(last_modified))
 						||((response.getLastHeader("ETag")!=null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
 
 					// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-					Dictionary.getSingleton().reLoadMainDict();
+                    if (dictType.equals(DictType.MAIN)) {
+                        Dictionary.getSingleton().reLoadMainDicts();
+                    } else {
+                        Dictionary.getSingleton().reLoadStopWordDict();
+                    }
+
 					last_modified = response.getLastHeader("Last-Modified")==null?null:response.getLastHeader("Last-Modified").getValue();
 					eTags = response.getLastHeader("ETag")==null?null:response.getLastHeader("ETag").getValue();
 				}
-			}else if (response.getStatusLine().getStatusCode()==304) {
+			} else if (response.getStatusLine().getStatusCode()==304) {
 				//没有修改，不做操作
 				//noop
-			}else{
+			} else {
 				logger.info("remote_ext_dict {} return bad code {}" , location , response.getStatusLine().getStatusCode() );
 			}
 
 		} catch (Exception e) {
-			logger.error("remote_ext_dict {} error!",e , location);
+			logger.error("remote_ext_dict {} error!", e , location);
 		}finally{
 			try {
 				if (response != null) {

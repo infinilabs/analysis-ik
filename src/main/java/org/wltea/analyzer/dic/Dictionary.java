@@ -96,8 +96,6 @@ public class Dictionary {
 	private final static  String EXT_STOP = "ext_stopwords";
 	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
 	private final static String REMOTE_OSS_EXT_STOP = "remote_oss_ext_stopwords";
-	private final static String OSS_ACCESS_KEY_ID = "oss_access_key_id";
-	private final static String OSS_ACCESS_KEY_SECRET = "oss_access_key_secret";
 
 	private Path conf_dir;
 	private Properties props;
@@ -163,19 +161,19 @@ public class Dictionary {
 						// 建立监控线程
 						for (String location : singleton.getRemoteExtDictionarys()) {
 							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+							pool.scheduleAtFixedRate(new Monitor(location, DictType.MAIN), 10, 60, TimeUnit.SECONDS);
 						}
 						for (String location : singleton.getRemoteExtStopWordDictionarys()) {
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+							pool.scheduleAtFixedRate(new Monitor(location, DictType.STOP), 10, 60, TimeUnit.SECONDS);
 						}
 
 						for (String location : singleton.getRemoteOSSExtDictionarys()) {
-							pool.scheduleAtFixedRate(new OSSMonitor(location), 10, 60, TimeUnit.SECONDS);
+							pool.scheduleAtFixedRate(new OSSMonitor(location, DictType.MAIN), 10, 60, TimeUnit.SECONDS);
 
 						}
 
 						for (String location : singleton.getRemoteOSSExtStopWordDictionarys()) {
-							pool.scheduleAtFixedRate(new OSSMonitor(location), 10, 60, TimeUnit.SECONDS);
+							pool.scheduleAtFixedRate(new OSSMonitor(location, DictType.STOP), 10, 60, TimeUnit.SECONDS);
 						}
 
 					}
@@ -503,22 +501,24 @@ public class Dictionary {
 	 * 加载远程OSS扩展词典到主词库表
      */
 	private void loadRemoteOssExtDict() {
-	    String remoteOssExtDict = props.getProperty(REMOTE_OSS_EXT_DICT);
-	    if (Strings.isNotBlank(remoteOssExtDict)) {
-            logger.info("[oss dict loading]");
-			try {
-				List<String> lists = OssDictClient.getInstance().getObjectContent(remoteOssExtDict);
-				for (String theWord : lists) {
-					if (theWord != null && !"".equals(theWord.trim())) {
-						// 加载扩展词典数据到主内存词典中
-						logger.info(theWord);
-						_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+		List<String> remoteOssExtDictPathList = getRemoteOSSExtDictionarys();
+		for (String remoteOssExtDictPath : remoteOssExtDictPathList) {
+			if (Strings.isNotBlank(remoteOssExtDictPath)) {
+				logger.info("[oss dict loading]");
+				try {
+					List<String> lists = OssDictClient.getInstance().getObjectContent(remoteOssExtDictPath);
+					for (String theWord : lists) {
+						if (theWord != null && !"".equals(theWord.trim())) {
+							// 加载扩展词典数据到主内存词典中
+							logger.info(theWord);
+							_MainDict.fillSegment(theWord.trim().toLowerCase().toCharArray());
+						}
 					}
+				} catch (IOException e) {
+					logger.error("[oss loading main dict error!]", e);
 				}
-			} catch (IOException e) {
-				logger.error("[oss loading main dict error!]", e);
 			}
-	    }
+		}
 	}
 
 
@@ -526,23 +526,24 @@ public class Dictionary {
 	 * 加载远程OSS扩展词典到主词库表
 	 */
 	private void loadRemoteStopOssExtDict() {
-	    String remoteOssExtStop = props.getProperty(REMOTE_OSS_EXT_STOP);
-	    if (Strings.isNotBlank(remoteOssExtStop)) {
-            logger.info("[oss stop dict loading]");
-			try {
-				List<String> lists = OssDictClient.getInstance().getObjectContent(remoteOssExtStop);
-				for (String theWord : lists) {
-					if (theWord != null && !"".equals(theWord.trim())) {
-						// 加载扩展词典数据到主内存词典中
-						logger.info(theWord);
-						_StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+		List<String> remoteOssExtStopWordPathList = getRemoteOSSExtStopWordDictionarys();
+		for (String remoteOssExtStopWordPath : remoteOssExtStopWordPathList) {
+			if (Strings.isNotBlank(remoteOssExtStopWordPath)) {
+				logger.info("[oss stop dict loading]");
+				try {
+					List<String> lists = OssDictClient.getInstance().getObjectContent(remoteOssExtStopWordPath);
+					for (String theWord : lists) {
+						if (theWord != null && !"".equals(theWord.trim())) {
+							// 加载扩展词典数据到主内存词典中
+							logger.info(theWord);
+							_StopWords.fillSegment(theWord.trim().toLowerCase().toCharArray());
+						}
 					}
+				} catch (IOException e) {
+					logger.error("[oss loading stop dict error!]", e);
 				}
-			} catch (IOException e) {
-				logger.error("[oss loading stop dict error!]", e);
 			}
-
-        }
+		}
 	}
 
 	/**
@@ -844,7 +845,7 @@ public class Dictionary {
 		}
 	}
 
-	public void reLoadMainDict() {
+	public void reLoadAllDicts() {
 		logger.info("重新加载词典...");
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
@@ -854,6 +855,26 @@ public class Dictionary {
 		_MainDict = tmpDict._MainDict;
 		_StopWords = tmpDict._StopWords;
 		logger.info("重新加载词典完毕...");
+	}
+
+	public void reLoadMainDicts() {
+		logger.info("重新加载主词典...");
+		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
+		Dictionary tmpDict = new Dictionary(configuration);
+		tmpDict.configuration = getSingleton().configuration;
+		tmpDict.loadMainDict();
+		_MainDict = tmpDict._MainDict;
+		logger.info("重新加载主词典完毕...");
+	}
+
+	public void reLoadStopWordDict() {
+		logger.info("重新加载停用词词典...");
+		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
+		Dictionary tmpDict = new Dictionary(configuration);
+		tmpDict.configuration = getSingleton().configuration;
+		tmpDict.loadStopWordDict();
+		_StopWords = tmpDict._StopWords;
+		logger.info("重新加载停用词词典完毕...");
 	}
 
 }

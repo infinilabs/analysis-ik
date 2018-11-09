@@ -32,15 +32,21 @@ public class OSSMonitor implements Runnable {
 	private String eTags;
 
 	/**
-	 *
+	 * 请求OSS地址
 	 */
 	private String endpoint;
 
+	/**
+	 * 词典类型
+	 */
+	private DictType dictType;
 
 
-	public OSSMonitor(String endpoint) {
+
+	public OSSMonitor(String endpoint, DictType dictType) {
 		this.endpoint = endpoint;
 		this.eTags = null;
+		this.dictType = dictType;
 	}
 	/**
 	 * 监控流程：
@@ -60,7 +66,11 @@ public class OSSMonitor implements Runnable {
 			if (objectMetadata != null && !objectMetadata.getETag().equalsIgnoreCase(eTags)) {
 				//reload dict
 				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-				Dictionary.getSingleton().reLoadMainDict();
+				if (dictType.equals(DictType.MAIN)) {
+					Dictionary.getSingleton().reLoadMainDicts();
+				} else {
+					Dictionary.getSingleton().reLoadStopWordDict();
+				}
 				eTags = objectMetadata.getETag();
 			}
 			if (objectMetadata != null && Strings.isNotBlank(eTags) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
