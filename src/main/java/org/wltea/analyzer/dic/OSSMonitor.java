@@ -78,7 +78,6 @@ public class OSSMonitor implements Runnable {
                 String ossLocalNodeName = NODE_NAME_FLAG + localNodeName;
 				if (objectMetadata.getUserMetadata() == null || objectMetadata.getUserMetadata().get(ossLocalNodeName) == null
                         || !objectMetadata.getUserMetadata().get(ossLocalNodeName).equals(eTags)) {
-                        logger.info(String.format("node name is %s and will upload etags to oss file! The eTags is %s", ossLocalNodeName, eTags));
                         List<String> otherNodeNameList = new ArrayList<>();
                         for (DiscoveryNode node : AnalysisIkPlugin.clusterService.state().nodes()) {
 							if (!(NODE_NAME_FLAG + node.getName().toLowerCase()).equals(ossLocalNodeName)) {
