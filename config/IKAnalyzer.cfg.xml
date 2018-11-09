@@ -19,4 +19,8 @@
 	<!-- <entry key="ecs_ram_role">RAMRoleName</entry> -->
 	<!--用户oss endpoint-->
 	<!-- <entry key="oss_endpoint">http://oss-xxxxxx.aliyuncs.com</entry> -->
+	<!--用户oss access key id-->
+	<!-- <entry key="oss_access_key_id">Hello aliyun elasticsearch</entry> -->
+	<!--用户oss access key secret-->
+	<!-- <entry key="oss_access_key_secret">Hello aliyun elasticsearch</entry> -->
 </properties>

@@ -96,6 +96,8 @@ public class Dictionary {
 	private final static  String EXT_STOP = "ext_stopwords";
 	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
 	private final static String REMOTE_OSS_EXT_STOP = "remote_oss_ext_stopwords";
+	private final static String OSS_ACCESS_KEY_ID = "oss_access_key_id";
+	private final static String OSS_ACCESS_KEY_SECRET = "oss_access_key_secret";
 
 	private Path conf_dir;
 	private Properties props;
@@ -241,7 +243,7 @@ public class Dictionary {
 
 			String[] filePaths = remoteOssExtDictCfg.split(";");
 			for (String filePath : filePaths) {
-				if (filePath != null && !"".equals(filePath.trim())) {
+				if (Strings.isNotBlank(filePath)) {
 					remoteOssExtDictFiles.add(filePath);
 				}
 			}
@@ -256,7 +258,7 @@ public class Dictionary {
 
 			String[] filePaths = remoteOssExtStopWordDictCfg.split(";");
 			for (String filePath : filePaths) {
-				if (filePath != null && !"".equals(filePath.trim())) {
+				if (Strings.isNotBlank(filePath.trim())) {
 					remoteOssExtStopWordDictFiles.add(filePath);
 				}
 			}

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -16,6 +17,7 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -28,7 +30,9 @@ import org.wltea.analyzer.util.DateHelper;
 import org.wltea.analyzer.util.PermissionHelper;
 
 /**
- * @Author nick.wn
+ * @author nick.wn
+ * @email nick.wn@alibaba-inc.com
+ * @date 2018/11/8
  */
 public class OssDictClient {
     private final Logger logger = Loggers.getLogger(OssDictClient.class);
@@ -44,10 +48,15 @@ public class OssDictClient {
 
     private final String ECS_RAM_ROLE_KEY = "ecs_ram_role";
     private final String ENDPOINT_KEY = "oss_endpoint";
+    private final String OSS_ACCESS_KEY_ID = "oss_access_key_id";
+    private final String OSS_ACCESS_KEY_SECRET = "oss_access_key_secret";
+    private final String NOT_SET = "NOT-SET";
+    private final String NODE_NAME_FLAG = "node-name-";
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
     private final String EXPIRATION = "Expiration";
 
+    private boolean isStsOssClient;
 
     public static OssDictClient getInstance() {
         return OssDictClient.LazyHolder.INSTANCE;
@@ -58,7 +67,14 @@ public class OssDictClient {
     }
 
     private OssDictClient() {
-        this.client = createClient();
+        if (StringUtils.isNotEmpty(Dictionary.getSingleton().getProperty(ECS_RAM_ROLE_KEY))) {
+            this.isStsOssClient = true;
+            this.client = createClient();
+        } else {
+            this.isStsOssClient = false;
+            this.client = createAKOssClient();
+        }
+
     }
 
     public void shutdown() {
@@ -94,7 +110,7 @@ public class OssDictClient {
             String ecsRamRole = Dictionary.getSingleton().getProperty(ECS_RAM_ROLE_KEY);
             String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
             if (Strings.isBlank(ecsRamRole) || Strings.isBlank(endpoint)) {
-                logger.warn(String.format("ecsRamRole or ossEndpoint is null, the ecsRamRole is %s and the ossEndpoint is %s", ecsRamRole, endpoint));
+                logger.warn(String.format("createClient failed! ecsRamRole or ossEndpoint is null, the ecsRamRole is %s and the ossEndpoint is %s", ecsRamRole, endpoint));
                 return null;
             }
             String fullECSMetaDataServiceUrl = ECS_METADATA_SERVICE + ecsRamRole;
@@ -155,9 +171,23 @@ public class OssDictClient {
         }
     }
 
+
+    private synchronized OSSClient createAKOssClient() {
+
+        String accessKeyId = Dictionary.getSingleton().getProperty(OSS_ACCESS_KEY_ID);
+        String secretAccessKey = Dictionary.getSingleton().getProperty(OSS_ACCESS_KEY_SECRET);
+        String endpoint = Dictionary.getSingleton().getProperty(ENDPOINT_KEY);
+        if (isStsOssClient || Strings.isBlank(accessKeyId) || Strings.isBlank(secretAccessKey) || Strings.isBlank(endpoint)) {
+            return this.client;
+        }
+        return new OSSClient(endpoint, accessKeyId, secretAccessKey);
+    }
+
     public ObjectMetadata getObjectMetaData(String endpoint) throws OSSException, ClientException, IOException {
         //防止token过期 更新token
-        createClient();
+        if (isStsOssClient) {
+            createClient();
+        }
         if (client == null) {
             logger.error(String.format("the oss client is null, maybe is not init!"));
             return null;
@@ -173,7 +203,9 @@ public class OssDictClient {
 
     public List<String> getObjectContent(String endpoint) throws OSSException, ClientException, IOException {
         //防止token过期 更新token
-        createClient();
+        if (isStsOssClient) {
+            createClient();
+        }
         if (client == null) {
             logger.error(String.format("the oss client is null, maybe is not init!"));
             return Collections.emptyList();
@@ -188,23 +220,33 @@ public class OssDictClient {
     }
 
 
-    public void updateObjectUserMetaInfo(String endpoint, String key, String value) throws OSSException, ClientException, IOException {
+    public void updateObjectUserMetaInfo(String endpoint, List<String> otherNodeNameList, String localNodeName, String localNodeETags) throws IOException {
         //防止token过期 更新token
-        createClient();
+        if (isStsOssClient) {
+            createClient();
+        }
         if (client == null) {
             logger.error(String.format("the oss client is null, maybe is not init!"));
             return ;
         }
         String bucketName = getBucketName(endpoint);
         String prefixKey = getPrefixKey(endpoint);
-        CopyObjectRequest request = new CopyObjectRequest(bucketName, prefixKey, bucketName, prefixKey);
         if (exists(bucketName, prefixKey)) {
+            CopyObjectRequest request = new CopyObjectRequest(bucketName, prefixKey, bucketName, prefixKey);
             ObjectMetadata meta = PermissionHelper.doPrivileged(() -> this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint)));
             // 设置自定义元信息property值为property-value。
-            meta.addUserMetadata(key, value);
+            //本地节点用本地节点的值覆盖，其它节点如果获取的元数据中不存在该节点则用NOT-SET覆盖
+            Map<String, String> oldMetaData = meta.getUserMetadata();
+            for(String nodeName : otherNodeNameList) {
+                if (oldMetaData.get(NODE_NAME_FLAG + nodeName) == null) {
+                    meta.addUserMetadata(NODE_NAME_FLAG + nodeName, NOT_SET);
+                }
+            }
+            meta.addUserMetadata(NODE_NAME_FLAG + localNodeName, localNodeETags);
             request.setNewObjectMetadata(meta);
             //修改元信息。
-            client.copyObject(request);
+            logger.info("add meta data " + meta.getUserMetadata());
+            PermissionHelper.doPrivileged(() -> this.client.copyObject(request));
         }
     }
 
