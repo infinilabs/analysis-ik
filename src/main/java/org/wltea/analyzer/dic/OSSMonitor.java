@@ -2,15 +2,12 @@ package org.wltea.analyzer.dic;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.ObjectMetadata;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
-import org.elasticsearch.cluster.node.DiscoveryNode;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 
@@ -24,12 +21,12 @@ import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 public class OSSMonitor implements Runnable {
 
 	private static final Logger logger = ESLoggerFactory.getLogger(OSSMonitor.class.getName());
-	private final String NODE_NAME_FLAG = "node-name-";
+	private final String WHETHER_UPDATE_OSS_META_DATA = "whether_update_oss_meta_data";
 
 	/**
 	 * 资源属性
 	 */
-	private String eTags;
+	private String eTag;
 
 	/**
 	 * 请求OSS地址
@@ -45,7 +42,7 @@ public class OSSMonitor implements Runnable {
 
 	public OSSMonitor(String endpoint, DictType dictType) {
 		this.endpoint = endpoint;
-		this.eTags = null;
+		this.eTag = null;
 		this.dictType = dictType;
 	}
 	/**
@@ -63,7 +60,7 @@ public class OSSMonitor implements Runnable {
 		OssDictClient ossDictClient = OssDictClient.getInstance();
 		try {
 			ObjectMetadata objectMetadata = ossDictClient.getObjectMetaData(this.endpoint);
-			if (objectMetadata != null && !objectMetadata.getETag().equalsIgnoreCase(eTags)) {
+			if (objectMetadata != null && !objectMetadata.getETag().equalsIgnoreCase(eTag)) {
 				//reload dict
 				// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
 				if (dictType.equals(DictType.MAIN)) {
@@ -71,21 +68,16 @@ public class OSSMonitor implements Runnable {
 				} else {
 					Dictionary.getSingleton().reLoadStopWordDict();
 				}
-				eTags = objectMetadata.getETag();
+				eTag = objectMetadata.getETag();
 			}
-			if (objectMetadata != null && Strings.isNotBlank(eTags) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
+			boolean updateMetaInfo = Dictionary.getSingleton().getProperty(WHETHER_UPDATE_OSS_META_DATA) == null ||
+				!Dictionary.getSingleton().getProperty(WHETHER_UPDATE_OSS_META_DATA).equals("true") ? false : true;
+			if (updateMetaInfo && objectMetadata != null && Strings.isNotBlank(eTag) && AnalysisIkPlugin.clusterService.state().nodes().getLocalNode() != null) {
                 String localNodeName = AnalysisIkPlugin.clusterService.localNode().getName().toLowerCase();
-                String ossLocalNodeName = NODE_NAME_FLAG + localNodeName;
+                String ossLocalNodeName = AnalysisIkPlugin.clusterService.state().metaData().clusterUUID().toLowerCase() + "-" + localNodeName;
 				if (objectMetadata.getUserMetadata() == null || objectMetadata.getUserMetadata().get(ossLocalNodeName) == null
-                        || !objectMetadata.getUserMetadata().get(ossLocalNodeName).equals(eTags)) {
-                        List<String> otherNodeNameList = new ArrayList<>();
-                        for (DiscoveryNode node : AnalysisIkPlugin.clusterService.state().nodes()) {
-							if (!(NODE_NAME_FLAG + node.getName().toLowerCase()).equals(ossLocalNodeName)) {
-								otherNodeNameList.add(NODE_NAME_FLAG + node.getName().toLowerCase());
-							}
-						}
-						AnalysisIkPlugin.clusterService.state().getNodes();
-						ossDictClient.updateObjectUserMetaInfo(this.endpoint, otherNodeNameList, ossLocalNodeName, eTags);
+                        || !objectMetadata.getUserMetadata().get(ossLocalNodeName).equals(eTag)) {
+						ossDictClient.updateObjectUserMetaInfo(this.endpoint, ossLocalNodeName, eTag);
 			    }
             }
 		} catch (OSSException e) {

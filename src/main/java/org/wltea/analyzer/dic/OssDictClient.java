@@ -8,15 +8,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 
 import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.*;
+import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -50,7 +48,6 @@ public class OssDictClient {
     private final String ENDPOINT_KEY = "oss_endpoint";
     private final String OSS_ACCESS_KEY_ID = "oss_access_key_id";
     private final String OSS_ACCESS_KEY_SECRET = "oss_access_key_secret";
-    private final String NOT_SET = "NOT-SET";
     private static CloseableHttpClient httpclient = HttpClients.createDefault();
 
     private final String EXPIRATION = "Expiration";
@@ -66,14 +63,14 @@ public class OssDictClient {
     }
 
     private OssDictClient() {
-        if (StringUtils.isNotEmpty(Dictionary.getSingleton().getProperty(ECS_RAM_ROLE_KEY))) {
-            this.isStsOssClient = true;
-            this.client = createClient();
-        } else {
+        if (StringUtils.isNotEmpty(Dictionary.getSingleton().getProperty(OSS_ACCESS_KEY_ID))
+            && StringUtils.isNotEmpty(Dictionary.getSingleton().getProperty(OSS_ACCESS_KEY_SECRET)) ) {
             this.isStsOssClient = false;
             this.client = createAKOssClient();
+        } else {
+            this.isStsOssClient = true;
+            this.client = createClient();
         }
-
     }
 
     public void shutdown() {
@@ -133,7 +130,7 @@ public class OssDictClient {
                     }
                     reader.close();
                     String jsonStringResponse = responseText.toString();
-                    JSONObject jsonObjectResponse = JSON.parseObject(jsonStringResponse);
+                    JSONObject jsonObjectResponse = JSONObject.fromObject(jsonStringResponse);
                     String accessKeyId = jsonObjectResponse.getString(ACCESS_KEY_ID);
                     String accessKeySecret = jsonObjectResponse.getString(ACCESS_KEY_SECRET);
                     String securityToken = jsonObjectResponse.getString(SECURITY_TOKEN);
@@ -215,7 +212,7 @@ public class OssDictClient {
     }
 
 
-    public void updateObjectUserMetaInfo(String endpoint, List<String> otherNodeNameList, String localNodeName, String localNodeETags) throws IOException {
+    public void updateObjectUserMetaInfo(String endpoint, String localNodeName, String localNodeETags) throws IOException {
         //防止token过期 更新token
         if (isStsOssClient) {
             createClient();
@@ -230,13 +227,6 @@ public class OssDictClient {
             CopyObjectRequest request = new CopyObjectRequest(bucketName, prefixKey, bucketName, prefixKey);
             ObjectMetadata meta = PermissionHelper.doPrivileged(() -> this.client.getObjectMetadata(getBucketName(endpoint), getPrefixKey(endpoint)));
             // 设置自定义元信息property值为property-value。
-            //本地节点用本地节点的值覆盖，其它节点如果获取的元数据中不存在该节点则用NOT-SET覆盖
-            Map<String, String> oldMetaData = meta.getUserMetadata();
-            for(String nodeName : otherNodeNameList) {
-                if (oldMetaData.get(nodeName) == null) {
-                    meta.addUserMetadata(nodeName, NOT_SET);
-                }
-            }
             meta.addUserMetadata(localNodeName, localNodeETags);
             request.setNewObjectMetadata(meta);
             //修改元信息。

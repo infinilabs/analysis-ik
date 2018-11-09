@@ -23,4 +23,6 @@
 	<!-- <entry key="oss_access_key_id">Hello aliyun elasticsearch</entry> -->
 	<!--用户oss access key secret-->
 	<!-- <entry key="oss_access_key_secret">Hello aliyun elasticsearch</entry> -->
+	<!--是否需要回写更新完毕信息到oss文件的元数据中 默认为false -->
+	<!-- <entry key="whether_update_oss_meta_data">false</entry> -->
 </properties>

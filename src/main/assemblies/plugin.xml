@@ -57,13 +57,5 @@
                 <include>com.aliyun.oss:aliyun-sdk-oss</include>
             </includes>
         </dependencySet>
-        <dependencySet>
-            <outputDirectory>elasticsearch</outputDirectory>
-            <useProjectArtifact>true</useProjectArtifact>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
-            <includes>
-                <include>com.alibaba:fastjson</include>
-            </includes>
-        </dependencySet>
     </dependencySets>
 </assembly>
