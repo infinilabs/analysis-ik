@@ -48,7 +48,7 @@ class AnalyzeContext {
 	private static final int BUFF_EXHAUST_CRITICAL = 100;	
 	
  
-	//字符窜读取缓冲
+	//字符串读取缓冲
     private char[] segmentBuff;
     //字符类型数组
     private int[] charTypes;
