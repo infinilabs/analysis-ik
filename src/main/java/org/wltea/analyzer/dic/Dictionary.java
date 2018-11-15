@@ -51,10 +51,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.io.PathUtils;
-import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.cfg.Configuration;
 import org.apache.logging.log4j.Logger;
+import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 
 /**
@@ -84,7 +84,7 @@ public class Dictionary {
 	 */
 	private Configuration configuration;
 
-	private static final Logger logger = ESLoggerFactory.getLogger(Monitor.class.getName());
+	private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
 
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
