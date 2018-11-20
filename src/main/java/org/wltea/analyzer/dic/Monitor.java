@@ -11,11 +11,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
-import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 public class Monitor implements Runnable {
 
-	private static final Logger logger = ESLoggerFactory.getLogger(Monitor.class.getName());
+	private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
 
 	private static CloseableHttpClient httpclient = HttpClients.createDefault();
 	/*
