@@ -267,6 +267,15 @@ class AnalyzeContext {
 				Lexeme l = path.pollFirst();
 				while(l != null){
 					this.results.add(l);
+					//字典中无单字，但是词元冲突了，切分出相交词元的前一个词元中的单字
+					int innerIndex = index + 1;
+					for (; innerIndex < index + l.getLength(); innerIndex++) {
+						Lexeme innerL = path.peekFirst();
+						if (innerL != null && innerIndex == innerL.getBegin()) {
+							this.outputSingleCJK(innerIndex - 1);
+						}
+					}
+					
 					//将index移至lexeme后
 					index = l.getBegin() + l.getLength();					
 					l = path.pollFirst();
