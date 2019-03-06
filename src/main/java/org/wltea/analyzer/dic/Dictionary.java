@@ -43,6 +43,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -69,13 +71,7 @@ public class Dictionary {
 
 	private DictSegment _MainDict;
 
-	private DictSegment _SurnameDict;
-
 	private DictSegment _QuantifierDict;
-
-	private DictSegment _SuffixDict;
-
-	private DictSegment _PrepDict;
 
 	private DictSegment _StopWords;
 
@@ -88,12 +84,12 @@ public class Dictionary {
 
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
-	public static final String PATH_DIC_MAIN = "main.dic";
-	public static final String PATH_DIC_SURNAME = "surname.dic";
-	public static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
-	public static final String PATH_DIC_SUFFIX = "suffix.dic";
-	public static final String PATH_DIC_PREP = "preposition.dic";
-	public static final String PATH_DIC_STOP = "stopword.dic";
+	private static final String PATH_DIC_MAIN = "main.dic";
+	private static final String PATH_DIC_SURNAME = "surname.dic";
+	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
+	private static final String PATH_DIC_SUFFIX = "suffix.dic";
+	private static final String PATH_DIC_PREP = "preposition.dic";
+	private static final String PATH_DIC_STOP = "stopword.dic";
 
 	private final static  String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private final static  String EXT_DICT = "ext_dict";
@@ -128,15 +124,13 @@ public class Dictionary {
 		if (input != null) {
 			try {
 				props.loadFromXML(input);
-			} catch (InvalidPropertiesFormatException e) {
-				logger.error("ik-analyzer", e);
 			} catch (IOException e) {
 				logger.error("ik-analyzer", e);
 			}
 		}
 	}
 
-	public String getProperty(String key){
+	private String getProperty(String key){
 		if(props!=null){
 			return props.getProperty(key);
 		}
@@ -148,7 +142,7 @@ public class Dictionary {
 	 * 
 	 * @return Dictionary
 	 */
-	public static synchronized Dictionary initial(Configuration cfg) {
+	public static synchronized void initial(Configuration cfg) {
 		if (singleton == null) {
 			synchronized (Dictionary.class) {
 				if (singleton == null) {
@@ -172,14 +166,12 @@ public class Dictionary {
 						}
 					}
 
-					return singleton;
 				}
 			}
 		}
-		return singleton;
 	}
 
-	private List<String> walkFileTree(List<String> files, Path path) {
+	private void walkFileTree(List<String> files, Path path) {
 		if (Files.isRegularFile(path)) {
 			files.add(path.toString());
 		} else if (Files.isDirectory(path)) try {
@@ -200,7 +192,6 @@ public class Dictionary {
 		} else {
 			logger.warn("[Ext Loading] file not found: " + path);
 		}
-		return files;
 	}
 
 	private void loadDictFile(DictSegment dict, Path file, boolean critical, String name) {
@@ -225,7 +216,7 @@ public class Dictionary {
 		}
 	}
 
-	public List<String> getExtDictionarys() {
+	private List<String> getExtDictionarys() {
 		List<String> extDictFiles = new ArrayList<String>(2);
 		String extDictCfg = getProperty(EXT_DICT);
 		if (extDictCfg != null) {
@@ -242,7 +233,7 @@ public class Dictionary {
 		return extDictFiles;
 	}
 
-	public List<String> getRemoteExtDictionarys() {
+	private List<String> getRemoteExtDictionarys() {
 		List<String> remoteExtDictFiles = new ArrayList<String>(2);
 		String remoteExtDictCfg = getProperty(REMOTE_EXT_DICT);
 		if (remoteExtDictCfg != null) {
@@ -258,7 +249,7 @@ public class Dictionary {
 		return remoteExtDictFiles;
 	}
 
-	public List<String> getExtStopWordDictionarys() {
+	private List<String> getExtStopWordDictionarys() {
 		List<String> extStopWordDictFiles = new ArrayList<String>(2);
 		String extStopWordDictCfg = getProperty(EXT_STOP);
 		if (extStopWordDictCfg != null) {
@@ -275,7 +266,7 @@ public class Dictionary {
 		return extStopWordDictFiles;
 	}
 
-	public List<String> getRemoteExtStopWordDictionarys() {
+	private List<String> getRemoteExtStopWordDictionarys() {
 		List<String> remoteExtStopWordDictFiles = new ArrayList<String>(2);
 		String remoteExtStopWordDictCfg = getProperty(REMOTE_EXT_STOP);
 		if (remoteExtStopWordDictCfg != null) {
@@ -291,7 +282,7 @@ public class Dictionary {
 		return remoteExtStopWordDictFiles;
 	}
 
-	public String getDictRoot() {
+	private String getDictRoot() {
 		return conf_dir.toAbsolutePath().toString();
 	}
 
@@ -468,25 +459,30 @@ public class Dictionary {
 
 				String charset = "UTF-8";
 				// 获取编码，默认为utf-8
-				if (response.getEntity().getContentType().getValue().contains("charset=")) {
-					String contentType = response.getEntity().getContentType().getValue();
-					charset = contentType.substring(contentType.lastIndexOf("=") + 1);
-				}
-				in = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), charset));
-				String line;
-				while ((line = in.readLine()) != null) {
-					buffer.add(line);
-				}
-				in.close();
-				response.close();
-				return buffer;
+				HttpEntity entity = response.getEntity();
+				if(entity!=null){
+					Header contentType = entity.getContentType();
+					if(contentType!=null&&contentType.getValue()!=null){
+						String typeValue = contentType.getValue();
+						if(typeValue!=null&&typeValue.contains("charset=")){
+							charset = typeValue.substring(typeValue.lastIndexOf("=") + 1);
+						}
+					}
+
+					if (entity.getContentLength() > 0) {
+						in = new BufferedReader(new InputStreamReader(entity.getContent(), charset));
+						String line;
+						while ((line = in.readLine()) != null) {
+							buffer.add(line);
+						}
+						in.close();
+						response.close();
+						return buffer;
+					}
+			}
 			}
 			response.close();
-		} catch (ClientProtocolException e) {
-			logger.error("getRemoteWords {} error", e, location);
-		} catch (IllegalStateException e) {
-			logger.error("getRemoteWords {} error", e, location);
-		} catch (IOException e) {
+		} catch (IllegalStateException | IOException e) {
 			logger.error("getRemoteWords {} error", e, location);
 		}
 		return buffer;
@@ -548,24 +544,24 @@ public class Dictionary {
 	}
 
 	private void loadSurnameDict() {
-		_SurnameDict = new DictSegment((char) 0);
+		DictSegment _SurnameDict = new DictSegment((char) 0);
 		Path file = PathUtils.get(getDictRoot(), Dictionary.PATH_DIC_SURNAME);
 		loadDictFile(_SurnameDict, file, true, "Surname");
 	}
 
 	private void loadSuffixDict() {
-		_SuffixDict = new DictSegment((char) 0);
+		DictSegment _SuffixDict = new DictSegment((char) 0);
 		Path file = PathUtils.get(getDictRoot(), Dictionary.PATH_DIC_SUFFIX);
 		loadDictFile(_SuffixDict, file, true, "Suffix");
 	}
 
 	private void loadPrepDict() {
-		_PrepDict = new DictSegment((char) 0);
+		DictSegment _PrepDict = new DictSegment((char) 0);
 		Path file = PathUtils.get(getDictRoot(), Dictionary.PATH_DIC_PREP);
 		loadDictFile(_PrepDict, file, true, "Preposition");
 	}
 
-	public void reLoadMainDict() {
+	void reLoadMainDict() {
 		logger.info("重新加载词典...");
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
