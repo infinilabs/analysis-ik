@@ -26,6 +26,8 @@ package org.wltea.analyzer.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
 
 /**
@@ -42,6 +44,10 @@ public final class IKAnalyzer extends Analyzer{
 	 * 默认细粒度切分算法
 	 */
 	public IKAnalyzer(){
+		super();
+		Settings settings = Settings.builder().put("path.home", System.getProperty("user.dir")).build();
+		Environment env = new Environment(settings, null);
+		this.configuration = new Configuration(env, settings);
 	}
 
     /**
