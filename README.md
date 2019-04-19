@@ -63,7 +63,7 @@ curl -XPOST http://localhost:9200/index/_mapping -H 'Content-Type:application/js
             "content": {
                 "type": "text",
                 "analyzer": "ik_max_word",
-                "search_analyzer": "ik_max_word"
+                "search_analyzer": "ik_smart"
             }
         }
 
