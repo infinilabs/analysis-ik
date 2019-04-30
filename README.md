@@ -55,7 +55,7 @@ curl -XPUT http://localhost:9200/index
 2.create a mapping
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
+curl -XPOST http://localhost:9200/index/fulltext/_mapping -H 'Content-Type:application/json' -d'
 {
     "fulltext": {
              "_all": {
@@ -82,25 +82,25 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -d'
 3.index some docs
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/1 -d'
+curl -XPOST http://localhost:9200/index/fulltext/1 -H 'Content-Type:application/json' -d'
 {"content":"美国留给伊拉克的是个烂摊子吗"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/2 -d'
+curl -XPOST http://localhost:9200/index/fulltext/2 -H 'Content-Type:application/json' -d'
 {"content":"公安部：各地校车将享最高路权"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/3 -d'
+curl -XPOST http://localhost:9200/index/fulltext/3 -H 'Content-Type:application/json' -d'
 {"content":"中韩渔警冲突调查：韩警平均每天扣1艘中国渔船"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/4 -d'
+curl -XPOST http://localhost:9200/index/fulltext/4 -H 'Content-Type:application/json' -d'
 {"content":"中国驻洛杉矶领事馆遭亚裔男子枪击 嫌犯已自首"}
 '
 ```
