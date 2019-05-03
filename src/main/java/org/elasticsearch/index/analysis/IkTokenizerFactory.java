@@ -12,7 +12,7 @@ public class IkTokenizerFactory extends AbstractTokenizerFactory {
 
   public IkTokenizerFactory(IndexSettings indexSettings, Environment env, String name, Settings settings) {
       super(indexSettings, settings);
-	  configuration=new Configuration(env,settings);
+	  configuration=new Configuration(env,settings, indexSettings.getIndex().getName());
   }
 
   public static IkTokenizerFactory getIkTokenizerFactory(IndexSettings indexSettings, Environment env, String name, Settings settings) {

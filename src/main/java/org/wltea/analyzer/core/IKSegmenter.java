@@ -79,9 +79,9 @@ public final class IKSegmenter {
 		//处理字母的子分词器
 		segmenters.add(new LetterSegmenter()); 
 		//处理中文数量词的子分词器
-		segmenters.add(new CN_QuantifierSegmenter());
+		segmenters.add(new CN_QuantifierSegmenter(configuration));
 		//处理中文词的子分词器
-		segmenters.add(new CJKSegmenter());
+		segmenters.add(new CJKSegmenter(configuration));
 		return segmenters;
 	}
 	
