@@ -25,38 +25,35 @@
  */
 package org.wltea.analyzer.dic;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.Files;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.cfg.Configuration;
-import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
+
+import java.io.*;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -67,8 +64,6 @@ public class Dictionary {
 	/*
 	 * 词典单子实例
 	 */
-	private static Dictionary singleton;
-
 	private DictSegment _MainDict;
 
 	private DictSegment _QuantifierDict;
@@ -100,7 +95,7 @@ public class Dictionary {
 	private Path conf_dir;
 	private Properties props;
 
-	private Dictionary(Configuration cfg) {
+	public Dictionary(Configuration cfg) {
 		this.configuration = cfg;
 		this.props = new Properties();
 		this.conf_dir = cfg.getEnvironment().configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
@@ -128,6 +123,16 @@ public class Dictionary {
 				logger.error("ik-analyzer", e);
 			}
 		}
+
+		try {
+			this.initial();
+		}catch (Exception e){
+			logger.error("init dic error..");
+		}
+	}
+
+	public Configuration getConfiguration() {
+		return configuration;
 	}
 
 	private String getProperty(String key){
@@ -142,31 +147,21 @@ public class Dictionary {
 	 * 
 	 * @return Dictionary
 	 */
-	public static synchronized void initial(Configuration cfg) {
-		if (singleton == null) {
-			synchronized (Dictionary.class) {
-				if (singleton == null) {
-
-					singleton = new Dictionary(cfg);
-					singleton.loadMainDict();
-					singleton.loadSurnameDict();
-					singleton.loadQuantifierDict();
-					singleton.loadSuffixDict();
-					singleton.loadPrepDict();
-					singleton.loadStopWordDict();
-
-					if(cfg.isEnableRemoteDict()){
-						// 建立监控线程
-						for (String location : singleton.getRemoteExtDictionarys()) {
-							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
-						}
-						for (String location : singleton.getRemoteExtStopWordDictionarys()) {
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
-						}
-					}
-
-				}
+	private void initial() {
+		loadMainDict();
+		loadSurnameDict();
+		loadQuantifierDict();
+		loadSuffixDict();
+		loadPrepDict();
+		loadStopWordDict();
+		if(this.configuration.isEnableRemoteDict()){
+			// 建立监控线程
+			for (String location : this.getRemoteExtDictionarys()) {
+				// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
+				pool.scheduleAtFixedRate(new Monitor(location + "/" + getIndexName(), this), 10, 60, TimeUnit.SECONDS);
+			}
+			for (String location : this.getRemoteExtStopWordDictionarys()) {
+				pool.scheduleAtFixedRate(new Monitor(location + "/" + getIndexName(), this), 10, 60, TimeUnit.SECONDS);
 			}
 		}
 	}
@@ -288,19 +283,6 @@ public class Dictionary {
 
 
 	/**
-	 * 获取词典单子实例
-	 * 
-	 * @return Dictionary 单例对象
-	 */
-	public static Dictionary getSingleton() {
-		if (singleton == null) {
-			throw new IllegalStateException("词典尚未初始化，请先调用initial方法");
-		}
-		return singleton;
-	}
-
-
-	/**
 	 * 批量加载新词条
 	 * 
 	 * @param words
@@ -311,7 +293,7 @@ public class Dictionary {
 			for (String word : words) {
 				if (word != null) {
 					// 批量加载词条到主内存词典中
-					singleton._MainDict.fillSegment(word.trim().toCharArray());
+					this._MainDict.fillSegment(word.trim().toCharArray());
 				}
 			}
 		}
@@ -325,7 +307,7 @@ public class Dictionary {
 			for (String word : words) {
 				if (word != null) {
 					// 批量屏蔽词条
-					singleton._MainDict.disableSegment(word.trim().toCharArray());
+					this._MainDict.disableSegment(word.trim().toCharArray());
 				}
 			}
 		}
@@ -337,7 +319,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray) {
-		return singleton._MainDict.match(charArray);
+		return this._MainDict.match(charArray);
 	}
 
 	/**
@@ -346,7 +328,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
-		return singleton._MainDict.match(charArray, begin, length);
+		return this._MainDict.match(charArray, begin, length);
 	}
 
 	/**
@@ -355,7 +337,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
-		return singleton._QuantifierDict.match(charArray, begin, length);
+		return this._QuantifierDict.match(charArray, begin, length);
 	}
 
 	/**
@@ -374,7 +356,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
-		return singleton._StopWords.match(charArray, begin, length).isMatch();
+		return this._StopWords.match(charArray, begin, length).isMatch();
 	}
 
 	/**
@@ -415,11 +397,11 @@ public class Dictionary {
 	private void loadRemoteExtDict() {
 		List<String> remoteExtDictFiles = getRemoteExtDictionarys();
 		for (String location : remoteExtDictFiles) {
-			logger.info("[Dict Loading] " + location);
-			List<String> lists = getRemoteWords(location);
+			logger.info("[Dict Loading] " + location + "/" + getIndexName());
+			List<String> lists = getRemoteWords(location + "/" + getIndexName());
 			// 如果找不到扩展的字典，则忽略
 			if (lists == null) {
-				logger.error("[Dict Loading] " + location + "加载失败");
+				logger.error("[Dict Loading] " + location + "/" + getIndexName() + "加载失败");
 				continue;
 			}
 			for (String theWord : lists) {
@@ -451,6 +433,7 @@ public class Dictionary {
 		CloseableHttpClient httpclient = HttpClients.createDefault();
 		CloseableHttpResponse response;
 		BufferedReader in;
+		logger.info("--> location : " + location);
 		HttpGet get = new HttpGet(location);
 		get.setConfig(rc);
 		try {
@@ -514,11 +497,11 @@ public class Dictionary {
 		// 加载远程停用词典
 		List<String> remoteExtStopWordDictFiles = getRemoteExtStopWordDictionarys();
 		for (String location : remoteExtStopWordDictFiles) {
-			logger.info("[Dict Loading] " + location);
-			List<String> lists = getRemoteWords(location);
+			logger.info("[Dict Loading] " + location + "/" + getIndexName());
+			List<String> lists = getRemoteWords(location + "/" + getIndexName());
 			// 如果找不到扩展的字典，则忽略
 			if (lists == null) {
-				logger.error("[Dict Loading] " + location + "加载失败");
+				logger.error("[Dict Loading] " + location + "/" + getIndexName() + "加载失败");
 				continue;
 			}
 			for (String theWord : lists) {
@@ -563,14 +546,12 @@ public class Dictionary {
 
 	void reLoadMainDict() {
 		logger.info("重新加载词典...");
-		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
-		Dictionary tmpDict = new Dictionary(configuration);
-		tmpDict.configuration = getSingleton().configuration;
-		tmpDict.loadMainDict();
-		tmpDict.loadStopWordDict();
-		_MainDict = tmpDict._MainDict;
-		_StopWords = tmpDict._StopWords;
+		this.loadMainDict();
+		this.loadStopWordDict();
 		logger.info("重新加载词典完毕...");
 	}
 
+	public String getIndexName() {
+		return configuration.getIndexName();
+	}
 }

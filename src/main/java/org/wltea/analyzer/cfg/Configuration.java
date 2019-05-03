@@ -27,9 +27,12 @@ public class Configuration {
 	//是否启用小写处理
 	private boolean enableLowercase=true;
 
+	private String indexName;
+
+	private Dictionary dictionary;
 
 	@Inject
-	public Configuration(Environment env,Settings settings) {
+	public Configuration(Environment env,Settings settings, String indexName) {
 		this.environment = env;
 		this.settings=settings;
 
@@ -37,9 +40,9 @@ public class Configuration {
 		this.enableLowercase = settings.get("enable_lowercase", "true").equals("true");
 		this.enableRemoteDict = settings.get("enable_remote_dict", "true").equals("true");
 
-		Dictionary.initial(this);
-
-	}
+        this.indexName = indexName;
+        this.dictionary = new Dictionary(this);
+    }
 
 	public Path getConfigInPluginDir() {
 		return PathUtils
@@ -72,4 +75,12 @@ public class Configuration {
 	public boolean isEnableLowercase() {
 		return enableLowercase;
 	}
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public Dictionary getDictionary() {
+        return dictionary;
+    }
 }
