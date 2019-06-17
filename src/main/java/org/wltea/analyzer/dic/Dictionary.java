@@ -469,21 +469,26 @@ public class Dictionary {
 						}
 					}
 
-					if (entity.getContentLength() > 0) {
-						in = new BufferedReader(new InputStreamReader(entity.getContent(), charset));
-						String line;
-						while ((line = in.readLine()) != null) {
-							buffer.add(line);
-						}
-						in.close();
-						response.close();
-						return buffer;
+					// The Content-Length will be ignore when the response header
+					// contains `Transfer-Encoding: chunked` or `Content-Encoding: gzip`
+//					if (entity.getContentLength() > 0) {
+					in = new BufferedReader(new InputStreamReader(entity.getContent(), charset));
+					String line;
+					while ((line = in.readLine()) != null) {
+						buffer.add(line);
 					}
-			}
+					in.close();
+					response.close();
+					return buffer;
+//					}
+				}
 			}
 			response.close();
 		} catch (IllegalStateException | IOException e) {
 			logger.error("getRemoteWords {} error", e, location);
+		} finally {
+			// Release the GET Connection
+			get.releaseConnection();
 		}
 		return buffer;
 	}
