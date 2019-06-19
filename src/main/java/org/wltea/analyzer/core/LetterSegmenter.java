@@ -38,7 +38,7 @@ class LetterSegmenter implements ISegmenter {
 	private static final char[] Letter_Connector = new char[]{'#' , '&' , '+' , '-' , '.' , '@' , '_'};
 	
 	//数字符号
-	private static final char[] Num_Connector = new char[]{',' , '.'};
+	private static final char[] Num_Connector = new char[]{'.'};
 	
 	/*
 	 * 词元的开始位置，

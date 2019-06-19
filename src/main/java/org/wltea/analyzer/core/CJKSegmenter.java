@@ -63,6 +63,14 @@ class CJKSegmenter implements ISegmenter {
 						//输出当前的词
 						Lexeme newLexeme = new Lexeme(context.getBufferOffset() , hit.getBegin() , context.getCursor() - hit.getBegin() + 1 , Lexeme.TYPE_CNWORD);
 						context.addLexeme(newLexeme);
+
+						// For vipmro
+						if (newLexeme.getLength() > 1) {
+							for (int i = 0; i < newLexeme.getLength(); i++) {
+								Lexeme temp = new Lexeme(context.getBufferOffset(), hit.getBegin() + i, 1, Lexeme.TYPE_CNCHAR);
+								context.addLexeme(temp);
+							}
+						}
 						
 						if(!hit.isPrefix()){//不是词前缀，hit不需要继续匹配，移除
 							this.tmpHits.remove(hit);
