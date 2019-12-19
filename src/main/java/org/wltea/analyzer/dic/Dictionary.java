@@ -294,7 +294,7 @@ public class Dictionary {
 	 */
 	public static Dictionary getSingleton() {
 		if (singleton == null) {
-			throw new IllegalStateException("词典尚未初始化，请先调用initial方法");
+			throw new IllegalStateException("ik dict has not been initialized yet, please call initial method first.");
 		}
 		return singleton;
 	}
@@ -419,7 +419,7 @@ public class Dictionary {
 			List<String> lists = getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
 			if (lists == null) {
-				logger.error("[Dict Loading] " + location + "加载失败");
+				logger.error("[Dict Loading] " + location + " load failed");
 				continue;
 			}
 			for (String theWord : lists) {
@@ -518,7 +518,7 @@ public class Dictionary {
 			List<String> lists = getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
 			if (lists == null) {
-				logger.error("[Dict Loading] " + location + "加载失败");
+				logger.error("[Dict Loading] " + location + " load failed");
 				continue;
 			}
 			for (String theWord : lists) {
@@ -562,7 +562,7 @@ public class Dictionary {
 	}
 
 	void reLoadMainDict() {
-		logger.info("重新加载词典...");
+		logger.info("start to reload ik dict.");
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
 		tmpDict.configuration = getSingleton().configuration;
@@ -570,7 +570,7 @@ public class Dictionary {
 		tmpDict.loadStopWordDict();
 		_MainDict = tmpDict._MainDict;
 		_StopWords = tmpDict._StopWords;
-		logger.info("重新加载词典完毕...");
+		logger.info("reload ik dict finished.");
 	}
 
 }
