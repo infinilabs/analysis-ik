@@ -80,7 +80,7 @@ public class Dictionary {
 	 */
 	private Configuration configuration;
 
-	private static final Logger logger = ESPluginLoggerFactory.getLogger(Monitor.class.getName());
+	private static final Logger logger = ESPluginLoggerFactory.getLogger(Dictionary.class.getName());
 
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
