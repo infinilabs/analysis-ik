@@ -163,37 +163,28 @@ Result
 
 ### Dictionary Configuration
 
-`IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/config/IKAnalyzer.cfg.xml`
-or `{plugins}/elasticsearch-analysis-ik-*/config/IKAnalyzer.cfg.xml`
+`IKAnalyzer.yml` can be located at `{conf}/analysis-ik/IKAnalyzer.yml`
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
-<properties>
-	<comment>IK Analyzer 扩展配置</comment>
-	<!--用户可以在这里配置自己的扩展字典 -->
-	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic</entry>
-	 <!--用户可以在这里配置自己的扩展停止词字典-->
-	<entry key="ext_stopwords">custom/ext_stopword.dic</entry>
- 	<!--用户可以在这里配置远程扩展字典 -->
-	<entry key="remote_ext_dict">location</entry>
- 	<!--用户可以在这里配置远程扩展停止词字典-->
-	<entry key="remote_ext_stopwords">http://xxx.com/xxx.dic</entry>
-</properties>
+```yml
+# IK Analyzer 扩展配置
+analysis_ik:
+  # 字典配置
+  dictionary:
+    # 用户可以在这里配置自己的扩展字典
+    ext_dict: ""
+    # 用户可以在这里配置自己的扩展停止词字典
+    ext_stop_word: ""
+    # 用户可以在这里配置远程扩展字典
+    remote_ext_dict: ""
+    # 用户可以在这里配置远程扩展停止词字典
+    remote_ext_stop_word: ""
 ```
 
 ### 热更新 IK 分词使用方法
 
 目前该插件支持热更新 IK 分词，通过上文在 IK 配置文件中提到的如下配置
 
-```xml
- 	<!--用户可以在这里配置远程扩展字典 -->
-	<entry key="remote_ext_dict">location</entry>
- 	<!--用户可以在这里配置远程扩展停止词字典-->
-	<entry key="remote_ext_stopwords">location</entry>
-```
-
-其中 `location` 是指一个 url，比如 `http://yoursite.com/getCustomDict`，该请求只需满足以下两点即可完成分词热更新。
+`remote_ext_dict`和`remote_ext_stop_word`，他们的参数值是指一个 url，比如 `http://yoursite.com/getCustomDict`，该请求只需满足以下两点即可完成分词热更新。
 
 1. 该 http 请求需要返回两个头部(header)，一个是 `Last-Modified`，一个是 `ETag`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
 
@@ -204,6 +195,21 @@ or `{plugins}/elasticsearch-analysis-ik-*/config/IKAnalyzer.cfg.xml`
 可以将需自动更新的热词放在一个 UTF-8 编码的 .txt 文件里，放在 nginx 或其他简易 http server 下，当 .txt 文件修改时，http server 会在客户端请求该文件时自动返回相应的 Last-Modified 和 ETag。可以另外做一个工具来从业务系统提取相关词汇，并更新这个 .txt 文件。
 
 have fun.
+
+如果使用Docker运行ElasticSearch服务（需要定制ElasticSearch镜像，安装上本插件），可以在创建容器时，通过配置环境变量，将上述参数传递进去：
+
+```yml
+elasticsearch:
+    image: my-elasticsearch-chs:7.9.3
+    container_name: elasticsearch
+    environment:
+        - cluster.name=docker-cluster
+        - bootstrap.memory_lock=true
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        - discovery.type=single-node
+        - analysis_ik.dictionary.remote_ext_dict=http://www.example.com/dic.txt
+        - analysis_ik.dictionary.remote_ext_stop_word=http://www.example.com/stop-word.txt
+```
 
 常见问题
 -------

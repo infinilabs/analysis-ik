@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -53,6 +52,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.io.PathUtils;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.cfg.Configuration;
 import org.apache.logging.log4j.Logger;
@@ -91,50 +91,27 @@ public class Dictionary {
 	private static final String PATH_DIC_PREP = "preposition.dic";
 	private static final String PATH_DIC_STOP = "stopword.dic";
 
-	private final static  String FILE_NAME = "IKAnalyzer.cfg.xml";
 	private final static  String EXT_DICT = "ext_dict";
 	private final static  String REMOTE_EXT_DICT = "remote_ext_dict";
-	private final static  String EXT_STOP = "ext_stopwords";
-	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
+	private final static  String EXT_STOP = "ext_stop_word";
+	private final static  String REMOTE_EXT_STOP = "remote_ext_stop_word";
 
-	private Path conf_dir;
-	private Properties props;
+	private Path configDir;
+	private Settings settings;
 
 	private Dictionary(Configuration cfg) {
 		this.configuration = cfg;
-		this.props = new Properties();
-		this.conf_dir = cfg.getEnvironment().configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
-		Path configFile = conf_dir.resolve(FILE_NAME);
-
-		InputStream input = null;
-		try {
-			logger.info("try load config from {}", configFile);
-			input = new FileInputStream(configFile.toFile());
-		} catch (FileNotFoundException e) {
-			conf_dir = cfg.getConfigInPluginDir();
-			configFile = conf_dir.resolve(FILE_NAME);
-			try {
-				logger.info("try load config from {}", configFile);
-				input = new FileInputStream(configFile.toFile());
-			} catch (FileNotFoundException ex) {
-				// We should report origin exception
-				logger.error("ik-analyzer", e);
-			}
-		}
-		if (input != null) {
-			try {
-				props.loadFromXML(input);
-			} catch (IOException e) {
-				logger.error("ik-analyzer", e);
-			}
-		}
+		this.configDir = cfg.getEnvironment().configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		this.settings = cfg.getEnvironment().settings();
 	}
 
-	private String getProperty(String key){
-		if(props!=null){
-			return props.getProperty(key);
-		}
-		return null;
+	public Settings getSettings() {
+		return settings;
+	}
+
+	private String getDictionarySetting(String key) {
+		String[] keys = { AnalysisIkPlugin.PLUGIN_NAME.replace("-", "_"), "dictionary", key };
+		return settings.get(String.join(".", keys));
 	}
 	/**
 	 * 词典初始化 由于IK Analyzer的词典采用Dictionary类的静态方法进行词典初始化
@@ -218,9 +195,8 @@ public class Dictionary {
 
 	private List<String> getExtDictionarys() {
 		List<String> extDictFiles = new ArrayList<String>(2);
-		String extDictCfg = getProperty(EXT_DICT);
-		if (extDictCfg != null) {
-
+		String extDictCfg = getDictionarySetting(EXT_DICT);
+		if (!extDictCfg.trim().equals("")) {
 			String[] filePaths = extDictCfg.split(";");
 			for (String filePath : filePaths) {
 				if (filePath != null && !"".equals(filePath.trim())) {
@@ -235,9 +211,9 @@ public class Dictionary {
 
 	private List<String> getRemoteExtDictionarys() {
 		List<String> remoteExtDictFiles = new ArrayList<String>(2);
-		String remoteExtDictCfg = getProperty(REMOTE_EXT_DICT);
-		if (remoteExtDictCfg != null) {
-
+		String remoteExtDictCfg = getDictionarySetting(REMOTE_EXT_DICT);
+		if (!remoteExtDictCfg.trim().equals("")) {
+			logger.info(">>>" + remoteExtDictCfg);
 			String[] filePaths = remoteExtDictCfg.split(";");
 			for (String filePath : filePaths) {
 				if (filePath != null && !"".equals(filePath.trim())) {
@@ -251,9 +227,8 @@ public class Dictionary {
 
 	private List<String> getExtStopWordDictionarys() {
 		List<String> extStopWordDictFiles = new ArrayList<String>(2);
-		String extStopWordDictCfg = getProperty(EXT_STOP);
-		if (extStopWordDictCfg != null) {
-
+		String extStopWordDictCfg = getDictionarySetting(EXT_STOP);
+		if (!extStopWordDictCfg.trim().equals("")) {
 			String[] filePaths = extStopWordDictCfg.split(";");
 			for (String filePath : filePaths) {
 				if (filePath != null && !"".equals(filePath.trim())) {
@@ -268,9 +243,8 @@ public class Dictionary {
 
 	private List<String> getRemoteExtStopWordDictionarys() {
 		List<String> remoteExtStopWordDictFiles = new ArrayList<String>(2);
-		String remoteExtStopWordDictCfg = getProperty(REMOTE_EXT_STOP);
-		if (remoteExtStopWordDictCfg != null) {
-
+		String remoteExtStopWordDictCfg = getDictionarySetting(REMOTE_EXT_STOP);
+		if (!remoteExtStopWordDictCfg.trim().equals("")) {
 			String[] filePaths = remoteExtStopWordDictCfg.split(";");
 			for (String filePath : filePaths) {
 				if (filePath != null && !"".equals(filePath.trim())) {
@@ -283,7 +257,7 @@ public class Dictionary {
 	}
 
 	private String getDictRoot() {
-		return conf_dir.toAbsolutePath().toString();
+		return configDir.toAbsolutePath().toString();
 	}
 
 
