@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
@@ -292,6 +293,8 @@ class AnalyzeContext {
 				index++;
 			}
 		}
+		//重排results,解决outputSingleCJK带来的lucence报错（offsets must not go backwards）
+        Collections.sort(this.results);
 		//清空当前的Map
 		this.pathMap.clear();
 	}
