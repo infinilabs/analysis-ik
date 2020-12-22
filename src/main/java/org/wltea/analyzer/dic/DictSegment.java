@@ -57,7 +57,7 @@ class DictSegment implements Comparable<DictSegment>{
 	
 	DictSegment(Character nodeChar){
 		if(nodeChar == null){
-			throw new IllegalArgumentException("参数为空异常，字符不能为空");
+			throw new IllegalArgumentException("node char cannot be empty");
 		}
 		this.nodeChar = nodeChar;
 	}
