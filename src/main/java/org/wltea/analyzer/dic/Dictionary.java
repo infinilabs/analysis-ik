@@ -51,6 +51,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
@@ -468,18 +469,13 @@ public class Dictionary {
 							charset = typeValue.substring(typeValue.lastIndexOf("=") + 1);
 						}
 					}
-
-					if (entity.getContentLength() > 0 || entity.isChunked()) {
-						in = new BufferedReader(new InputStreamReader(entity.getContent(), charset));
-						String line;
-						while ((line = in.readLine()) != null) {
-							buffer.add(line);
-						}
-						in.close();
-						response.close();
-						return buffer;
+					String string = EntityUtils.toString(entity, charset);
+					if(string != null){
+						List<String> words = Arrays.asList(string.split("\n|\r\n"));
+						buffer.addAll(words);
+						logger.info("add {} remote stopwords from {}", words.size(), location);
 					}
-			}
+				}
 			}
 			response.close();
 		} catch (IllegalStateException | IOException e) {
