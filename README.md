@@ -10,16 +10,9 @@ Versions
 
 IK version | ES version
 -----------|-----------
-master | 6.x -> master
-6.3.0| 6.3.0
-6.2.4| 6.2.4
-6.1.3| 6.1.3
-5.6.8| 5.6.8
-5.5.3| 5.5.3
-5.4.3| 5.4.3
-5.3.3| 5.3.3
-5.2.2| 5.2.2
-5.1.2| 5.1.2
+master | 7.x -> master
+6.x| 6.x
+5.x| 5.x
 1.10.6 | 2.4.6
 1.9.5 | 2.3.5
 1.8.1 | 2.2.1
@@ -64,13 +57,13 @@ curl -XPUT http://localhost:9200/index
 2.create a mapping
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/_mapping -H 'Content-Type:application/json' -d'
+curl -XPOST http://localhost:9200/index/_mapping -H 'Content-Type:application/json' -d'
 {
         "properties": {
             "content": {
                 "type": "text",
                 "analyzer": "ik_max_word",
-                "search_analyzer": "ik_max_word"
+                "search_analyzer": "ik_smart"
             }
         }
 
@@ -80,25 +73,25 @@ curl -XPOST http://localhost:9200/index/fulltext/_mapping -H 'Content-Type:appli
 3.index some docs
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/1 -H 'Content-Type:application/json' -d'
+curl -XPOST http://localhost:9200/index/_create/1 -H 'Content-Type:application/json' -d'
 {"content":"美国留给伊拉克的是个烂摊子吗"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/2 -H 'Content-Type:application/json' -d'
+curl -XPOST http://localhost:9200/index/_create/2 -H 'Content-Type:application/json' -d'
 {"content":"公安部：各地校车将享最高路权"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/3 -H 'Content-Type:application/json' -d'
+curl -XPOST http://localhost:9200/index/_create/3 -H 'Content-Type:application/json' -d'
 {"content":"中韩渔警冲突调查：韩警平均每天扣1艘中国渔船"}
 '
 ```
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/4 -H 'Content-Type:application/json' -d'
+curl -XPOST http://localhost:9200/index/_create/4 -H 'Content-Type:application/json' -d'
 {"content":"中国驻洛杉矶领事馆遭亚裔男子枪击 嫌犯已自首"}
 '
 ```
@@ -106,7 +99,7 @@ curl -XPOST http://localhost:9200/index/fulltext/4 -H 'Content-Type:application/
 4.query with highlighting
 
 ```bash
-curl -XPOST http://localhost:9200/index/fulltext/_search  -H 'Content-Type:application/json' -d'
+curl -XPOST http://localhost:9200/index/_search  -H 'Content-Type:application/json' -d'
 {
     "query" : { "match" : { "content" : "中国" }},
     "highlight" : {
@@ -248,13 +241,13 @@ curl -XGET "http://localhost:9200/your_index/_analyze" -H 'Content-Type: applica
 4. ik_max_word 和 ik_smart 什么区别?
 
 
-ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合；
+ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合，适合 Term Query；
 
-ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”。
+ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”，适合 Phrase 查询。
 
 Changes
 ------
-*5.0.0*
+*自 v5.0.0 起*
 
 - 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
 
