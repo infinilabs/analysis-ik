@@ -11,7 +11,7 @@ public class IkTokenizerFactory extends AbstractTokenizerFactory {
   private Configuration configuration;
 
   public IkTokenizerFactory(IndexSettings indexSettings, Environment env, String name, Settings settings) {
-      super(indexSettings, settings,name);
+      super(indexSettings, name,settings);
 	  configuration=new Configuration(env,settings);
   }
 
