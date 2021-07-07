@@ -11,38 +11,39 @@ import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 import java.util.WeakHashMap;
 
 public class PrefixPluginLogger extends ExtendedLoggerWrapper {
-    private static final WeakHashMap<String, Marker> markers = new WeakHashMap();
-    private final Marker marker;
+	private static final WeakHashMap<String, Marker> MARKERS = new WeakHashMap<>();
+	private final Marker marker;
 
-    static int markersSize() {
-        return markers.size();
-    }
+	PrefixPluginLogger(ExtendedLogger logger, String name, String prefix) {
+		super(logger, name, null);
+		String actualPrefix = prefix == null ? "" : prefix;
+		WeakHashMap<String, Marker> var6 = MARKERS;
+		MarkerManager.Log4jMarker actualMarker;
+		synchronized (MARKERS) {
+			MarkerManager.Log4jMarker maybeMarker = (MarkerManager.Log4jMarker) MARKERS.get(actualPrefix);
+			if (maybeMarker == null) {
+				actualMarker = new MarkerManager.Log4jMarker(actualPrefix);
+				MARKERS.put(new String(actualPrefix), actualMarker);
+			} else {
+				actualMarker = maybeMarker;
+			}
+		}
 
-    public String prefix() {
-        return this.marker.getName();
-    }
+		this.marker = actualMarker;
+	}
 
-    PrefixPluginLogger(ExtendedLogger logger, String name, String prefix) {
-        super(logger, name, (MessageFactory) null);
-        String actualPrefix = prefix == null ? "" : prefix;
-        WeakHashMap var6 = markers;
-        MarkerManager.Log4jMarker actualMarker;
-        synchronized (markers) {
-            MarkerManager.Log4jMarker maybeMarker = (MarkerManager.Log4jMarker) markers.get(actualPrefix);
-            if (maybeMarker == null) {
-                actualMarker = new MarkerManager.Log4jMarker(actualPrefix);
-                markers.put(new String(actualPrefix), actualMarker);
-            } else {
-                actualMarker = maybeMarker;
-            }
-        }
+	static int markersSize() {
+		return MARKERS.size();
+	}
 
-        this.marker = (Marker) actualMarker;
-    }
+	public String prefix() {
+		return this.marker.getName();
+	}
 
-    public void logMessage(String fqcn, Level level, Marker marker, Message message, Throwable t) {
-        assert marker == null;
+	@Override
+	public void logMessage(String fqcn, Level level, Marker marker, Message message, Throwable t) {
+		assert marker == null;
 
-        super.logMessage(fqcn, level, this.marker, message, t);
-    }
+		super.logMessage(fqcn, level, this.marker, message, t);
+	}
 }

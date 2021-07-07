@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.wltea.analyzer.cfg;
 
@@ -19,26 +19,25 @@ public class Configuration {
 	private Settings settings;
 
 	//是否启用智能分词
-	private  boolean useSmart;
+	private boolean useSmart;
 
 	//是否启用远程词典加载
-	private boolean enableRemoteDict=false;
+	private boolean enableRemoteDict = false;
 
 	//是否启用小写处理
-	private boolean enableLowercase=true;
+	private boolean enableLowercase = true;
 
 
 	@Inject
-	public Configuration(Environment env,Settings settings) {
+	public Configuration(Environment env, Settings settings) {
 		this.environment = env;
-		this.settings=settings;
+		this.settings = settings;
 
 		this.useSmart = settings.get("use_smart", "false").equals("true");
 		this.enableLowercase = settings.get("enable_lowercase", "true").equals("true");
 		this.enableRemoteDict = settings.get("enable_remote_dict", "true").equals("true");
 
 		Dictionary.initial(this);
-
 	}
 
 	public Path getConfigInPluginDir() {

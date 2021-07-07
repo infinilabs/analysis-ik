@@ -1,62 +1,58 @@
 /**
  * IK 中文分词  版本 5.0
  * IK Analyzer release 5.0
- *
+ * <p>
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * 源代码由林良益(linliangyi2005@gmail.com)提供
  * 版权声明 2012，乌龙茶工作室
  * provided by Linliangyi and copyright 2012 by Oolong studio
- *
- *
  */
 package org.wltea.analyzer.dic;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.Files;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.cfg.Configuration;
-import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -64,39 +60,30 @@ import org.wltea.analyzer.help.ESPluginLoggerFactory;
  */
 public class Dictionary {
 
-	/*
-	 * 词典单子实例
-	 */
-	private static Dictionary singleton;
-
-	private DictSegment _MainDict;
-
-	private DictSegment _QuantifierDict;
-
-	private DictSegment _StopWords;
-
-	/**
-	 * 配置对象
-	 */
-	private Configuration configuration;
-
 	private static final Logger logger = ESPluginLoggerFactory.getLogger(Dictionary.class.getName());
-
-	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
-
 	private static final String PATH_DIC_MAIN = "main.dic";
 	private static final String PATH_DIC_SURNAME = "surname.dic";
 	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
 	private static final String PATH_DIC_SUFFIX = "suffix.dic";
 	private static final String PATH_DIC_PREP = "preposition.dic";
 	private static final String PATH_DIC_STOP = "stopword.dic";
-
-	private final static  String FILE_NAME = "IKAnalyzer.cfg.xml";
-	private final static  String EXT_DICT = "ext_dict";
-	private final static  String REMOTE_EXT_DICT = "remote_ext_dict";
-	private final static  String EXT_STOP = "ext_stopwords";
-	private final static  String REMOTE_EXT_STOP = "remote_ext_stopwords";
-
+	private final static String FILE_NAME = "IKAnalyzer.cfg.xml";
+	private final static String EXT_DICT = "ext_dict";
+	private final static String REMOTE_EXT_DICT = "remote_ext_dict";
+	private final static String EXT_STOP = "ext_stopwords";
+	private final static String REMOTE_EXT_STOP = "remote_ext_stopwords";
+	/*
+	 * 词典单子实例
+	 */
+	private static Dictionary singleton;
+	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+	private DictSegment _MainDict;
+	private DictSegment _QuantifierDict;
+	private DictSegment _StopWords;
+	/**
+	 * 配置对象
+	 */
+	private Configuration configuration;
 	private Path conf_dir;
 	private Properties props;
 
@@ -130,16 +117,10 @@ public class Dictionary {
 		}
 	}
 
-	private String getProperty(String key){
-		if(props!=null){
-			return props.getProperty(key);
-		}
-		return null;
-	}
 	/**
 	 * 词典初始化 由于IK Analyzer的词典采用Dictionary类的静态方法进行词典初始化
 	 * 只有当Dictionary类被实际调用时，才会开始载入词典， 这将延长首次分词操作的时间 该方法提供了一个在应用加载阶段就初始化字典的手段
-	 * 
+	 *
 	 * @return Dictionary
 	 */
 	public static synchronized void initial(Configuration cfg) {
@@ -155,7 +136,7 @@ public class Dictionary {
 					singleton.loadPrepDict();
 					singleton.loadStopWordDict();
 
-					if(cfg.isEnableRemoteDict()){
+					if (cfg.isEnableRemoteDict()) {
 						// 建立监控线程
 						for (String location : singleton.getRemoteExtDictionarys()) {
 							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
@@ -171,24 +152,101 @@ public class Dictionary {
 		}
 	}
 
+	/**
+	 * 获取词典单子实例
+	 *
+	 * @return Dictionary 单例对象
+	 */
+	public static Dictionary getSingleton() {
+		if (singleton == null) {
+			throw new IllegalStateException("ik dict has not been initialized yet, please call initial method first.");
+		}
+		return singleton;
+	}
+
+	private static List<String> getRemoteWords(String location) {
+		SpecialPermission.check();
+		return AccessController.doPrivileged((PrivilegedAction<List<String>>) () -> {
+			return getRemoteWordsUnprivileged(location);
+		});
+	}
+
+	/**
+	 * 从远程服务器上下载自定义词条
+	 */
+	private static List<String> getRemoteWordsUnprivileged(String location) {
+
+		List<String> buffer = new ArrayList<String>();
+		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
+				.setSocketTimeout(60 * 1000).build();
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		CloseableHttpResponse response;
+		BufferedReader in;
+		HttpGet get = new HttpGet(location);
+		get.setConfig(rc);
+		try {
+			response = httpclient.execute(get);
+			if (response.getStatusLine().getStatusCode() == 200) {
+
+				String charset = "UTF-8";
+				// 获取编码，默认为utf-8
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					Header contentType = entity.getContentType();
+					if (contentType != null && contentType.getValue() != null) {
+						String typeValue = contentType.getValue();
+						if (typeValue != null && typeValue.contains("charset=")) {
+							charset = typeValue.substring(typeValue.lastIndexOf("=") + 1);
+						}
+					}
+
+					if (entity.getContentLength() > 0 || entity.isChunked()) {
+						in = new BufferedReader(new InputStreamReader(entity.getContent(), charset));
+						String line;
+						while ((line = in.readLine()) != null) {
+							buffer.add(line);
+						}
+						in.close();
+						response.close();
+						return buffer;
+					}
+				}
+			}
+			response.close();
+		} catch (IllegalStateException | IOException e) {
+			logger.error("getRemoteWords {} error", e, location);
+		}
+		return buffer;
+	}
+
+	private String getProperty(String key) {
+		if (props != null) {
+			return props.getProperty(key);
+		}
+		return null;
+	}
+
 	private void walkFileTree(List<String> files, Path path) {
 		if (Files.isRegularFile(path)) {
 			files.add(path.toString());
-		} else if (Files.isDirectory(path)) try {
-			Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-				@Override
-				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-					files.add(file.toString());
-					return FileVisitResult.CONTINUE;
-				}
-				@Override
-				public FileVisitResult visitFileFailed(Path file, IOException e) {
-					logger.error("[Ext Loading] listing files", e);
-					return FileVisitResult.CONTINUE;
-				}
-			});
-		} catch (IOException e) {
-			logger.error("[Ext Loading] listing files", e);
+		} else if (Files.isDirectory(path)) {
+			try {
+				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+						files.add(file.toString());
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFileFailed(Path file, IOException e) {
+						logger.error("[Ext Loading] listing files", e);
+						return FileVisitResult.CONTINUE;
+					}
+				});
+			} catch (IOException e) {
+				logger.error("[Ext Loading] listing files", e);
+			}
 		} else {
 			logger.warn("[Ext Loading] file not found: " + path);
 		}
@@ -197,20 +255,25 @@ public class Dictionary {
 	private void loadDictFile(DictSegment dict, Path file, boolean critical, String name) {
 		try (InputStream is = new FileInputStream(file.toFile())) {
 			BufferedReader br = new BufferedReader(
-					new InputStreamReader(is, "UTF-8"), 512);
+					new InputStreamReader(is, StandardCharsets.UTF_8), 512);
 			String word = br.readLine();
 			if (word != null) {
-				if (word.startsWith("\uFEFF"))
+				if (word.startsWith("\uFEFF")) {
 					word = word.substring(1);
+				}
 				for (; word != null; word = br.readLine()) {
 					word = word.trim();
-					if (word.isEmpty()) continue;
+					if (word.isEmpty()) {
+						continue;
+					}
 					dict.fillSegment(word.toCharArray());
 				}
 			}
 		} catch (FileNotFoundException e) {
 			logger.error("ik-analyzer: " + name + " not found", e);
-			if (critical) throw new RuntimeException("ik-analyzer: " + name + " not found!!!", e);
+			if (critical) {
+				throw new RuntimeException("ik-analyzer: " + name + " not found!!!", e);
+			}
 		} catch (IOException e) {
 			logger.error("ik-analyzer: " + name + " loading failed", e);
 		}
@@ -286,23 +349,9 @@ public class Dictionary {
 		return conf_dir.toAbsolutePath().toString();
 	}
 
-
-	/**
-	 * 获取词典单子实例
-	 * 
-	 * @return Dictionary 单例对象
-	 */
-	public static Dictionary getSingleton() {
-		if (singleton == null) {
-			throw new IllegalStateException("ik dict has not been initialized yet, please call initial method first.");
-		}
-		return singleton;
-	}
-
-
 	/**
 	 * 批量加载新词条
-	 * 
+	 *
 	 * @param words
 	 *            Collection<String>词条列表
 	 */
@@ -333,7 +382,7 @@ public class Dictionary {
 
 	/**
 	 * 检索匹配主词典
-	 * 
+	 *
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray) {
@@ -342,7 +391,7 @@ public class Dictionary {
 
 	/**
 	 * 检索匹配主词典
-	 * 
+	 *
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
@@ -351,7 +400,7 @@ public class Dictionary {
 
 	/**
 	 * 检索匹配量词词典
-	 * 
+	 *
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
@@ -360,7 +409,7 @@ public class Dictionary {
 
 	/**
 	 * 从已匹配的Hit中直接取出DictSegment，继续向下匹配
-	 * 
+	 *
 	 * @return Hit
 	 */
 	public Hit matchWithHit(char[] charArray, int currentIndex, Hit matchedHit) {
@@ -370,7 +419,7 @@ public class Dictionary {
 
 	/**
 	 * 判断是否是停止词
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
@@ -399,13 +448,11 @@ public class Dictionary {
 	private void loadExtDict() {
 		// 加载扩展词典配置
 		List<String> extDictFiles = getExtDictionarys();
-		if (extDictFiles != null) {
-			for (String extDictName : extDictFiles) {
-				// 读取扩展词典文件
-				logger.info("[Dict Loading] " + extDictName);
-				Path file = PathUtils.get(extDictName);
-				loadDictFile(_MainDict, file, false, "Extra Dict");
-			}
+		for (String extDictName : extDictFiles) {
+			// 读取扩展词典文件
+			logger.info("[Dict Loading] " + extDictName);
+			Path file = PathUtils.get(extDictName);
+			loadDictFile(_MainDict, file, false, "Extra Dict");
 		}
 	}
 
@@ -433,61 +480,6 @@ public class Dictionary {
 
 	}
 
-	private static List<String> getRemoteWords(String location) {
-		SpecialPermission.check();
-		return AccessController.doPrivileged((PrivilegedAction<List<String>>) () -> {
-			return getRemoteWordsUnprivileged(location);
-		});
-	}
-
-	/**
-	 * 从远程服务器上下载自定义词条
-	 */
-	private static List<String> getRemoteWordsUnprivileged(String location) {
-
-		List<String> buffer = new ArrayList<String>();
-		RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
-				.setSocketTimeout(60 * 1000).build();
-		CloseableHttpClient httpclient = HttpClients.createDefault();
-		CloseableHttpResponse response;
-		BufferedReader in;
-		HttpGet get = new HttpGet(location);
-		get.setConfig(rc);
-		try {
-			response = httpclient.execute(get);
-			if (response.getStatusLine().getStatusCode() == 200) {
-
-				String charset = "UTF-8";
-				// 获取编码，默认为utf-8
-				HttpEntity entity = response.getEntity();
-				if(entity!=null){
-					Header contentType = entity.getContentType();
-					if(contentType!=null&&contentType.getValue()!=null){
-						String typeValue = contentType.getValue();
-						if(typeValue!=null&&typeValue.contains("charset=")){
-							charset = typeValue.substring(typeValue.lastIndexOf("=") + 1);
-						}
-					}
-
-					if (entity.getContentLength() > 0 || entity.isChunked()) {
-						in = new BufferedReader(new InputStreamReader(entity.getContent(), charset));
-						String line;
-						while ((line = in.readLine()) != null) {
-							buffer.add(line);
-						}
-						in.close();
-						response.close();
-						return buffer;
-					}
-			}
-			}
-			response.close();
-		} catch (IllegalStateException | IOException e) {
-			logger.error("getRemoteWords {} error", e, location);
-		}
-		return buffer;
-	}
-
 	/**
 	 * 加载用户扩展的停止词词典
 	 */
@@ -501,14 +493,12 @@ public class Dictionary {
 
 		// 加载扩展停止词典
 		List<String> extStopWordDictFiles = getExtStopWordDictionarys();
-		if (extStopWordDictFiles != null) {
-			for (String extStopWordDictName : extStopWordDictFiles) {
-				logger.info("[Dict Loading] " + extStopWordDictName);
+		for (String extStopWordDictName : extStopWordDictFiles) {
+			logger.info("[Dict Loading] " + extStopWordDictName);
 
-				// 读取扩展词典文件
-				file = PathUtils.get(extStopWordDictName);
-				loadDictFile(_StopWords, file, false, "Extra Stopwords");
-			}
+			// 读取扩展词典文件
+			file = PathUtils.get(extStopWordDictName);
+			loadDictFile(_StopWords, file, false, "Extra Stopwords");
 		}
 
 		// 加载远程停用词典
