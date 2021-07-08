@@ -25,10 +25,11 @@ public class PropertiesHelper {
 	private final static String FILE_NAME = "IKAnalyzer.cfg.xml";
 
 	private Properties properties;
-	private Path confDir;
+	private String dictRoot;
 
 	public PropertiesHelper(Configuration configuration) {
-		this.confDir = configuration.getEnvironment().configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		Path confDir = configuration.getEnvironment().configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		this.dictRoot = confDir.toAbsolutePath().toString();
 		Path configFile = confDir.resolve(FILE_NAME);
 		InputStream input = null;
 		try {
@@ -47,6 +48,7 @@ public class PropertiesHelper {
 		}
 		if (input != null) {
 			try {
+				this.properties = new Properties();
 				properties.loadFromXML(input);
 			} catch (IOException e) {
 				logger.error("ik-analyzer", e);
@@ -61,12 +63,8 @@ public class PropertiesHelper {
 		return null;
 	}
 
-	public String getDictRoot() {
-		return confDir.toAbsolutePath().toString();
-	}
-
 	public Path getPathBaseOnDictRoot(String name) {
-		return this.get(this.getDictRoot(), name);
+		return this.get(this.dictRoot, name);
 	}
 
 	public Path get(String first, String... more) {
