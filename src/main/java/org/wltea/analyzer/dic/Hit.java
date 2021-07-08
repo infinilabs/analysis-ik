@@ -35,16 +35,16 @@ public class Hit {
 	private static final int PREFIX = 0x00000010;
 
 
-	//该HIT当前状态，默认未匹配
+	// 该HIT当前状态，默认未匹配
 	private int hitState = UNMATCH;
 
-	//记录词典匹配过程中，当前匹配到的词典分支节点
+	// 记录词典匹配过程中，当前匹配到的词典分支节点
 	private DictSegment matchedDictSegment;
-	/*
+	/**
 	 * 词段开始位置
 	 */
 	private int begin;
-	/*
+	/**
 	 * 词段的结束位置
 	 */
 	private int end;
@@ -80,14 +80,14 @@ public class Hit {
 	/**
 	 * 判断是否是不匹配
 	 */
-	public boolean isUnmatch() {
+	public boolean isUnMatch() {
 		return this.hitState == UNMATCH;
 	}
 
 	/**
 	 *
 	 */
-	public void setUnmatch() {
+	public void setUnMatch() {
 		this.hitState = UNMATCH;
 	}
 

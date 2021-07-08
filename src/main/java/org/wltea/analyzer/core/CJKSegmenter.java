@@ -45,7 +45,7 @@ class CJKSegmenter implements ISegmenter {
 		this.tmpHits = new LinkedList<Hit>();
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see org.wltea.analyzer.core.ISegmenter#analyze(org.wltea.analyzer.core.AnalyzeContext)
 	 */
 	@Override
@@ -67,7 +67,7 @@ class CJKSegmenter implements ISegmenter {
 							this.tmpHits.remove(hit);
 						}
 
-					} else if (hit.isUnmatch()) {
+					} else if (hit.isUnMatch()) {
 						//hit不是词，移除
 						this.tmpHits.remove(hit);
 					}
@@ -114,7 +114,7 @@ class CJKSegmenter implements ISegmenter {
 		}
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see org.wltea.analyzer.core.ISegmenter#reset()
 	 */
 	@Override

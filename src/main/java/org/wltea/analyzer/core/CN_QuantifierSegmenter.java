@@ -165,7 +165,7 @@ class CN_QuantifierSegmenter implements ISegmenter {
 							this.countHits.remove(hit);
 						}
 
-					} else if (hit.isUnmatch()) {
+					} else if (hit.isUnMatch()) {
 						//hit不是词，移除
 						this.countHits.remove(hit);
 					}

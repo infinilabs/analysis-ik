@@ -31,49 +31,49 @@ import java.util.Arrays;
  */
 class LetterSegmenter implements ISegmenter {
 
-	//子分词器标签
+	// 子分词器标签
 	static final String SEGMENTER_NAME = "LETTER_SEGMENTER";
-	//链接符号
-	private static final char[] Letter_Connector = new char[]{'#', '&', '+', '-', '.', '@', '_'};
+	// 链接符号
+	private static final char[] LETTER_CONNECTOR = new char[]{'#', '&', '+', '-', '.', '@', '_'};
 
-	//数字符号
-	private static final char[] Num_Connector = new char[]{',', '.'};
+	// 数字符号
+	private static final char[] NUM_CONNECTOR = new char[]{',', '.'};
 
-	/*
+	/**
 	 * 词元的开始位置，
 	 * 同时作为子分词器状态标识
 	 * 当start > -1 时，标识当前的分词器正在处理字符
 	 */
 	private int start;
-	/*
+	/**
 	 * 记录词元结束位置
 	 * end记录的是在词元中最后一个出现的Letter但非Sign_Connector的字符的位置
 	 */
 	private int end;
 
-	/*
+	/**
 	 * 字母起始位置
 	 */
 	private int englishStart;
 
-	/*
+	/**
 	 * 字母结束位置
 	 */
 	private int englishEnd;
 
-	/*
+	/**
 	 * 阿拉伯数字起始位置
 	 */
 	private int arabicStart;
 
-	/*
+	/**
 	 * 阿拉伯数字结束位置
 	 */
 	private int arabicEnd;
 
 	LetterSegmenter() {
-		Arrays.sort(Letter_Connector);
-		Arrays.sort(Num_Connector);
+		Arrays.sort(LETTER_CONNECTOR);
+		Arrays.sort(NUM_CONNECTOR);
 		this.start = -1;
 		this.end = -1;
 		this.englishStart = -1;
@@ -83,7 +83,7 @@ class LetterSegmenter implements ISegmenter {
 	}
 
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see org.wltea.analyzer.core.ISegmenter#analyze(org.wltea.analyzer.core.AnalyzeContext)
 	 */
 	@Override
@@ -105,7 +105,7 @@ class LetterSegmenter implements ISegmenter {
 		}
 	}
 
-	/* (non-Javadoc)
+	/** (non-Javadoc)
 	 * @see org.wltea.analyzer.core.ISegmenter#reset()
 	 */
 	@Override
@@ -121,14 +121,9 @@ class LetterSegmenter implements ISegmenter {
 	/**
 	 * 处理数字字母混合输出
 	 * 如：windos2000 | linliangyi2005@gmail.com
-	 //	 * @param input
-	 * @param context
-	 * @return
 	 */
 	private boolean processMixLetter(AnalyzeContext context) {
-		boolean needLock = false;
-
-		if (this.start == -1) {//当前的分词器尚未开始处理字符
+		if (this.start == -1) { // 当前的分词器尚未开始处理字符
 			if (CharacterUtil.CHAR_ARABIC == context.getCurrentCharType()
 					|| CharacterUtil.CHAR_ENGLISH == context.getCurrentCharType()) {
 				//记录起始指针的位置,标明分词器进入处理状态
@@ -136,10 +131,10 @@ class LetterSegmenter implements ISegmenter {
 				this.end = start;
 			}
 
-		} else {//当前的分词器正在处理字符
+		} else { // 当前的分词器正在处理字符
 			if (CharacterUtil.CHAR_ARABIC == context.getCurrentCharType()
 					|| CharacterUtil.CHAR_ENGLISH == context.getCurrentCharType()) {
-				//记录下可能的结束位置
+				// 记录下可能的结束位置
 				this.end = context.getCursor();
 
 			} else if (CharacterUtil.CHAR_USELESS == context.getCurrentCharType()
@@ -165,23 +160,14 @@ class LetterSegmenter implements ISegmenter {
 		}
 
 		//判断是否锁定缓冲区
-		if (this.start == -1 && this.end == -1) {
-			//对缓冲区解锁
-			needLock = false;
-		} else {
-			needLock = true;
-		}
-		return needLock;
+		// false : 对缓冲区解锁
+		return this.start != -1 || this.end != -1;
 	}
 
 	/**
 	 * 处理纯英文字母输出
-	 * @param context
-	 * @return
 	 */
 	private boolean processEnglishLetter(AnalyzeContext context) {
-		boolean needLock = false;
-
 		if (this.englishStart == -1) {//当前的分词器尚未开始处理英文字符
 			if (CharacterUtil.CHAR_ENGLISH == context.getCurrentCharType()) {
 				//记录起始指针的位置,标明分词器进入处理状态
@@ -211,23 +197,14 @@ class LetterSegmenter implements ISegmenter {
 		}
 
 		//判断是否锁定缓冲区
-		if (this.englishStart == -1 && this.englishEnd == -1) {
-			//对缓冲区解锁
-			needLock = false;
-		} else {
-			needLock = true;
-		}
-		return needLock;
+		// false : 对缓冲区解锁
+		return this.englishStart != -1 || this.englishEnd != -1;
 	}
 
 	/**
 	 * 处理阿拉伯数字输出
-	 * @param context
-	 * @return
 	 */
 	private boolean processArabicLetter(AnalyzeContext context) {
-		boolean needLock = false;
-
 		if (this.arabicStart == -1) {//当前的分词器尚未开始处理数字字符
 			if (CharacterUtil.CHAR_ARABIC == context.getCurrentCharType()) {
 				//记录起始指针的位置,标明分词器进入处理状态
@@ -260,32 +237,23 @@ class LetterSegmenter implements ISegmenter {
 		}
 
 		//判断是否锁定缓冲区
-		if (this.arabicStart == -1 && this.arabicEnd == -1) {
-			//对缓冲区解锁
-			needLock = false;
-		} else {
-			needLock = true;
-		}
-		return needLock;
+		//false : 对缓冲区解锁
+		return this.arabicStart != -1 || this.arabicEnd != -1;
 	}
 
 	/**
 	 * 判断是否是字母连接符号
-	 * @param input
-	 * @return
 	 */
 	private boolean isLetterConnector(char input) {
-		int index = Arrays.binarySearch(Letter_Connector, input);
+		int index = Arrays.binarySearch(LETTER_CONNECTOR, input);
 		return index >= 0;
 	}
 
 	/**
 	 * 判断是否是数字连接符号
-	 * @param input
-	 * @return
 	 */
 	private boolean isNumConnector(char input) {
-		int index = Arrays.binarySearch(Num_Connector, input);
+		int index = Arrays.binarySearch(NUM_CONNECTOR, input);
 		return index >= 0;
 	}
 }

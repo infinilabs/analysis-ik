@@ -44,8 +44,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 
 	/**
 	 * 向LexemePath追加相交的Lexeme
-	 * @param lexeme
-	 * @return
 	 */
 	boolean addCrossLexeme(Lexeme lexeme) {
 		if (this.isEmpty()) {
@@ -54,25 +52,21 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 			this.pathEnd = lexeme.getBegin() + lexeme.getLength();
 			this.payloadLength += lexeme.getLength();
 			return true;
+		}
 
-		} else if (this.checkCross(lexeme)) {
+		if (this.checkCross(lexeme)) {
 			this.addLexeme(lexeme);
 			if (lexeme.getBegin() + lexeme.getLength() > this.pathEnd) {
 				this.pathEnd = lexeme.getBegin() + lexeme.getLength();
 			}
 			this.payloadLength = this.pathEnd - this.pathBegin;
 			return true;
-
-		} else {
-			return false;
-
 		}
+		return false;
 	}
 
 	/**
 	 * 向LexemePath追加不相交的Lexeme
-	 * @param lexeme
-	 * @return
 	 */
 	boolean addNotCrossLexeme(Lexeme lexeme) {
 		if (this.isEmpty()) {
@@ -81,25 +75,23 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 			this.pathEnd = lexeme.getBegin() + lexeme.getLength();
 			this.payloadLength += lexeme.getLength();
 			return true;
-
-		} else if (this.checkCross(lexeme)) {
-			return false;
-
-		} else {
-			this.addLexeme(lexeme);
-			this.payloadLength += lexeme.getLength();
-			Lexeme head = this.peekFirst();
-			this.pathBegin = head.getBegin();
-			Lexeme tail = this.peekLast();
-			this.pathEnd = tail.getBegin() + tail.getLength();
-			return true;
-
 		}
+
+		if (this.checkCross(lexeme)) {
+			return false;
+		}
+
+		this.addLexeme(lexeme);
+		this.payloadLength += lexeme.getLength();
+		Lexeme head = this.peekFirst();
+		this.pathBegin = head.getBegin();
+		Lexeme tail = this.peekLast();
+		this.pathEnd = tail.getBegin() + tail.getLength();
+		return true;
 	}
 
 	/**
 	 * 移除尾部的Lexeme
-	 * @return
 	 */
 	Lexeme removeTail() {
 		Lexeme tail = this.pollLast();
@@ -117,8 +109,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 
 	/**
 	 * 检测词元位置交叉（有歧义的切分）
-	 * @param lexeme
-	 * @return
 	 */
 	boolean checkCross(Lexeme lexeme) {
 		return (lexeme.getBegin() >= this.pathBegin && lexeme.getBegin() < this.pathEnd)
@@ -135,7 +125,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 
 	/**
 	 * 获取Path的有效词长
-	 * @return
 	 */
 	int getPayloadLength() {
 		return this.payloadLength;
@@ -143,7 +132,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 
 	/**
 	 * 获取LexemePath的路径长度
-	 * @return
 	 */
 	int getPathLength() {
 		return this.pathEnd - this.pathBegin;
@@ -152,7 +140,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 
 	/**
 	 * X权重（词元长度积）
-	 * @return
 	 */
 	int getXWeight() {
 		int product = 1;
@@ -166,7 +153,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 
 	/**
 	 * 词元位置权重
-	 * @return
 	 */
 	int getPWeight() {
 		int pWeight = 0;
@@ -193,6 +179,7 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 		return theCopy;
 	}
 
+	@Override
 	public int compareTo(LexemePath o) {
 		//比较有效文本长度
 		if (this.payloadLength > o.payloadLength) {
@@ -230,7 +217,6 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 							} else if (this.getPWeight() < o.getPWeight()) {
 								return 1;
 							}
-
 						}
 					}
 				}
@@ -239,8 +225,9 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 		return 0;
 	}
 
+	@Override
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("pathBegin  : ").append(pathBegin).append("\r\n");
 		sb.append("pathEnd  : ").append(pathEnd).append("\r\n");
 		sb.append("payloadLength  : ").append(payloadLength).append("\r\n");

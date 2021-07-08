@@ -23,8 +23,10 @@
  */
 package org.wltea.analyzer.core;
 
+import java.util.Objects;
+
 /**
- * IK分词器专用的Lexem快速排序集合
+ * IK分词器专用的Lexeme快速排序集合
  */
 class QuickSortSet {
 	//链表头
@@ -40,7 +42,6 @@ class QuickSortSet {
 
 	/**
 	 * 向链表集合添加词元
-	 * @param lexeme
 	 */
 	boolean addLexeme(Lexeme lexeme) {
 		Cell newCell = new Cell(lexeme);
@@ -49,50 +50,54 @@ class QuickSortSet {
 			this.tail = newCell;
 			this.size++;
 			return true;
+		}
+		// 词元与尾部词元相同，不放入集合
+		if (this.tail.compareTo(newCell) == 0) {
+			return false;
+		}
+		// 词元接入链表尾部
+		if (this.tail.compareTo(newCell) < 0) {
+			this.tail.next = newCell;
+			newCell.prev = this.tail;
+			this.tail = newCell;
+			this.size++;
+			return true;
+		}
 
-		} else {
-			if (this.tail.compareTo(newCell) == 0) {//词元与尾部词元相同，不放入集合
-				return false;
+		// 词元接入链表头部
+		if (this.head.compareTo(newCell) > 0) {
+			this.head.prev = newCell;
+			newCell.next = this.head;
+			this.head = newCell;
+			this.size++;
+			return true;
 
-			} else if (this.tail.compareTo(newCell) < 0) {//词元接入链表尾部
-				this.tail.next = newCell;
-				newCell.prev = this.tail;
-				this.tail = newCell;
-				this.size++;
-				return true;
+		}
+		// 从尾部上逆
+		Cell index = this.tail;
+		while (index != null && index.compareTo(newCell) > 0) {
+			index = index.prev;
+		}
 
-			} else if (this.head.compareTo(newCell) > 0) {//词元接入链表头部
-				this.head.prev = newCell;
-				newCell.next = this.head;
-				this.head = newCell;
-				this.size++;
-				return true;
-
-			} else {
-				//从尾部上逆
-				Cell index = this.tail;
-				while (index != null && index.compareTo(newCell) > 0) {
-					index = index.prev;
-				}
-				if (index.compareTo(newCell) == 0) {//词元与集合中的词元重复，不放入集合
-					return false;
-
-				} else if (index.compareTo(newCell) < 0) {//词元插入链表中的某个位置
-					newCell.prev = index;
-					newCell.next = index.next;
-					index.next.prev = newCell;
-					index.next = newCell;
-					this.size++;
-					return true;
-				}
-			}
+		// 词元与集合中的词元重复，不放入集合
+		if (Objects.isNull(index)
+				|| index.compareTo(newCell) == 0) {
+			return false;
+		}
+		// 词元插入链表中的某个位置
+		if (index.compareTo(newCell) < 0) {
+			newCell.prev = index;
+			newCell.next = index.next;
+			index.next.prev = newCell;
+			index.next = newCell;
+			this.size++;
+			return true;
 		}
 		return false;
 	}
 
 	/**
 	 * 返回链表头部元素
-	 * @return
 	 */
 	Lexeme peekFirst() {
 		if (this.head != null) {
@@ -112,19 +117,19 @@ class QuickSortSet {
 			this.tail = null;
 			this.size--;
 			return first;
-		} else if (this.size > 1) {
+		}
+
+		if (this.size > 1) {
 			Lexeme first = this.head.lexeme;
 			this.head = this.head.next;
 			this.size--;
 			return first;
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	/**
 	 * 返回链表尾部元素
-	 * @return
 	 */
 	Lexeme peekLast() {
 		if (this.tail != null) {
@@ -144,21 +149,19 @@ class QuickSortSet {
 			this.tail = null;
 			this.size--;
 			return last;
+		}
 
-		} else if (this.size > 1) {
+		if (this.size > 1) {
 			Lexeme last = this.tail.lexeme;
 			this.tail = this.tail.prev;
 			this.size--;
 			return last;
-
-		} else {
-			return null;
 		}
+		return null;
 	}
 
 	/**
 	 * 返回集合大小
-	 * @return
 	 */
 	int size() {
 		return this.size;
@@ -166,7 +169,6 @@ class QuickSortSet {
 
 	/**
 	 * 判断集合是否为空
-	 * @return
 	 */
 	boolean isEmpty() {
 		return this.size == 0;
@@ -174,7 +176,6 @@ class QuickSortSet {
 
 	/**
 	 * 返回lexeme链的头部
-	 * @return
 	 */
 	Cell getHead() {
 		return this.head;
@@ -207,7 +208,7 @@ class QuickSortSet {
 	 * QuickSortSet集合单元
 	 *
 	 */
-	class Cell implements Comparable<Cell> {
+	static class Cell implements Comparable<Cell> {
 		private Cell prev;
 		private Cell next;
 		private Lexeme lexeme;
@@ -219,6 +220,7 @@ class QuickSortSet {
 			this.lexeme = lexeme;
 		}
 
+		@Override
 		public int compareTo(Cell o) {
 			return this.lexeme.compareTo(o.lexeme);
 		}

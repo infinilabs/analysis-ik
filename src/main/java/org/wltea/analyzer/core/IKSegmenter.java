@@ -57,7 +57,6 @@ public final class IKSegmenter {
 		this.init();
 	}
 
-
 	/**
 	 * 初始化
 	 */
@@ -91,8 +90,8 @@ public final class IKSegmenter {
 	 * @throws java.io.IOException
 	 */
 	public synchronized Lexeme next() throws IOException {
-		Lexeme l = null;
-		while ((l = context.getNextLexeme()) == null) {
+		Lexeme lexeme = null;
+		while ((lexeme = context.getNextLexeme()) == null) {
 			/*
 			 * 从reader中读取数据，填充buffer
 			 * 如果reader是分次读入buffer的，那么buffer要  进行移位处理
@@ -130,7 +129,7 @@ public final class IKSegmenter {
 			//记录本次分词的缓冲区位移
 			context.markBufferOffset();
 		}
-		return l;
+		return lexeme;
 	}
 
 	/**

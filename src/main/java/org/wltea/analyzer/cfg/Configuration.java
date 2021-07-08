@@ -33,9 +33,9 @@ public class Configuration {
 		this.environment = env;
 		this.settings = settings;
 
-		this.useSmart = settings.get("use_smart", "false").equals("true");
-		this.enableLowercase = settings.get("enable_lowercase", "true").equals("true");
-		this.enableRemoteDict = settings.get("enable_remote_dict", "true").equals("true");
+		this.useSmart = "true".equals(settings.get("use_smart", "false"));
+		this.enableLowercase = "true".equals(settings.get("enable_lowercase", "true"));
+		this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
 
 		Dictionary.initial(this);
 	}

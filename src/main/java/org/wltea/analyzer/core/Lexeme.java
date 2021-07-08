@@ -24,7 +24,7 @@
 package org.wltea.analyzer.core;
 
 /**
- * IK词元对象 
+ * IK词元对象
  */
 public class Lexeme implements Comparable<Lexeme> {
 	//lexemeType常量
@@ -60,7 +60,6 @@ public class Lexeme implements Comparable<Lexeme> {
 	//词元类型
 	private int lexemeType;
 
-
 	public Lexeme(int offset, int begin, int length, int lexemeType) {
 		this.offset = offset;
 		this.begin = begin;
@@ -71,11 +70,12 @@ public class Lexeme implements Comparable<Lexeme> {
 		this.lexemeType = lexemeType;
 	}
 
-	/*
+	/**
 	 * 判断词元相等算法
 	 * 起始位置偏移、起始位置、终止位置相同
 	 * @see java.lang.Object#equals(Object o)
 	 */
+	@Override
 	public boolean equals(Object o) {
 		if (o == null) {
 			return false;
@@ -87,46 +87,38 @@ public class Lexeme implements Comparable<Lexeme> {
 
 		if (o instanceof Lexeme) {
 			Lexeme other = (Lexeme) o;
-			if (this.offset == other.getOffset()
+			return this.offset == other.getOffset()
 					&& this.begin == other.getBegin()
-					&& this.length == other.getLength()) {
-				return true;
-			} else {
-				return false;
-			}
+					&& this.length == other.getLength();
 		} else {
 			return false;
 		}
 	}
 
-	/*
+	/**
 	 * 词元哈希编码算法
 	 * @see java.lang.Object#hashCode()
 	 */
+	@Override
 	public int hashCode() {
 		int absBegin = getBeginPosition();
 		int absEnd = getEndPosition();
 		return (absBegin * 37) + (absEnd * 31) + ((absBegin * absEnd) % getLength()) * 11;
 	}
 
-	/*
+	/**
 	 * 词元在排序集合中的比较算法
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
+	@Override
 	public int compareTo(Lexeme other) {
 		//起始位置优先
 		if (this.begin < other.getBegin()) {
 			return -1;
 		} else if (this.begin == other.getBegin()) {
 			//词元长度优先
-			if (this.length > other.getLength()) {
-				return -1;
-			} else if (this.length == other.getLength()) {
-				return 0;
-			} else {//this.length < other.getLength()
-				return 1;
-			}
-
+			//this.length < other.getLength()
+			return Integer.compare(other.getLength(), this.length);
 		} else {//this.begin > other.getBegin()
 			return 1;
 		}
@@ -253,31 +245,21 @@ public class Lexeme implements Comparable<Lexeme> {
 
 	/**
 	 * 合并两个相邻的词元
-	 * @param l
-	 * @param lexemeType
 	 * @return boolean 词元是否成功合并
 	 */
-	public boolean append(Lexeme l, int lexemeType) {
-		if (l != null && this.getEndPosition() == l.getBeginPosition()) {
-			this.length += l.getLength();
+	public boolean append(Lexeme lexeme, int lexemeType) {
+		if (lexeme != null && this.getEndPosition() == lexeme.getBeginPosition()) {
+			this.length += lexeme.getLength();
 			this.lexemeType = lexemeType;
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
-
-	/**
-	 *
-	 */
+	@Override
 	public String toString() {
-		StringBuffer strbuf = new StringBuffer();
-		strbuf.append(this.getBeginPosition()).append("-").append(this.getEndPosition());
-		strbuf.append(" : ").append(this.lexemeText).append(" : \t");
-		strbuf.append(this.getLexemeTypeString());
-		return strbuf.toString();
+		return this.getBeginPosition() + "-" + this.getEndPosition() +
+				" : " + this.lexemeText + " : \t" +
+				this.getLexemeTypeString();
 	}
-
-
 }
