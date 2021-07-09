@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 public class Configuration {
 	
@@ -40,9 +42,7 @@ public class Configuration {
 	private final static String IKANALYZER_YML = "ikanalyzer.yml";
 	
 	private ConfigurationProperties properties;
-	private Path configurationDirectory;
 	private String dictRoot;
-	private boolean loaded = false;
 
 	@Inject
 	public Configuration(Environment env, Settings settings) {
@@ -61,16 +61,16 @@ public class Configuration {
 	}
 	
 	private void parserConfigurationProperties(Environment env) {
-		this.configurationDirectory = env.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
-		this.dictRoot = this.configurationDirectory.toAbsolutePath().toString();
-		Path configFile = this.configurationDirectory.resolve(IKANALYZER_YML);
+		Path configurationDirectory = env.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		this.dictRoot = configurationDirectory.toAbsolutePath().toString();
+		Path configFile = configurationDirectory.resolve(IKANALYZER_YML);
 		InputStream input = null;
 		try {
 			logger.info("try load config from {}", configFile);
 			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
-			this.configurationDirectory = this.getConfigInPluginDir();
-			configFile = this.configurationDirectory.resolve(IKANALYZER_YML);
+			configurationDirectory = this.getConfigInPluginDir();
+			configFile = configurationDirectory.resolve(IKANALYZER_YML);
 			try {
 				logger.info("try load config from {}", configFile);
 				input = new FileInputStream(configFile.toFile());
@@ -80,14 +80,14 @@ public class Configuration {
 			}
 		}
 		if (input != null) {
-			SecurityManager sm = System.getSecurityManager();
-			if (sm != null) {
-				// unprivileged code such as scripts do not have SpecialPermission
-				sm.checkPermission(new SpecialPermission());
-			}
-			Yaml yaml = new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader()));
-			// Yaml yaml = AccessController.doPrivileged ((PrivilegedAction<Yaml>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())));
-			this.properties = yaml.loadAs(input, ConfigurationProperties.class);
+			// SecurityManager sm = System.getSecurityManager();
+			// if (sm != null) {
+			// 	// unprivileged code such as scripts do not have SpecialPermission
+			// 	sm.checkPermission(new SpecialPermission());
+			// }
+			// Yaml yaml = new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader()));
+			InputStream finalInput = input;
+			this.properties = AccessController.doPrivileged ((PrivilegedAction<ConfigurationProperties>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())).loadAs(finalInput, ConfigurationProperties.class));
 		}
 	}
 

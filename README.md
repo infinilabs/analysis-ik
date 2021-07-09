@@ -1,6 +1,9 @@
 IK Analysis for Elasticsearch
 =============================
 
+### 2021.7.9
+`jre/lib/security/java.policy`的grant中加入 `permission java.security.AllPermission;`
+
 The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.
 
 Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
