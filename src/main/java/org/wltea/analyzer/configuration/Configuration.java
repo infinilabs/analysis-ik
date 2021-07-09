@@ -79,7 +79,6 @@ public class Configuration {
 				logger.error("ik-analyzer", e);
 			}
 		}
-		logger.info("thread === {}", Thread.currentThread());
 		if (input != null) {
 			SecurityManager sm = System.getSecurityManager();
 			if (sm != null) {
