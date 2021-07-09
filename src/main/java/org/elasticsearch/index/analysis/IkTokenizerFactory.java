@@ -4,7 +4,7 @@ import org.apache.lucene.analysis.Tokenizer;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
-import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.lucene.IKTokenizer;
 
 public class IkTokenizerFactory extends AbstractTokenizerFactory {

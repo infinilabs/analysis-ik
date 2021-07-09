@@ -25,7 +25,7 @@ package org.wltea.analyzer.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Tokenizer;
-import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.configuration.Configuration;
 
 /**
  * IK分词器，Lucene Analyzer接口实现

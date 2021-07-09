@@ -1,0 +1,9 @@
+extDictionaries:
+  - extra_main.dic
+  - extra_single_word.dic
+  - extra_single_word_full.dic
+  - extra_single_word_low_freq.dic
+extStopWordsDictionaries:
+  - extra_stopword.dic
+remoteExtDictionaries:
+remoteStopWordsDictionaries:

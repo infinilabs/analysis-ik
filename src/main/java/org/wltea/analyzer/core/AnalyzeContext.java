@@ -23,7 +23,7 @@
  */
 package org.wltea.analyzer.core;
 
-import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
 
 import java.io.IOException;

@@ -3,7 +3,7 @@ package org.elasticsearch.index.analysis;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
-import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.lucene.IKAnalyzer;
 
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {

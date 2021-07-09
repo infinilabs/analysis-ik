@@ -23,19 +23,13 @@
  */
 package org.wltea.analyzer.dic;
 
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
-import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.configuration.Configuration;
+import org.wltea.analyzer.configuration.ConfigurationProperties;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
-import org.wltea.analyzer.help.PropertiesHelper;
 import org.wltea.analyzer.help.RemoteDictDownloader;
+import org.wltea.analyzer.help.StringHelper;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -46,7 +40,10 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -59,15 +56,8 @@ public class Dictionary {
 
 	private static final Logger logger = ESPluginLoggerFactory.getLogger(Dictionary.class.getName());
 	private static final String PATH_DIC_MAIN = "main.dic";
-	private static final String PATH_DIC_SURNAME = "surname.dic";
 	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
-	private static final String PATH_DIC_SUFFIX = "suffix.dic";
-	private static final String PATH_DIC_PREP = "preposition.dic";
 	private static final String PATH_DIC_STOP = "stopword.dic";
-	private final static String EXT_DICT = "ext_dict";
-	private final static String REMOTE_EXT_DICT = "remote_ext_dict";
-	private final static String EXT_STOP = "ext_stopwords";
-	private final static String REMOTE_EXT_STOP = "remote_ext_stopwords";
 	/*
 	 * 词典单子实例
 	 */
@@ -80,39 +70,38 @@ public class Dictionary {
 	 * 配置对象
 	 */
 	private Configuration configuration;
-	private PropertiesHelper propertiesHelper;
+	private ConfigurationProperties configurationProperties;
 
 	private Dictionary(Configuration configuration) {
 		this.configuration = configuration;
-		this.propertiesHelper = new PropertiesHelper(configuration);
+		this.configurationProperties = configuration.getProperties();
 	}
 
 	/**
 	 * 词典初始化 由于IK Analyzer的词典采用Dictionary类的静态方法进行词典初始化
 	 * 只有当Dictionary类被实际调用时，才会开始载入词典， 这将延长首次分词操作的时间 该方法提供了一个在应用加载阶段就初始化字典的手段
 	 */
-	public static synchronized void initial(Configuration cfg) {
+	public static synchronized void initial(Configuration configuration) {
 		if (singleton == null) {
 			synchronized (Dictionary.class) {
 				if (singleton == null) {
 
-					singleton = new Dictionary(cfg);
+					singleton = new Dictionary(configuration);
 					singleton.loadMainDict();
-					singleton.loadSurnameDict();
 					singleton.loadQuantifierDict();
-					singleton.loadSuffixDict();
-					singleton.loadPrepDict();
 					singleton.loadStopWordDict();
 
-					if (cfg.isEnableRemoteDict()) {
+					if (configuration.isEnableRemoteDict()) {
 						// 建立监控线程
-						for (String location : singleton.getExtDictionaries(REMOTE_EXT_DICT, false)) {
+						List<String> remoteExtDictionaries = singleton.configurationProperties.getRemoteExtDictionaries();
+						List<String> remoteStopWordsDictionaries = singleton.configurationProperties.getRemoteStopWordsDictionaries();
+						List<String> allRemoteDictionaries = new ArrayList<>();
+						allRemoteDictionaries.addAll(remoteExtDictionaries);
+						allRemoteDictionaries.addAll(remoteStopWordsDictionaries);
+						allRemoteDictionaries.forEach(location -> {
 							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
-						}
-						for (String location : singleton.getExtDictionaries(REMOTE_EXT_STOP, false)) {
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
-						}
+							pool.scheduleAtFixedRate(new Monitor(location.trim()), 10, 60, TimeUnit.SECONDS);
+						});
 					}
 				}
 			}
@@ -136,23 +125,12 @@ public class Dictionary {
 		return AccessController.doPrivileged((PrivilegedAction<List<String>>) () -> RemoteDictDownloader.getRemoteWordsUnprivileged(location));
 	}
 
-	private List<String> getExtDictionaries(String dict, boolean walk) {
+	private List<String> walkFiles(List<String> filePaths) {
 		List<String> extDictFiles = new ArrayList<>(2);
-		String extDictCfg = this.propertiesHelper.getProperty(dict);
-		if (Objects.isNull(extDictCfg)) {
-			return extDictFiles;
-		}
-		String[] filePaths = extDictCfg.split(";");
-		for (String filePath : filePaths) {
-			if (filePath != null && !"".equals(filePath.trim())) {
-				if (walk) {
-					Path file = this.propertiesHelper.getPathBaseOnDictRoot(filePath.trim());
-					walkFileTree(extDictFiles, file);
-				} else {
-					extDictFiles.add(filePath);
-				}
-			}
-		}
+		filePaths.forEach(filePath -> {
+			Path file = this.configuration.getPathBaseOnDictRoot(filePath);
+			walkFileTree(extDictFiles, file);
+		});
 		return extDictFiles;
 	}
 
@@ -162,28 +140,33 @@ public class Dictionary {
 	 * @param words Collection<String>词条列表
 	 */
 	public void addWords(Collection<String> words) {
-		if (words != null) {
-			for (String word : words) {
-				if (word != null) {
-					// 批量加载词条到主内存词典中
-					singleton.mainDictionary.fillSegment(word.trim().toCharArray());
-				}
-			}
-		}
+		this.addWords(words, true);
 	}
 
 	/**
 	 * 批量移除（屏蔽）词条
 	 */
 	public void disableWords(Collection<String> words) {
-		if (words != null) {
-			for (String word : words) {
-				if (word != null) {
-					// 批量屏蔽词条
-					singleton.mainDictionary.disableSegment(word.trim().toCharArray());
-				}
-			}
+		this.addWords(words, false);
+	}
+
+	/**
+	 * 批量加载新词条
+	 *
+	 * @param words Collection<String>词条列表
+	 * @param enabled true表明一个完整的词，false表示从词典中屏蔽当前词
+	 */
+	private void addWords(Collection<String> words, boolean enabled) {
+		if (Objects.isNull(words)) {
+			return;
 		}
+		words.stream()
+				.filter(StringHelper::nonBlank)
+				.map(String::trim)
+				.forEach(word -> {
+					// 批量加载词条到主内存词典中或stop word中
+					singleton.mainDictionary.fillSegment(word.toCharArray(), enabled);
+				});
 	}
 
 	/**
@@ -240,12 +223,13 @@ public class Dictionary {
 		mainDictionary = new DictSegment((char) 0);
 
 		// 读取主词典文件
-		Path file = this.propertiesHelper.getPathBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
+		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
 		loadDictFile(mainDictionary, file, false, "Main Dict");
 		// 加载扩展词典
 		this.loadExtDict();
 		// 加载远程自定义词库
-		this.loadRemoteExtDict(mainDictionary, REMOTE_EXT_DICT);
+		List<String> remoteExtDictionaries = this.configurationProperties.getRemoteExtDictionaries();
+		this.loadRemoteExtDict(mainDictionary, remoteExtDictionaries);
 	}
 
 	/**
@@ -253,11 +237,12 @@ public class Dictionary {
 	 */
 	private void loadExtDict() {
 		// 加载扩展词典配置
-		List<String> extDictFiles = this.getExtDictionaries(EXT_DICT, true);
+		List<String> extDictFiles = this.configurationProperties.getExtDictionaries();
+		extDictFiles = this.walkFiles(extDictFiles);
 		for (String extDictName : extDictFiles) {
 			// 读取扩展词典文件
 			logger.info("[Dict Loading] " + extDictName);
-			Path file = this.propertiesHelper.get(extDictName);
+			Path file = this.configuration.get(extDictName);
 			loadDictFile(mainDictionary, file, false, "Extra Dict");
 		}
 	}
@@ -270,26 +255,28 @@ public class Dictionary {
 		stopWordsDictionary = new DictSegment((char) 0);
 
 		// 读取主词典文件
-		Path file = this.propertiesHelper.getPathBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
+		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
 		loadDictFile(stopWordsDictionary, file, false, "Main Stopwords");
 
 		// 加载扩展停止词典
-		List<String> extStopWordDictFiles = this.getExtDictionaries(EXT_STOP, true);
+		List<String> extStopWordDictFiles = this.configurationProperties.getExtStopWordsDictionaries();
+		extStopWordDictFiles = this.walkFiles(extStopWordDictFiles);
 		for (String extStopWordDictName : extStopWordDictFiles) {
 			logger.info("[Dict Loading] " + extStopWordDictName);
 
 			// 读取扩展词典文件
-			file = this.propertiesHelper.get(extStopWordDictName);
+			file = this.configuration.get(extStopWordDictName);
 			loadDictFile(stopWordsDictionary, file, false, "Extra Stopwords");
 		}
 
 		// 加载远程停用词典
-		this.loadRemoteExtDict(stopWordsDictionary, REMOTE_EXT_STOP);
+		List<String> remoteStopWordsDictionaries = this.configurationProperties.getRemoteStopWordsDictionaries();
+		this.loadRemoteExtDict(stopWordsDictionary, remoteStopWordsDictionaries);
 	}
 
-	private void loadRemoteExtDict(DictSegment dictSegment, String dict) {
-		List<String> remoteExtStopWordDictFiles = this.getExtDictionaries(dict, false);
-		for (String location : remoteExtStopWordDictFiles) {
+	private void loadRemoteExtDict(DictSegment dictSegment,
+								   List<String> remoteDictFiles) {
+		for (String location : remoteDictFiles) {
 			logger.info("[Dict Loading] " + location);
 			List<String> lists = getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
@@ -314,26 +301,8 @@ public class Dictionary {
 		// 建立一个量词典实例
 		quantifierDictionary = new DictSegment((char) 0);
 		// 读取量词词典文件
-		Path file = this.propertiesHelper.getPathBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
+		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
 		loadDictFile(quantifierDictionary, file, false, "Quantifier");
-	}
-
-	private void loadSurnameDict() {
-		DictSegment surnameDict = new DictSegment((char) 0);
-		Path file = this.propertiesHelper.getPathBaseOnDictRoot(Dictionary.PATH_DIC_SURNAME);
-		loadDictFile(surnameDict, file, true, "Surname");
-	}
-
-	private void loadSuffixDict() {
-		DictSegment suffixDict = new DictSegment((char) 0);
-		Path file = this.propertiesHelper.getPathBaseOnDictRoot(Dictionary.PATH_DIC_SUFFIX);
-		loadDictFile(suffixDict, file, true, "Suffix");
-	}
-
-	private void loadPrepDict() {
-		DictSegment prepDict = new DictSegment((char) 0);
-		Path file = this.propertiesHelper.getPathBaseOnDictRoot(Dictionary.PATH_DIC_PREP);
-		loadDictFile(prepDict, file, true, "Preposition");
 	}
 
 	void reLoadMainDict() {
