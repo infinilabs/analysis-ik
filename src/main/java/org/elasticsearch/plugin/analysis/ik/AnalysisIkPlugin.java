@@ -17,8 +17,6 @@ public class AnalysisIkPlugin extends Plugin implements AnalysisPlugin {
 
 	public static String PLUGIN_NAME = "analysis-ik";
 
-	public static boolean configurationLoaded = false;
-
 	@Override
 	public Map<String, AnalysisModule.AnalysisProvider<TokenizerFactory>> getTokenizers() {
 		Map<String, AnalysisModule.AnalysisProvider<TokenizerFactory>> extra = new HashMap<>();

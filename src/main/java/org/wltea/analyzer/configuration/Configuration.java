@@ -40,13 +40,14 @@ public class Configuration {
 	private boolean enableLowercase = true;
 	
 	private final static String IKANALYZER_YML = "ikanalyzer.yml";
-	
+
+	private static boolean isLoaded = false;
 	private ConfigurationProperties properties;
 	private String dictRoot;
 
 	@Inject
 	public Configuration(Environment env, Settings settings) {
-		if (!AnalysisIkPlugin.configurationLoaded) {
+		if (!Configuration.isLoaded) {
 			this.environment = env;
 			this.settings = settings;
 
@@ -56,7 +57,7 @@ public class Configuration {
 
 			this.parserConfigurationProperties(env);
 			Dictionary.initial(this);
-			AnalysisIkPlugin.configurationLoaded = true;
+			Configuration.isLoaded = true;
 		}
 	}
 	
