@@ -66,16 +66,16 @@ class AnalyzeContext {
 	//最终分词结果集
 	private LinkedList<Lexeme> results;
 	//分词器配置项
-	private Configuration cfg;
+	private Configuration configuration;
 
 	public AnalyzeContext(Configuration configuration) {
-		this.cfg = configuration;
+		this.configuration = configuration;
 		this.segmentBuff = new char[BUFF_SIZE];
 		this.charTypes = new int[BUFF_SIZE];
-		this.buffLocker = new HashSet<String>();
+		this.buffLocker = new HashSet<>();
 		this.orgLexemes = new QuickSortSet();
-		this.pathMap = new HashMap<Integer, LexemePath>();
-		this.results = new LinkedList<Lexeme>();
+		this.pathMap = new HashMap<>();
+		this.results = new LinkedList<>();
 	}
 
 	int getCursor() {
@@ -131,7 +131,7 @@ class AnalyzeContext {
 	 */
 	void initCursor() {
 		this.cursor = 0;
-		this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor], cfg.isEnableLowercase());
+		this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor], configuration.isEnableLowercase());
 		this.charTypes[this.cursor] = CharacterUtil.identifyCharType(this.segmentBuff[this.cursor]);
 	}
 
@@ -143,12 +143,11 @@ class AnalyzeContext {
 	boolean moveCursor() {
 		if (this.cursor < this.available - 1) {
 			this.cursor++;
-			this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor], cfg.isEnableLowercase());
+			this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor], configuration.isEnableLowercase());
 			this.charTypes[this.cursor] = CharacterUtil.identifyCharType(this.segmentBuff[this.cursor]);
 			return true;
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	/**
@@ -180,7 +179,6 @@ class AnalyzeContext {
 	/**
 	 * 判断当前segmentBuff是否已经用完
 	 * 当前执针cursor移至segmentBuff末端this.available - 1
-	 * @return
 	 */
 	boolean isBufferConsumed() {
 		return this.cursor == this.available - 1;
@@ -194,7 +192,6 @@ class AnalyzeContext {
 	 * 2.buffIndex < available - 1 && buffIndex > available - BUFF_EXHAUST_CRITICAL表示当前指针处于临界区内
 	 * 3.!context.isBufferLocked()表示没有segmenter在占用buffer
 	 * 要中断当前循环（buffer要进行移位，并再读取数据的操作）
-	 * @return
 	 */
 	boolean needRefillBuffer() {
 		return this.available == BUFF_SIZE
@@ -229,10 +226,8 @@ class AnalyzeContext {
 		}
 	}
 
-
 	/**
 	 * 返回原始分词结果
-	 * @return
 	 */
 	QuickSortSet getOrgLexemes() {
 		return this.orgLexemes;
@@ -290,7 +285,6 @@ class AnalyzeContext {
 
 	/**
 	 * 对CJK字符进行单字输出
-	 * @param index
 	 */
 	private void outputSingleCJK(int index) {
 		if (CharacterUtil.CHAR_CHINESE == this.charTypes[index]) {
@@ -306,7 +300,6 @@ class AnalyzeContext {
 	 * 返回lexeme 
 	 *
 	 * 同时处理合并
-	 * @return
 	 */
 	Lexeme getNextLexeme() {
 		//从结果集取出，并移除第一个Lexme
@@ -314,7 +307,7 @@ class AnalyzeContext {
 		while (result != null) {
 			//数量词合并
 			this.compound(result);
-			if (Dictionary.getSingleton().isStopWord(this.segmentBuff, result.getBegin(), result.getLength())) {
+			if (Dictionary.getDictionary().isStopWord(this.segmentBuff, result.getBegin(), result.getLength())) {
 				//是停止词继续取列表的下一个
 				result = this.results.pollFirst();
 			} else {
@@ -345,8 +338,7 @@ class AnalyzeContext {
 	 * 组合词元
 	 */
 	private void compound(Lexeme result) {
-
-		if (!this.cfg.isUseSmart()) {
+		if (!this.configuration.isUseSmart()) {
 			return;
 		}
 		//数量词合并处理
@@ -354,6 +346,9 @@ class AnalyzeContext {
 
 			if (Lexeme.TYPE_ARABIC == result.getLexemeType()) {
 				Lexeme nextLexeme = this.results.peekFirst();
+				if (Objects.isNull(nextLexeme)) {
+					return;
+				}
 				boolean appendOk = false;
 				if (Lexeme.TYPE_CNUM == nextLexeme.getLexemeType()) {
 					//合并英文数词+中文数词
@@ -381,8 +376,6 @@ class AnalyzeContext {
 					this.results.pollFirst();
 				}
 			}
-
 		}
 	}
-
 }

@@ -1,6 +1,10 @@
 package org.wltea.analyzer.help;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * StringHelper
@@ -12,5 +16,12 @@ public final class StringHelper {
 
 	public static boolean nonBlank(String string) {
 		return Objects.nonNull(string) && !"".equals(string.trim());
+	}
+
+	public static List<String> filterBlank(Collection<String> strings) {
+		if (Objects.isNull(strings)) {
+			return Collections.emptyList();
+		}
+		return strings.stream().filter(StringHelper::nonBlank).map(String::trim).collect(Collectors.toList());
 	}
 }

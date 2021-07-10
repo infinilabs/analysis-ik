@@ -38,10 +38,7 @@ public class ConfigurationProperties {
 	private List<String> defaultEmptyIfNull(List<String> list) {
 		return Objects.isNull(list)
 				? Collections.emptyList()
-				: list.stream()
-				.filter(StringHelper::nonBlank)
-				.map(String::trim)
-				.collect(Collectors.toList());
+				: StringHelper.filterBlank(list);
 	}
 
 	public List<String> getExtDictionaries() {

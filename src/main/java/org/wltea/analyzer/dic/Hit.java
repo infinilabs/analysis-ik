@@ -34,7 +34,6 @@ public class Hit {
 	//Hit前缀匹配
 	private static final int PREFIX = 0x00000010;
 
-
 	// 该HIT当前状态，默认未匹配
 	private int hitState = UNMATCH;
 
@@ -50,15 +49,22 @@ public class Hit {
 	private int end;
 
 	/**
+	 * 从已匹配的Hit中直接取出DictSegment，继续向下匹配
+	 *
+	 * @return Hit
+	 */
+	public Hit matchWithHit(char[] charArray, int currentIndex) {
+		DictSegment ds = this.getMatchedDictSegment();
+		return ds.match(charArray, currentIndex, 1, this);
+	}
+
+	/**
 	 * 判断是否完全匹配
 	 */
 	public boolean isMatch() {
 		return (this.hitState & MATCH) > 0;
 	}
 
-	/**
-	 *
-	 */
 	public void setMatch() {
 		this.hitState = this.hitState | MATCH;
 	}
@@ -70,9 +76,6 @@ public class Hit {
 		return (this.hitState & PREFIX) > 0;
 	}
 
-	/**
-	 *
-	 */
 	public void setPrefix() {
 		this.hitState = this.hitState | PREFIX;
 	}
@@ -84,9 +87,6 @@ public class Hit {
 		return this.hitState == UNMATCH;
 	}
 
-	/**
-	 *
-	 */
 	public void setUnMatch() {
 		this.hitState = UNMATCH;
 	}
@@ -114,5 +114,4 @@ public class Hit {
 	public void setEnd(int end) {
 		this.end = end;
 	}
-
 }

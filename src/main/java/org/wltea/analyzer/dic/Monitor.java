@@ -85,7 +85,7 @@ public class Monitor implements Runnable {
 						|| ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
 
 					// 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-					Dictionary.getSingleton().reLoadMainDict();
+					Dictionary.getDictionary().reLoadMainDict();
 					last_modified = response.getLastHeader("Last-Modified") == null ? null : response.getLastHeader("Last-Modified").getValue();
 					eTags = response.getLastHeader("ETag") == null ? null : response.getLastHeader("ETag").getValue();
 				}

@@ -88,9 +88,8 @@ class LetterSegmenter implements ISegmenter {
 	 */
 	@Override
 	public void analyze(AnalyzeContext context) {
-		boolean bufferLockFlag = false;
 		//处理英文字母
-		bufferLockFlag = this.processEnglishLetter(context) || bufferLockFlag;
+		boolean bufferLockFlag = this.processEnglishLetter(context);
 		//处理阿拉伯字母
 		bufferLockFlag = this.processArabicLetter(context) || bufferLockFlag;
 		//处理混合字母(这个要放最后处理，可以通过QuickSortSet排除重复)

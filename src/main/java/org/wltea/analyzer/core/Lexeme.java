@@ -90,9 +90,8 @@ public class Lexeme implements Comparable<Lexeme> {
 			return this.offset == other.getOffset()
 					&& this.begin == other.getBegin()
 					&& this.length == other.getLength();
-		} else {
-			return false;
 		}
+		return false;
 	}
 
 	/**

@@ -32,7 +32,6 @@ import java.util.List;
 
 /**
  * IK分词器主类
- *
  */
 public final class IKSegmenter {
 
@@ -45,7 +44,6 @@ public final class IKSegmenter {
 	//分词歧义裁决器
 	private IKArbitrator arbitrator;
 	private Configuration configuration;
-
 
 	/**
 	 * IK分词器构造函数
@@ -90,7 +88,7 @@ public final class IKSegmenter {
 	 * @throws java.io.IOException
 	 */
 	public synchronized Lexeme next() throws IOException {
-		Lexeme lexeme = null;
+		Lexeme lexeme;
 		while ((lexeme = context.getNextLexeme()) == null) {
 			/*
 			 * 从reader中读取数据，填充buffer

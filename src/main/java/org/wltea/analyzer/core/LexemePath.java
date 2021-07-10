@@ -238,5 +238,4 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath> {
 		}
 		return sb.toString();
 	}
-
 }

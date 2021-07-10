@@ -61,7 +61,7 @@ public class Dictionary {
 	/*
 	 * 词典单子实例
 	 */
-	private static Dictionary singleton;
+	private static Dictionary dictionary;
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 	private DictSegment mainDictionary;
 	private DictSegment quantifierDictionary;
@@ -82,19 +82,19 @@ public class Dictionary {
 	 * 只有当Dictionary类被实际调用时，才会开始载入词典， 这将延长首次分词操作的时间 该方法提供了一个在应用加载阶段就初始化字典的手段
 	 */
 	public static synchronized void initial(Configuration configuration) {
-		if (singleton == null) {
+		if (dictionary == null) {
 			synchronized (Dictionary.class) {
-				if (singleton == null) {
+				if (dictionary == null) {
 
-					singleton = new Dictionary(configuration);
-					singleton.loadMainDict();
-					singleton.loadQuantifierDict();
-					singleton.loadStopWordDict();
+					dictionary = new Dictionary(configuration);
+					dictionary.loadMainDict();
+					dictionary.loadQuantifierDict();
+					dictionary.loadStopWordDict();
 
 					if (configuration.isEnableRemoteDict()) {
 						// 建立监控线程
-						List<String> remoteExtDictionaries = singleton.configurationProperties.getRemoteExtDictionaries();
-						List<String> remoteStopWordsDictionaries = singleton.configurationProperties.getRemoteStopWordsDictionaries();
+						List<String> remoteExtDictionaries = dictionary.configurationProperties.getRemoteExtDictionaries();
+						List<String> remoteStopWordsDictionaries = dictionary.configurationProperties.getRemoteStopWordsDictionaries();
 						List<String> allRemoteDictionaries = new ArrayList<>();
 						allRemoteDictionaries.addAll(remoteExtDictionaries);
 						allRemoteDictionaries.addAll(remoteStopWordsDictionaries);
@@ -113,11 +113,11 @@ public class Dictionary {
 	 *
 	 * @return Dictionary 单例对象
 	 */
-	public static Dictionary getSingleton() {
-		if (singleton == null) {
+	public static Dictionary getDictionary() {
+		if (dictionary == null) {
 			throw new IllegalStateException("ik dict has not been initialized yet, please call initial method first.");
 		}
-		return singleton;
+		return dictionary;
 	}
 
 	private static List<String> getRemoteWords(String location) {
@@ -160,13 +160,10 @@ public class Dictionary {
 		if (Objects.isNull(words)) {
 			return;
 		}
-		words.stream()
-				.filter(StringHelper::nonBlank)
-				.map(String::trim)
-				.forEach(word -> {
-					// 批量加载词条到主内存词典中或stop word中
-					singleton.mainDictionary.fillSegment(word.toCharArray(), enabled);
-				});
+		StringHelper.filterBlank(words).forEach(word -> {
+			// 批量加载词条到主内存词典中或stop word中
+			dictionary.mainDictionary.fillSegment(word.toCharArray(), enabled);
+		});
 	}
 
 	/**
@@ -175,7 +172,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray) {
-		return singleton.mainDictionary.match(charArray);
+		return dictionary.mainDictionary.match(charArray);
 	}
 
 	/**
@@ -184,7 +181,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
-		return singleton.mainDictionary.match(charArray, begin, length);
+		return dictionary.mainDictionary.match(charArray, begin, length);
 	}
 
 	/**
@@ -193,17 +190,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
-		return singleton.quantifierDictionary.match(charArray, begin, length);
-	}
-
-	/**
-	 * 从已匹配的Hit中直接取出DictSegment，继续向下匹配
-	 *
-	 * @return Hit
-	 */
-	public Hit matchWithHit(char[] charArray, int currentIndex, Hit matchedHit) {
-		DictSegment ds = matchedHit.getMatchedDictSegment();
-		return ds.match(charArray, currentIndex, 1, matchedHit);
+		return dictionary.quantifierDictionary.match(charArray, begin, length);
 	}
 
 	/**
@@ -212,7 +199,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
-		return singleton.stopWordsDictionary.match(charArray, begin, length).isMatch();
+		return dictionary.stopWordsDictionary.match(charArray, begin, length).isMatch();
 	}
 
 	/**
@@ -238,13 +225,12 @@ public class Dictionary {
 	private void loadExtDict() {
 		// 加载扩展词典配置
 		List<String> extDictFiles = this.configurationProperties.getExtDictionaries();
-		extDictFiles = this.walkFiles(extDictFiles);
-		for (String extDictName : extDictFiles) {
+		StringHelper.filterBlank(this.walkFiles(extDictFiles)).forEach(extDictName -> {
 			// 读取扩展词典文件
 			logger.info("[Dict Loading] " + extDictName);
 			Path file = this.configuration.get(extDictName);
 			loadDictFile(mainDictionary, file, false, "Extra Dict");
-		}
+		});
 	}
 
 	/**
@@ -260,7 +246,7 @@ public class Dictionary {
 
 		// 加载扩展停止词典
 		List<String> extStopWordDictFiles = this.configurationProperties.getExtStopWordsDictionaries();
-		extStopWordDictFiles = this.walkFiles(extStopWordDictFiles);
+		extStopWordDictFiles = StringHelper.filterBlank(this.walkFiles(extStopWordDictFiles));
 		for (String extStopWordDictName : extStopWordDictFiles) {
 			logger.info("[Dict Loading] " + extStopWordDictName);
 
@@ -278,19 +264,17 @@ public class Dictionary {
 								   List<String> remoteDictFiles) {
 		for (String location : remoteDictFiles) {
 			logger.info("[Dict Loading] " + location);
-			List<String> lists = getRemoteWords(location);
+			List<String> remoteWords = getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
-			if (lists == null) {
+			if (remoteWords == null) {
 				logger.error("[Dict Loading] " + location + " load failed");
 				continue;
 			}
-			for (String theWord : lists) {
-				if (theWord != null && !"".equals(theWord.trim())) {
-					// 加载远程词典数据到主内存中
-					logger.info(theWord);
-					dictSegment.fillSegment(theWord.trim().toLowerCase().toCharArray());
-				}
-			}
+			StringHelper.filterBlank(remoteWords).forEach(word -> {
+				// 加载远程词典数据到主内存中
+				logger.info(word);
+				dictSegment.fillSegment(word.trim().toLowerCase().toCharArray());
+			});
 		}
 	}
 
@@ -309,7 +293,7 @@ public class Dictionary {
 		logger.info("start to reload ik dict.");
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
-		tmpDict.configuration = getSingleton().configuration;
+		tmpDict.configuration = getDictionary().configuration;
 		tmpDict.loadMainDict();
 		tmpDict.loadStopWordDict();
 		mainDictionary = tmpDict.mainDictionary;
@@ -319,8 +303,7 @@ public class Dictionary {
 
 	private void loadDictFile(DictSegment dict, Path file, boolean critical, String name) {
 		try (InputStream is = new FileInputStream(file.toFile())) {
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(is, StandardCharsets.UTF_8), 512);
+			BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8), 512);
 			String word = br.readLine();
 			if (word != null) {
 				if (word.startsWith("\uFEFF")) {
