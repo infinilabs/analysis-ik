@@ -34,43 +34,37 @@ public class ConfigurationProperties {
 	 * 远程stop word库
 	 */
 	private List<String> remoteStopWordsDictionaries;
-
-	private List<String> defaultEmptyIfNull(List<String> list) {
-		return Objects.isNull(list)
-				? Collections.emptyList()
-				: StringHelper.filterBlank(list);
-	}
-
+	
 	public List<String> getExtDictionaries() {
-		return extDictionaries = defaultEmptyIfNull(extDictionaries);
+		return extDictionaries = StringHelper.filterBlank(extDictionaries);
 	}
 
 	public void setExtDictionaries(List<String> extDictionaries) {
-		this.extDictionaries = defaultEmptyIfNull(extDictionaries);
+		this.extDictionaries = StringHelper.filterBlank(extDictionaries);
 	}
 
 	public List<String> getExtStopWordsDictionaries() {
-		return extStopWordsDictionaries = defaultEmptyIfNull(extStopWordsDictionaries);
+		return extStopWordsDictionaries = StringHelper.filterBlank(extStopWordsDictionaries);
 	}
 
 	public void setExtStopWordsDictionaries(List<String> extStopWordsDictionaries) {
-		this.extStopWordsDictionaries = defaultEmptyIfNull(extStopWordsDictionaries);
+		this.extStopWordsDictionaries = StringHelper.filterBlank(extStopWordsDictionaries);
 	}
 
 	public List<String> getRemoteExtDictionaries() {
-		return remoteExtDictionaries = defaultEmptyIfNull(remoteExtDictionaries);
+		return remoteExtDictionaries = StringHelper.filterBlank(remoteExtDictionaries);
 	}
 
 	public void setRemoteExtDictionaries(List<String> remoteExtDictionaries) {
-		this.remoteExtDictionaries = defaultEmptyIfNull(remoteExtDictionaries);
+		this.remoteExtDictionaries = StringHelper.filterBlank(remoteExtDictionaries);
 	}
 
 	public List<String> getRemoteStopWordsDictionaries() {
-		return remoteStopWordsDictionaries = defaultEmptyIfNull(remoteStopWordsDictionaries);
+		return remoteStopWordsDictionaries = StringHelper.filterBlank(remoteStopWordsDictionaries);
 	}
 
 	public void setRemoteStopWordsDictionaries(List<String> remoteStopWordsDictionaries) {
-		this.remoteStopWordsDictionaries = defaultEmptyIfNull(remoteStopWordsDictionaries);
+		this.remoteStopWordsDictionaries = StringHelper.filterBlank(remoteStopWordsDictionaries);
 	}
 
 	@Override
