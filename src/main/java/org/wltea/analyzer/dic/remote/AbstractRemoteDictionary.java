@@ -1,6 +1,7 @@
 package org.wltea.analyzer.dic.remote;
 
 import org.wltea.analyzer.configuration.Configuration;
+import org.wltea.analyzer.configuration.ConfigurationProperties;
 
 /**
  * AbstractRemoteDictionary
@@ -14,5 +15,9 @@ public abstract class AbstractRemoteDictionary {
 
     public AbstractRemoteDictionary(Configuration configuration) {
         this.configuration = configuration;
+    }
+
+    public ConfigurationProperties getConfigurationProperties() {
+        return this.configuration.getProperties();
     }
 }

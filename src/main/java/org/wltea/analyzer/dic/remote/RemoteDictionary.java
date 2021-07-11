@@ -42,10 +42,10 @@ public final class RemoteDictionary {
 
     public static IRemoteDictionary getRemoteDictionary(URI uri) {
         String schema = uri.getScheme();
-        IRemoteDictionary remoteDictionary = REMOTE_DICTIONARY.get(schema);
         logger.info("Remote Dictionary schema {}", schema);
+        IRemoteDictionary remoteDictionary = REMOTE_DICTIONARY.get(schema);
         if (Objects.isNull(remoteDictionary)) {
-            logger.error("Load Remote Error");
+            logger.error("Load Remote Dictionary Error");
         }
         return remoteDictionary;
     }
