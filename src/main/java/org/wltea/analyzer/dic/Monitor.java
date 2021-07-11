@@ -1,6 +1,6 @@
 package org.wltea.analyzer.dic;
 
-import org.wltea.analyzer.help.RemoteDictHelper;
+import org.wltea.analyzer.help.DictionaryHelper;
 
 public class Monitor implements Runnable {
 
@@ -12,6 +12,6 @@ public class Monitor implements Runnable {
 
 	@Override
 	public void run() {
-		RemoteDictHelper.reloadRemoteDictionary(location);
+		DictionaryHelper.reloadRemoteDictionary(location);
 	}
 }

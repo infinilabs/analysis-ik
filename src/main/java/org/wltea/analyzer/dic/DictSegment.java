@@ -23,6 +23,12 @@
  */
 package org.wltea.analyzer.dic;
 
+import org.apache.logging.log4j.Logger;
+import org.wltea.analyzer.help.ESPluginLoggerFactory;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +37,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * 词典树分段，表示词典树的一个分枝
  */
 class DictSegment implements Comparable<DictSegment> {
+
+	private static final Logger logger = ESPluginLoggerFactory.getLogger(DictSegment.class.getName());
 
 	// 公用字典表，存储汉字
 	private static final Map<Character, Character> CHAR_MAP = new ConcurrentHashMap<Character, Character>(16, 0.95f);
@@ -171,6 +179,30 @@ class DictSegment implements Comparable<DictSegment> {
 	 */
 	void fillSegment(char[] charArray) {
 		this.fillSegment(charArray, 0, charArray.length, true);
+	}
+
+	void fillSegment(Path file, String fileName) {
+		try (InputStream is = new FileInputStream(file.toFile())) {
+			BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8), 512);
+			String word = br.readLine();
+			if (word != null) {
+				if (word.startsWith("\uFEFF")) {
+					word = word.substring(1);
+				}
+				for (; word != null; word = br.readLine()) {
+					word = word.trim();
+					if (word.isEmpty()) {
+						continue;
+					}
+					this.fillSegment(word.toCharArray());
+				}
+			}
+		} catch (FileNotFoundException e) {
+			logger.error("ik-analyzer: " + fileName + " not found", e);
+			throw new RuntimeException("ik-analyzer: " + fileName + " not found!!!", e);
+		} catch (IOException e) {
+			logger.error("ik-analyzer: " + fileName + " loading failed", e);
+		}
 	}
 
 	/**

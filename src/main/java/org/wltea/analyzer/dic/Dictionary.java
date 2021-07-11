@@ -26,17 +26,11 @@ package org.wltea.analyzer.dic;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
+import org.wltea.analyzer.help.DictionaryHelper;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
-import org.wltea.analyzer.help.RemoteDictHelper;
 import org.wltea.analyzer.help.StringHelper;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -92,10 +86,10 @@ public class Dictionary {
 						// 建立监控线程
 						List<String> mainRemoteExtDictFiles = dictionary.configurationProperties.getMainRemoteExtDictFiles();
 						List<String> remoteStopDictFiles = dictionary.configurationProperties.getRemoteStopDictFiles();
-						List<String> allRemoteDictionaries = new ArrayList<>();
-						allRemoteDictionaries.addAll(mainRemoteExtDictFiles);
-						allRemoteDictionaries.addAll(remoteStopDictFiles);
-						allRemoteDictionaries.forEach(location -> {
+						List<String> allRemoteDictFiles = new ArrayList<>();
+						allRemoteDictFiles.addAll(mainRemoteExtDictFiles);
+						allRemoteDictFiles.addAll(remoteStopDictFiles);
+						allRemoteDictFiles.forEach(location -> {
 							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
 							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
 						});
@@ -115,15 +109,6 @@ public class Dictionary {
 			throw new IllegalStateException("ik dict has not been initialized yet, please call initial method first.");
 		}
 		return dictionary;
-	}
-
-	private List<String> walkFiles(List<String> filePaths) {
-		List<String> extDictFiles = new ArrayList<>(2);
-		filePaths.forEach(filePath -> {
-			Path file = this.configuration.getBaseOnDictRoot(filePath);
-			walkFileTree(extDictFiles, file);
-		});
-		return extDictFiles;
 	}
 
 	/**
@@ -203,14 +188,14 @@ public class Dictionary {
 
 		// 读取主词典文件
 		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
-		loadDictFile(this.mainDictionary, file, "Main DictFile");
+		this.mainDictionary.fillSegment(file, "Main DictFile");
 		// 加载扩展词典
 		List<String> mainExtDictFiles = this.configurationProperties.getMainExtDictFiles();
 		this.loadLocalExtDict(this.mainDictionary, mainExtDictFiles, "Main Extra DictFile");
 
 		// 加载远程自定义词库
 		List<String> mainRemoteExtDictFiles = this.configurationProperties.getMainRemoteExtDictFiles();
-		this.loadRemoteExtDict(mainDictionary, mainRemoteExtDictFiles);
+		this.loadRemoteExtDict(this.mainDictionary, mainRemoteExtDictFiles);
 	}
 
 	/**
@@ -222,7 +207,7 @@ public class Dictionary {
 
 		// 读取主词典文件
 		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
-		loadDictFile(this.stopWordsDictionary, file, "Main Stopwords");
+		this.stopWordsDictionary.fillSegment(file, "Main Stopwords");
 
 		// 加载扩展停止词典
 		List<String> extStopDictFiles = this.configurationProperties.getExtStopDictFiles();
@@ -235,30 +220,31 @@ public class Dictionary {
 
 	private void loadLocalExtDict(DictSegment dictSegment, List<String> extDictFiles, String name) {
 		// 加载扩展词典配置
-		StringHelper.filterBlank(this.walkFiles(extDictFiles)).forEach(extDictName -> {
+		extDictFiles = DictionaryHelper.walkFiles(extDictFiles, this.configuration.getBaseOnDictRoot(name));
+		extDictFiles.forEach(extDictName -> {
 			// 读取扩展词典文件
 			logger.info("[Local DictFile Loading] " + extDictName);
 			Path file = this.configuration.get(extDictName);
-			loadDictFile(dictSegment, file, name);
+			dictSegment.fillSegment(file, name);
 		});
 	}
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   List<String> remoteDictFiles) {
-		for (String location : remoteDictFiles) {
+		remoteDictFiles.forEach(location -> {
 			logger.info("[Remote DictFile Loading] " + location);
-			List<String> remoteWords = RemoteDictHelper.getRemoteWords(location);
+			List<String> remoteWords = DictionaryHelper.getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
 			if (remoteWords.isEmpty()) {
 				logger.error("[Remote DictFile Loading] " + location + " load failed");
-				continue;
+				return;
 			}
 			remoteWords.forEach(word -> {
 				// 加载远程词典数据到主内存中
 				logger.info(word);
 				dictSegment.fillSegment(word.toLowerCase().toCharArray());
 			});
-		}
+		});
 	}
 
 	/**
@@ -266,74 +252,24 @@ public class Dictionary {
 	 */
 	private void loadQuantifierDict() {
 		// 建立一个量词典实例
-		quantifierDictionary = new DictSegment((char) 0);
+		this.quantifierDictionary = new DictSegment((char) 0);
 		// 读取量词词典文件
 		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
-		loadDictFile(quantifierDictionary, file,  "Quantifier");
+		this.quantifierDictionary.fillSegment(file,  "Quantifier");
 	}
 
 	/**
 	 * 重新加载词典
 	 */
 	public void reloadMainDict() {
-		logger.info("start to reload ik dict.");
+		logger.info("begin to reload ik dictionary.");
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
 		tmpDict.configuration = getDictionary().configuration;
 		tmpDict.loadMainDict();
 		tmpDict.loadStopWordDict();
-		mainDictionary = tmpDict.mainDictionary;
-		stopWordsDictionary = tmpDict.stopWordsDictionary;
-		logger.info("reload ik dict finished.");
-	}
-
-	private void loadDictFile(DictSegment dict, Path file, String name) {
-		try (InputStream is = new FileInputStream(file.toFile())) {
-			BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8), 512);
-			String word = br.readLine();
-			if (word != null) {
-				if (word.startsWith("\uFEFF")) {
-					word = word.substring(1);
-				}
-				for (; word != null; word = br.readLine()) {
-					word = word.trim();
-					if (word.isEmpty()) {
-						continue;
-					}
-					dict.fillSegment(word.toCharArray());
-				}
-			}
-		} catch (FileNotFoundException e) {
-			logger.error("ik-analyzer: " + name + " not found", e);
-			throw new RuntimeException("ik-analyzer: " + name + " not found!!!", e);
-		} catch (IOException e) {
-			logger.error("ik-analyzer: " + name + " loading failed", e);
-		}
-	}
-
-	private void walkFileTree(List<String> files, Path path) {
-		if (Files.isRegularFile(path)) {
-			files.add(path.toString());
-		} else if (Files.isDirectory(path)) {
-			try {
-				Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-					@Override
-					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-						files.add(file.toString());
-						return FileVisitResult.CONTINUE;
-					}
-
-					@Override
-					public FileVisitResult visitFileFailed(Path file, IOException e) {
-						logger.error("[Ext Loading] listing files", e);
-						return FileVisitResult.CONTINUE;
-					}
-				});
-			} catch (IOException e) {
-				logger.error("[Ext Loading] listing files", e);
-			}
-		} else {
-			logger.warn("[Ext Loading] file not found: " + path);
-		}
+		this.mainDictionary = tmpDict.mainDictionary;
+		this.stopWordsDictionary = tmpDict.stopWordsDictionary;
+		logger.info("reload ik dictionary finished.");
 	}
 }
