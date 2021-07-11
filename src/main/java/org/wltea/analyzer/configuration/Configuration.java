@@ -84,13 +84,8 @@ public class Configuration {
 			}
 		}
 		if (input != null) {
-			// SecurityManager sm = System.getSecurityManager();
-			// if (sm != null) {
-			// 	// unprivileged code such as scripts do not have SpecialPermission
-			// 	sm.checkPermission(new SpecialPermission());
-			// }
-			// Yaml yaml = new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader()));
 			InputStream finalInput = input;
+			SpecialPermission.check();
 			this.properties = AccessController.doPrivileged ((PrivilegedAction<ConfigurationProperties>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())).loadAs(finalInput, ConfigurationProperties.class));
 		}
 	}
@@ -131,7 +126,7 @@ public class Configuration {
 		return properties;
 	}
 
-	public Path getPathBaseOnDictRoot(String name) {
+	public Path getBaseOnDictRoot(String name) {
 		return this.get(this.dictRoot, name);
 	}
 

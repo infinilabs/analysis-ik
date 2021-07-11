@@ -128,7 +128,7 @@ public class Dictionary {
 	private List<String> walkFiles(List<String> filePaths) {
 		List<String> extDictFiles = new ArrayList<>(2);
 		filePaths.forEach(filePath -> {
-			Path file = this.configuration.getPathBaseOnDictRoot(filePath);
+			Path file = this.configuration.getBaseOnDictRoot(filePath);
 			walkFileTree(extDictFiles, file);
 		});
 		return extDictFiles;
@@ -210,7 +210,7 @@ public class Dictionary {
 		this.mainDictionary = new DictSegment((char) 0);
 
 		// 读取主词典文件
-		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
+		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
 		loadDictFile(this.mainDictionary, file, false, "Main DictFile");
 		// 加载扩展词典
 		List<String> mainExtDictFiles = this.configurationProperties.getMainExtDictFiles();
@@ -229,7 +229,7 @@ public class Dictionary {
 		this.stopWordsDictionary = new DictSegment((char) 0);
 
 		// 读取主词典文件
-		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
+		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
 		loadDictFile(this.stopWordsDictionary, file, false, "Main Stopwords");
 
 		// 加载扩展停止词典
@@ -276,7 +276,7 @@ public class Dictionary {
 		// 建立一个量词典实例
 		quantifierDictionary = new DictSegment((char) 0);
 		// 读取量词词典文件
-		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
+		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
 		loadDictFile(quantifierDictionary, file, false, "Quantifier");
 	}
 
