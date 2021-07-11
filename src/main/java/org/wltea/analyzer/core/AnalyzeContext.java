@@ -24,7 +24,7 @@
 package org.wltea.analyzer.core;
 
 import org.wltea.analyzer.configuration.Configuration;
-import org.wltea.analyzer.dic.Dictionary;
+import org.wltea.analyzer.dictionary.Dictionary;
 
 import java.io.IOException;
 import java.io.Reader;

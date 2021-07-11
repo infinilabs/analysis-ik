@@ -2,8 +2,9 @@ package org.wltea.analyzer.help;
 
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
-import org.wltea.analyzer.dic.remote.IRemoteDictionary;
-import org.wltea.analyzer.dic.remote.RemoteDictionary;
+import org.wltea.analyzer.configuration.Configuration;
+import org.wltea.analyzer.dictionary.remote.AbstractRemoteDictionary;
+import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,9 +31,10 @@ public final class DictionaryHelper {
 
 	private static final Logger logger = ESPluginLoggerFactory.getLogger(DictionaryHelper.class.getName());
 
-	public static List<String> walkFiles(List<String> files, Path path) {
-		List<String> extDictFiles = new ArrayList<>(2);
+	public static List<String> walkFiles(List<String> files, Configuration configuration) {
+		List<String> extDictFiles = new ArrayList<>(files.size());
 		files.forEach(filePath -> {
+			Path path = configuration.getBaseOnDictRoot(filePath);
 			if (Files.isRegularFile(path)) {
 				extDictFiles.add(path.toString());
 			} else if (Files.isDirectory(path)) {
@@ -62,7 +64,7 @@ public final class DictionaryHelper {
 
 	public static List<String> getRemoteWords(String location) {
 		URI uri = toUri(location);
-		IRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
+		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
 		List<String> remoteWords = Collections.emptyList();
 		if (Objects.isNull(remoteDictionary)) {
 			return remoteWords;
@@ -74,7 +76,7 @@ public final class DictionaryHelper {
 
 	public static void reloadRemoteDictionary(String location) {
 		URI uri = toUri(location);
-		IRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
+		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
 		if (Objects.isNull(remoteDictionary)) {
 			return;
 		}

@@ -21,7 +21,7 @@
  * 版权声明 2012，乌龙茶工作室
  * provided by Linliangyi and copyright 2012 by Oolong studio
  */
-package org.wltea.analyzer.dic;
+package org.wltea.analyzer.dictionary;
 
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
@@ -83,6 +83,7 @@ public class Dictionary {
 					dictionary.loadStopWordDict();
 
 					if (configuration.isEnableRemoteDict()) {
+						logger.info("enable remote dictionary");
 						// 建立监控线程
 						List<String> mainRemoteExtDictFiles = dictionary.configurationProperties.getMainRemoteExtDictFiles();
 						List<String> remoteStopDictFiles = dictionary.configurationProperties.getRemoteStopDictFiles();
@@ -220,7 +221,7 @@ public class Dictionary {
 
 	private void loadLocalExtDict(DictSegment dictSegment, List<String> extDictFiles, String name) {
 		// 加载扩展词典配置
-		extDictFiles = DictionaryHelper.walkFiles(extDictFiles, this.configuration.getBaseOnDictRoot(name));
+		extDictFiles = DictionaryHelper.walkFiles(extDictFiles, this.configuration);
 		extDictFiles.forEach(extDictName -> {
 			// 读取扩展词典文件
 			logger.info("[Local DictFile Loading] " + extDictName);
@@ -241,7 +242,7 @@ public class Dictionary {
 			}
 			remoteWords.forEach(word -> {
 				// 加载远程词典数据到主内存中
-				logger.info(word);
+				logger.info("[New Word] {}", word);
 				dictSegment.fillSegment(word.toLowerCase().toCharArray());
 			});
 		});

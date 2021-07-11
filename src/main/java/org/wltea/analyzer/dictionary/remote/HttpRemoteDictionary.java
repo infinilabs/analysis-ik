@@ -1,4 +1,4 @@
-package org.wltea.analyzer.dic.remote;
+package org.wltea.analyzer.dictionary.remote;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -10,7 +10,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
-import org.wltea.analyzer.dic.Dictionary;
+import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.io.BufferedReader;
@@ -26,9 +26,9 @@ import java.util.List;
  * @author Qicz
  * @since 2021/7/11 15:38
  */
-public class HttpRemoteDictionary extends AbstractRemoteDictionary implements IRemoteDictionary {
+class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
-    protected static final Logger logger = ESPluginLoggerFactory.getLogger(HttpRemoteDictionary.class.getName());
+    private static final Logger logger = ESPluginLoggerFactory.getLogger(HttpRemoteDictionary.class.getName());
 
     private static final CloseableHttpClient httpclient = HttpClients.createDefault();
 
@@ -41,12 +41,13 @@ public class HttpRemoteDictionary extends AbstractRemoteDictionary implements IR
      */
     private String eTags;
 
-    public HttpRemoteDictionary(Configuration configuration) {
+    HttpRemoteDictionary(Configuration configuration) {
         super(configuration);
     }
 
     @Override
     public List<String> getRemoteWords(URI uri) {
+        logger.info("[Remote DictFile reloading] for {}", uri);
         List<String> words = new ArrayList<>();
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
                 .setSocketTimeout(60 * 1000).build();
@@ -100,6 +101,7 @@ public class HttpRemoteDictionary extends AbstractRemoteDictionary implements IR
      */
     @Override
     public void reloadRemoteDictionary(URI uri) {
+        logger.info("[Remote DictFile reloading] for {}", uri);
         //超时设置
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
                 .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
@@ -150,5 +152,10 @@ public class HttpRemoteDictionary extends AbstractRemoteDictionary implements IR
                 logger.error(e.getMessage(), e);
             }
         }
+    }
+
+    @Override
+    public String schema() {
+        return RemoteDictionarySchema.HTTP.schema;
     }
 }

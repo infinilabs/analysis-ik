@@ -1,4 +1,4 @@
-package org.wltea.analyzer.dic;
+package org.wltea.analyzer.dictionary;
 
 import org.wltea.analyzer.help.DictionaryHelper;
 
