@@ -1,9 +1,14 @@
-extDictionaries:
-  - extra_main.dic
-  - extra_single_word.dic
-  - extra_single_word_full.dic
-  - extra_single_word_low_freq.dic
-extStopWordsDictionaries:
-  - extra_stopword.dic
-remoteExtDictionaries:
-remoteStopWordsDictionaries:
+dict: # 扩展词库配置
+  local: # 本地扩展词典配置
+    main: # 本地主词典扩展词典文件
+      - extra_main.dic
+      - extra_single_word.dic
+      - extra_single_word_full.dic
+      - extra_single_word_low_freq.dic
+    stop: # 本地stop词典扩展词典文件
+      - extra_stopword.dic
+  remote: # 远程扩展词典配置
+    main: # 远程主词典扩展词典文件
+      -
+    stop: # 远程stop词典扩展词典文件
+      -

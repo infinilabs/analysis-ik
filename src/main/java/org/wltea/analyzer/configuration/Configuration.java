@@ -47,6 +47,9 @@ public class Configuration {
 
 	@Inject
 	public Configuration(Environment env, Settings settings) {
+		if (Configuration.isLoaded) {
+			logger.info("the ik config is loaded");
+		}
 		if (!Configuration.isLoaded) {
 			this.environment = env;
 			this.settings = settings;

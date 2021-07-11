@@ -93,11 +93,11 @@ public class Dictionary {
 
 					if (configuration.isEnableRemoteDict()) {
 						// 建立监控线程
-						List<String> remoteExtDictionaries = dictionary.configurationProperties.getRemoteExtDictionaries();
-						List<String> remoteStopWordsDictionaries = dictionary.configurationProperties.getRemoteStopWordsDictionaries();
+						List<String> mainRemoteExtDictFiles = dictionary.configurationProperties.getMainRemoteExtDictFiles();
+						List<String> remoteStopDictFiles = dictionary.configurationProperties.getRemoteStopDictFiles();
 						List<String> allRemoteDictionaries = new ArrayList<>();
-						allRemoteDictionaries.addAll(remoteExtDictionaries);
-						allRemoteDictionaries.addAll(remoteStopWordsDictionaries);
+						allRemoteDictionaries.addAll(mainRemoteExtDictFiles);
+						allRemoteDictionaries.addAll(remoteStopDictFiles);
 						allRemoteDictionaries.forEach(location -> {
 							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
 							pool.scheduleAtFixedRate(new Monitor(location.trim()), 10, 60, TimeUnit.SECONDS);
@@ -207,30 +207,18 @@ public class Dictionary {
 	 */
 	private void loadMainDict() {
 		// 建立一个主词典实例
-		mainDictionary = new DictSegment((char) 0);
+		this.mainDictionary = new DictSegment((char) 0);
 
 		// 读取主词典文件
 		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
-		loadDictFile(mainDictionary, file, false, "Main Dict");
+		loadDictFile(this.mainDictionary, file, false, "Main DictFile");
 		// 加载扩展词典
-		this.loadExtDict();
-		// 加载远程自定义词库
-		List<String> remoteExtDictionaries = this.configurationProperties.getRemoteExtDictionaries();
-		this.loadRemoteExtDict(mainDictionary, remoteExtDictionaries);
-	}
+		List<String> mainExtDictFiles = this.configurationProperties.getMainExtDictFiles();
+		this.loadLocalExtDict(this.mainDictionary, mainExtDictFiles, "Main Extra DictFile");
 
-	/**
-	 * 加载用户配置的扩展词典到主词库表
-	 */
-	private void loadExtDict() {
-		// 加载扩展词典配置
-		List<String> extDictFiles = this.configurationProperties.getExtDictionaries();
-		StringHelper.filterBlank(this.walkFiles(extDictFiles)).forEach(extDictName -> {
-			// 读取扩展词典文件
-			logger.info("[Dict Loading] " + extDictName);
-			Path file = this.configuration.get(extDictName);
-			loadDictFile(mainDictionary, file, false, "Extra Dict");
-		});
+		// 加载远程自定义词库
+		List<String> mainRemoteExtDictFiles = this.configurationProperties.getMainRemoteExtDictFiles();
+		this.loadRemoteExtDict(mainDictionary, mainRemoteExtDictFiles);
 	}
 
 	/**
@@ -238,42 +226,45 @@ public class Dictionary {
 	 */
 	private void loadStopWordDict() {
 		// 建立主词典实例
-		stopWordsDictionary = new DictSegment((char) 0);
+		this.stopWordsDictionary = new DictSegment((char) 0);
 
 		// 读取主词典文件
 		Path file = this.configuration.getPathBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
-		loadDictFile(stopWordsDictionary, file, false, "Main Stopwords");
+		loadDictFile(this.stopWordsDictionary, file, false, "Main Stopwords");
 
 		// 加载扩展停止词典
-		List<String> extStopWordDictFiles = this.configurationProperties.getExtStopWordsDictionaries();
-		extStopWordDictFiles = StringHelper.filterBlank(this.walkFiles(extStopWordDictFiles));
-		for (String extStopWordDictName : extStopWordDictFiles) {
-			logger.info("[Dict Loading] " + extStopWordDictName);
-
-			// 读取扩展词典文件
-			file = this.configuration.get(extStopWordDictName);
-			loadDictFile(stopWordsDictionary, file, false, "Extra Stopwords");
-		}
+		List<String> extStopDictFiles = this.configurationProperties.getExtStopDictFiles();
+		this.loadLocalExtDict(this.stopWordsDictionary, extStopDictFiles, "Extra Stopwords");
 
 		// 加载远程停用词典
-		List<String> remoteStopWordsDictionaries = this.configurationProperties.getRemoteStopWordsDictionaries();
-		this.loadRemoteExtDict(stopWordsDictionary, remoteStopWordsDictionaries);
+		List<String> remoteStopDictFiles = this.configurationProperties.getRemoteStopDictFiles();
+		this.loadRemoteExtDict(this.stopWordsDictionary, remoteStopDictFiles);
+	}
+
+	private void loadLocalExtDict(DictSegment dictSegment, List<String> extDictFiles, String name) {
+		// 加载扩展词典配置
+		StringHelper.filterBlank(this.walkFiles(extDictFiles)).forEach(extDictName -> {
+			// 读取扩展词典文件
+			logger.info("[DictFile Loading] " + extDictName);
+			Path file = this.configuration.get(extDictName);
+			loadDictFile(dictSegment, file, false, name);
+		});
 	}
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   List<String> remoteDictFiles) {
 		for (String location : remoteDictFiles) {
-			logger.info("[Dict Loading] " + location);
+			logger.info("[DictFile Loading] " + location);
 			List<String> remoteWords = getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
 			if (remoteWords == null) {
-				logger.error("[Dict Loading] " + location + " load failed");
+				logger.error("[DictFile Loading] " + location + " load failed");
 				continue;
 			}
 			StringHelper.filterBlank(remoteWords).forEach(word -> {
 				// 加载远程词典数据到主内存中
 				logger.info(word);
-				dictSegment.fillSegment(word.trim().toLowerCase().toCharArray());
+				dictSegment.fillSegment(word.toLowerCase().toCharArray());
 			});
 		}
 	}

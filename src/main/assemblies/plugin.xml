@@ -39,6 +39,7 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <includes>
                 <include>org.apache.httpcomponents:httpclient</include>
+                <include>org.projectlombok:lombok</include>
             </includes>
         </dependencySet>
     </dependencySets>
