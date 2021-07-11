@@ -97,7 +97,7 @@ public class Monitor implements Runnable {
 			}
 
 		} catch (Exception e) {
-			logger.error("remote_ext_dict {} error!", e, location);
+			logger.error("remote_ext_dict error {} location {} !", e, location);
 		} finally {
 			try {
 				if (response != null) {

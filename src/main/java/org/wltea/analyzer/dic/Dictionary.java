@@ -245,7 +245,7 @@ public class Dictionary {
 		// 加载扩展词典配置
 		StringHelper.filterBlank(this.walkFiles(extDictFiles)).forEach(extDictName -> {
 			// 读取扩展词典文件
-			logger.info("[DictFile Loading] " + extDictName);
+			logger.info("[Local DictFile Loading] " + extDictName);
 			Path file = this.configuration.get(extDictName);
 			loadDictFile(dictSegment, file, false, name);
 		});
@@ -254,11 +254,12 @@ public class Dictionary {
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   List<String> remoteDictFiles) {
 		for (String location : remoteDictFiles) {
-			logger.info("[DictFile Loading] " + location);
+			logger.info("[Remote DictFile Loading] " + location);
+			// TODO parser location schema
 			List<String> remoteWords = getRemoteWords(location);
 			// 如果找不到扩展的字典，则忽略
 			if (remoteWords == null) {
-				logger.error("[DictFile Loading] " + location + " load failed");
+				logger.error("[Remote DictFile Loading] " + location + " load failed");
 				continue;
 			}
 			StringHelper.filterBlank(remoteWords).forEach(word -> {

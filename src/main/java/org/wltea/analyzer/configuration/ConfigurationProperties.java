@@ -19,6 +19,32 @@ public class ConfigurationProperties {
 	 */
 	private Dict dict;
 
+	/**
+	 * mysql 配置
+	 */
+	private MySQL mysql;
+
+	/**
+	 * redis 配置
+	 */
+	private Redis redis;
+
+	public final List<String> getMainExtDictFiles() {
+		return StringHelper.filterBlank(dict.local.main);
+	}
+
+	public final List<String> getExtStopDictFiles() {
+		return StringHelper.filterBlank(dict.local.stop);
+	}
+
+	public final List<String> getMainRemoteExtDictFiles() {
+		return StringHelper.filterBlank(dict.remote.main);
+	}
+
+	public final List<String> getRemoteStopDictFiles() {
+		return StringHelper.filterBlank(dict.remote.stop);
+	}
+
 	@Data
 	public static class Dict {
 
@@ -50,19 +76,20 @@ public class ConfigurationProperties {
 		private List<String> stop;
 	}
 
-	public final List<String> getMainExtDictFiles() {
-		return StringHelper.filterBlank(dict.local.main);
+	@Data
+	public static class MySQL {
+
+		private String url;
+		private String username;
+		private String password;
 	}
 
-	public final List<String> getExtStopDictFiles() {
-		return StringHelper.filterBlank(dict.local.stop);
-	}
+	@Data
+	public static class Redis {
 
-	public final List<String> getMainRemoteExtDictFiles() {
-		return StringHelper.filterBlank(dict.remote.main);
-	}
-
-	public final List<String> getRemoteStopDictFiles() {
-		return StringHelper.filterBlank(dict.remote.stop);
+		private String host;
+		private Integer port;
+		private String password;
+		private Integer database;
 	}
 }
