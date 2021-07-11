@@ -11,6 +11,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.dic.Dictionary;
+import org.wltea.analyzer.dic.remote.RemoteDictionary;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -48,7 +49,7 @@ public class Configuration {
 	@Inject
 	public Configuration(Environment env, Settings settings) {
 		if (Configuration.isLoaded) {
-			logger.info("the ik config is loaded");
+			logger.info("the ik configuration is loaded");
 		}
 		if (!Configuration.isLoaded) {
 			this.environment = env;
@@ -60,6 +61,7 @@ public class Configuration {
 
 			this.parserConfigurationProperties(env);
 			Dictionary.initial(this);
+			RemoteDictionary.initial(this);
 			Configuration.isLoaded = true;
 		}
 	}
@@ -80,7 +82,7 @@ public class Configuration {
 				input = new FileInputStream(configFile.toFile());
 			} catch (FileNotFoundException ex) {
 				// We should report origin exception
-				logger.error("ik-analyzer", e);
+				logger.error("ik-analyzer", ex);
 			}
 		}
 		if (input != null) {
