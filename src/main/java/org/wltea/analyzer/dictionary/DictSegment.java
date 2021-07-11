@@ -181,6 +181,9 @@ class DictSegment implements Comparable<DictSegment> {
 		this.fillSegment(charArray, 0, charArray.length, true);
 	}
 
+	/**
+	 * 从文件中加载填充词典片段
+	 */
 	void fillSegment(Path file, String fileName) {
 		try (InputStream is = new FileInputStream(file.toFile())) {
 			BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8), 512);

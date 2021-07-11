@@ -22,10 +22,12 @@ public final class RemoteDictionary {
     private static final Map<String, AbstractRemoteDictionary> REMOTE_DICTIONARY = new HashMap<>();
 
     private static void addRemoteDictionary(AbstractRemoteDictionary remoteDictionary) {
-        REMOTE_DICTIONARY.put(remoteDictionary.schema(), remoteDictionary);
+        String schema = remoteDictionary.schema();
+        REMOTE_DICTIONARY.put(schema, remoteDictionary);
+        logger.info("The Remote Dictionary For schema {} is loaded!", schema);
     }
 
-    public static void initial(Configuration configuration) {
+    public static void prepare(Configuration configuration) {
         addRemoteDictionary(new HttpRemoteDictionary(configuration));
         addRemoteDictionary(new RedisRemoteDictionary(configuration));
         addRemoteDictionary(new MySQLRemoteDictionary(configuration));

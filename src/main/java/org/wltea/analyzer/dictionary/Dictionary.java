@@ -26,6 +26,7 @@ package org.wltea.analyzer.dictionary;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
+import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.help.DictionaryHelper;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.wltea.analyzer.help.StringHelper;
@@ -76,14 +77,15 @@ public class Dictionary {
 		if (dictionary == null) {
 			synchronized (Dictionary.class) {
 				if (dictionary == null) {
-
+					// 远程词典初始化准备
+					RemoteDictionary.prepare(configuration);
 					dictionary = new Dictionary(configuration);
 					dictionary.loadMainDict();
 					dictionary.loadQuantifierDict();
 					dictionary.loadStopWordDict();
 
 					if (configuration.isEnableRemoteDict()) {
-						logger.info("enable remote dictionary");
+						logger.info("Remote Dictionary enabled!");
 						// 建立监控线程
 						List<String> mainRemoteExtDictFiles = dictionary.configurationProperties.getMainRemoteExtDictFiles();
 						List<String> remoteStopDictFiles = dictionary.configurationProperties.getRemoteStopDictFiles();

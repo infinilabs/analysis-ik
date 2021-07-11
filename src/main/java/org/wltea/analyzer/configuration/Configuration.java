@@ -60,7 +60,6 @@ public class Configuration {
 			this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
 
 			this.parserConfigurationProperties(env);
-			RemoteDictionary.initial(this);
 			Dictionary.initial(this);
 			Configuration.isLoaded = true;
 		}
