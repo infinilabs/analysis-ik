@@ -47,7 +47,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
     @Override
     public List<String> getRemoteWords(URI uri) {
-        logger.info("[Remote DictFile reloading] for {}", uri);
+        logger.info("[Remote DictFile Loading] for {}", uri);
         List<String> words = new ArrayList<>();
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
                 .setSocketTimeout(60 * 1000).build();
