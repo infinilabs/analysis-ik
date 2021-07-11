@@ -280,7 +280,7 @@ public class Dictionary {
 		loadDictFile(quantifierDictionary, file, false, "Quantifier");
 	}
 
-	void reLoadMainDict() {
+	void reloadMainDict() {
 		logger.info("start to reload ik dict.");
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
