@@ -26,131 +26,71 @@ package org.wltea.analyzer.dictionary;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
-import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.help.DictionaryHelper;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
-import org.wltea.analyzer.help.StringHelper;
 
-import java.nio.file.Path;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-
 /**
- * 词典管理类,单子模式
+ * 词典管理类
+ *
+ * @author Qicz
+ * @since 2021/7/12 23:34
  */
 public class Dictionary {
 
 	private static final Logger logger = ESPluginLoggerFactory.getLogger(Dictionary.class.getName());
-	private static final String PATH_DIC_MAIN = "main.dic";
-	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
-	private static final String PATH_DIC_STOP = "stopword.dic";
-	/*
-	 * 词典单子实例
-	 */
-	private static Dictionary dictionary;
+
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+
 	private DictSegment mainDictionary;
-	private DictSegment quantifierDictionary;
 	private DictSegment stopWordsDictionary;
-	/**
-	 * 配置对象
-	 */
 	private Configuration configuration;
-	private ConfigurationProperties configurationProperties;
 
-	private Dictionary(Configuration configuration) {
+	private final DefaultDictionary defaultDictionary;
+
+	public static Dictionary initial(Configuration configuration, DefaultDictionary defaultDictionary) {
+		return new Dictionary(configuration, defaultDictionary);
+	}
+
+	private Dictionary(Configuration configuration, DefaultDictionary defaultDictionary) {
 		this.configuration = configuration;
-		this.configurationProperties = configuration.getProperties();
+		this.defaultDictionary = defaultDictionary;
+		this.initial(configuration);
 	}
 
-	/**
-	 * 词典初始化 由于IK Analyzer的词典采用Dictionary类的静态方法进行词典初始化
-	 * 只有当Dictionary类被实际调用时，才会开始载入词典， 这将延长首次分词操作的时间 该方法提供了一个在应用加载阶段就初始化字典的手段
-	 */
-	public static synchronized void initial(Configuration configuration) {
-		if (dictionary == null) {
-			synchronized (Dictionary.class) {
-				if (dictionary == null) {
-					// 远程词典初始化准备
-					RemoteDictionary.prepare(configuration);
-					dictionary = new Dictionary(configuration);
-					dictionary.loadMainDict();
-					dictionary.loadQuantifierDict();
-					dictionary.loadStopWordDict();
+	private void initial(Configuration configuration) {
+		ConfigurationProperties properties = Configuration.getProperties();
+		this.loadMainDict(properties);
+		this.loadStopWordDict(properties);
 
-					if (configuration.isEnableRemoteDict()) {
-						logger.info("Remote Dictionary enabled!");
-						// 建立监控线程
-						ConfigurationProperties configurationProperties = dictionary.configurationProperties;
-						List<String> mainRemoteExtDictFiles = configurationProperties.getMainRemoteExtDictFiles();
-						List<String> remoteStopDictFiles = configurationProperties.getRemoteStopDictFiles();
+		if (configuration.isEnableRemoteDict()) {
+			logger.info("Remote Dictionary enabled!");
+			// 建立监控线程
+			List<String> mainRemoteExtDictFiles = properties.getMainRemoteExtDictFiles();
+			List<String> remoteStopDictFiles = properties.getRemoteStopDictFiles();
 
-						Set<String> allRemoteDictFiles = new HashSet<>();
-						allRemoteDictFiles.addAll(mainRemoteExtDictFiles);
-						allRemoteDictFiles.addAll(remoteStopDictFiles);
-						ConfigurationProperties.RemoteDictFile.Refresh remoteRefresh = configurationProperties.getRemoteRefresh();
-						allRemoteDictFiles.forEach(location -> {
-							DictionaryType dictionaryType = DictionaryType.MAIN_WORDS;
-							if (remoteStopDictFiles.contains(location)) {
-								dictionaryType = DictionaryType.STOP_WORDS;
-							}
-							pool.scheduleAtFixedRate(
-									new Monitor(dictionaryType, location),
-									remoteRefresh.getDelay(),
-									remoteRefresh.getPeriod(),
-									TimeUnit.SECONDS);
-						});
-					}
+			Set<String> allRemoteDictFiles = new HashSet<>();
+			allRemoteDictFiles.addAll(mainRemoteExtDictFiles);
+			allRemoteDictFiles.addAll(remoteStopDictFiles);
+			ConfigurationProperties.RemoteDictFile.Refresh remoteRefresh = properties.getRemoteRefresh();
+			allRemoteDictFiles.forEach(location -> {
+				DictionaryType dictionaryType = DictionaryType.MAIN_WORDS;
+				if (remoteStopDictFiles.contains(location)) {
+					dictionaryType = DictionaryType.STOP_WORDS;
 				}
-			}
+				pool.scheduleAtFixedRate(
+						new Monitor(this, dictionaryType, location),
+						remoteRefresh.getDelay(),
+						remoteRefresh.getPeriod(),
+						TimeUnit.SECONDS);
+			});
 		}
-	}
-
-	/**
-	 * 获取词典单子实例
-	 *
-	 * @return Dictionary 单例对象
-	 */
-	public static Dictionary getDictionary() {
-		if (dictionary == null) {
-			throw new IllegalStateException("ik dict has not been initialized yet, please call initial method first.");
-		}
-		return dictionary;
-	}
-
-	/**
-	 * 批量加载新词条
-	 *
-	 * @param words Collection<String>词条列表
-	 */
-	public void addWords(Collection<String> words) {
-		this.addWords(words, true);
-	}
-
-	/**
-	 * 批量移除（屏蔽）词条
-	 */
-	public void disableWords(Collection<String> words) {
-		this.addWords(words, false);
-	}
-
-	/**
-	 * 批量加载新词条
-	 *
-	 * @param words Collection<String>词条列表
-	 * @param enabled true表明一个完整的词，false表示从词典中屏蔽当前词
-	 */
-	private void addWords(Collection<String> words, boolean enabled) {
-		if (Objects.isNull(words)) {
-			return;
-		}
-		StringHelper.filterBlank(words).forEach(word -> {
-			// 批量加载词条到主内存词典中或stop word中
-			dictionary.mainDictionary.fillSegment(word.toCharArray(), enabled);
-		});
 	}
 
 	/**
@@ -159,7 +99,11 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray) {
-		return dictionary.mainDictionary.match(charArray);
+		Hit hit = this.defaultDictionary.matchInMainDict(charArray);
+		if (hit.isMatch()) {
+			return hit;
+		}
+		return this.mainDictionary.match(charArray);
 	}
 
 	/**
@@ -168,7 +112,11 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
-		return dictionary.mainDictionary.match(charArray, begin, length);
+		Hit hit = this.defaultDictionary.matchInMainDict(charArray, begin, length);
+		if (hit.isMatch()) {
+			return hit;
+		}
+		return this.mainDictionary.match(charArray, begin, length);
 	}
 
 	/**
@@ -177,7 +125,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
-		return dictionary.quantifierDictionary.match(charArray, begin, length);
+		return this.defaultDictionary.matchInQuantifierDict(charArray, begin, length);
 	}
 
 	/**
@@ -186,57 +134,35 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
-		return dictionary.stopWordsDictionary.match(charArray, begin, length).isMatch();
+		boolean stopWord = this.defaultDictionary.isStopWord(charArray, begin, length);
+		if (!stopWord) {
+			return true;
+		}
+		return this.stopWordsDictionary.match(charArray, begin, length).isMatch();
 	}
 
 	/**
 	 * 加载主词典及扩展词典
 	 */
-	private void loadMainDict() {
+	private void loadMainDict(ConfigurationProperties properties) {
 		// 建立一个主词典实例
 		this.mainDictionary = new DictSegment((char) 0);
 
-		// 读取主词典文件
-		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
-		this.mainDictionary.fillSegment(file, "Main DictFile");
-		// 加载扩展词典
-		List<String> mainExtDictFiles = this.configurationProperties.getMainExtDictFiles();
-		this.loadLocalExtDict(this.mainDictionary, mainExtDictFiles, "Main Extra DictFile");
-
 		// 加载远程自定义词库
-		List<String> mainRemoteExtDictFiles = this.configurationProperties.getMainRemoteExtDictFiles();
+		List<String> mainRemoteExtDictFiles = properties.getMainRemoteExtDictFiles();
 		this.loadRemoteExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS, mainRemoteExtDictFiles);
 	}
 
 	/**
 	 * 加载用户扩展的停止词词典
 	 */
-	private void loadStopWordDict() {
+	private void loadStopWordDict(ConfigurationProperties properties) {
 		// 建立主词典实例
 		this.stopWordsDictionary = new DictSegment((char) 0);
 
-		// 读取主词典文件
-		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
-		this.stopWordsDictionary.fillSegment(file, "Main Stopwords");
-
-		// 加载扩展停止词典
-		List<String> extStopDictFiles = this.configurationProperties.getExtStopDictFiles();
-		this.loadLocalExtDict(this.stopWordsDictionary, extStopDictFiles, "Extra Stopwords");
-
 		// 加载远程停用词典
-		List<String> remoteStopDictFiles = this.configurationProperties.getRemoteStopDictFiles();
+		List<String> remoteStopDictFiles = properties.getRemoteStopDictFiles();
 		this.loadRemoteExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS, remoteStopDictFiles);
-	}
-
-	private void loadLocalExtDict(DictSegment dictSegment, List<String> extDictFiles, String name) {
-		// 加载扩展词典配置
-		extDictFiles = DictionaryHelper.walkFiles(extDictFiles, this.configuration);
-		extDictFiles.forEach(extDictName -> {
-			// 读取扩展词典文件
-			logger.info("[Local DictFile Loading] " + extDictName);
-			Path file = this.configuration.get(extDictName);
-			dictSegment.fillSegment(file, name);
-		});
 	}
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
@@ -244,7 +170,7 @@ public class Dictionary {
 								   List<String> remoteDictFiles) {
 		remoteDictFiles.forEach(location -> {
 			logger.info("[Remote DictFile Loading] " + location);
-			Set<String> remoteWords = DictionaryHelper.getRemoteWords(dictionaryType, location);
+			Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, location);
 			// 如果找不到扩展的字典，则忽略
 			if (remoteWords.isEmpty()) {
 				logger.error("[Remote DictFile Loading] " + location + " load failed");
@@ -259,38 +185,27 @@ public class Dictionary {
 	}
 
 	/**
-	 * 加载量词词典
-	 */
-	private void loadQuantifierDict() {
-		// 建立一个量词典实例
-		this.quantifierDictionary = new DictSegment((char) 0);
-		// 读取量词词典文件
-		Path file = this.configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
-		this.quantifierDictionary.fillSegment(file,  "Quantifier");
-	}
-
-	/**
 	 * 重新加载词典
 	 */
 	public synchronized void reload(DictionaryType dictionaryType) {
 		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
-		Dictionary tmpDict = new Dictionary(configuration);
-		tmpDict.configuration = getDictionary().configuration;
+		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary);
+		ConfigurationProperties properties = configuration.getProperties();
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
-				tmpDict.loadMainDict();
+				tmpDict.loadMainDict(properties);
 				this.mainDictionary = tmpDict.mainDictionary;
 			}
 				break;
 			case STOP_WORDS: {
-				tmpDict.loadStopWordDict();
+				tmpDict.loadStopWordDict(properties);
 				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
 			}
 				break;
 			default: {
-				tmpDict.loadMainDict();
-				tmpDict.loadStopWordDict();
+				tmpDict.loadMainDict(properties);
+				tmpDict.loadStopWordDict(properties);
 				this.mainDictionary = tmpDict.mainDictionary;
 				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
 			}

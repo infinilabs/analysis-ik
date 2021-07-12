@@ -70,10 +70,13 @@ class CN_QuantifierSegmenter implements ISegmenter {
 	//待处理的量词hit队列
 	private List<Hit> countHits;
 
-	CN_QuantifierSegmenter() {
+	private final Dictionary dictionary;
+
+	CN_QuantifierSegmenter(Dictionary dictionary) {
 		nStart = -1;
 		nEnd = -1;
 		this.countHits = new LinkedList<Hit>();
+		this.dictionary = dictionary;
 	}
 
 	/**
@@ -176,7 +179,7 @@ class CN_QuantifierSegmenter implements ISegmenter {
 			}
 
 			//对当前指针位置的字符进行单字匹配
-			Hit singleCharHit = Dictionary.getDictionary().matchInQuantifierDict(context.getSegmentBuff(), context.getCursor(), 1);
+			Hit singleCharHit = this.dictionary.matchInQuantifierDict(context.getSegmentBuff(), context.getCursor(), 1);
 			// 首字成量词词
 			//首字为量词前缀
 			// 前缀匹配则放入hit列表

@@ -24,6 +24,7 @@
 package org.wltea.analyzer.core;
 
 import org.wltea.analyzer.configuration.Configuration;
+import org.wltea.analyzer.dictionary.Dictionary;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -72,13 +73,14 @@ public final class IKSegmenter {
 	 * @return List<ISegmenter>
 	 */
 	private List<ISegmenter> loadSegmenters() {
-		List<ISegmenter> segmenters = new ArrayList<ISegmenter>(4);
+		List<ISegmenter> segmenters = new ArrayList<>(4);
+		Dictionary dictionary = this.configuration.getDictionary();
 		//处理字母的子分词器
 		segmenters.add(new LetterSegmenter());
 		//处理中文数量词的子分词器
-		segmenters.add(new CN_QuantifierSegmenter());
+		segmenters.add(new CN_QuantifierSegmenter(dictionary));
 		//处理中文词的子分词器
-		segmenters.add(new CJKSegmenter());
+		segmenters.add(new CJKSegmenter(dictionary));
 		return segmenters;
 	}
 

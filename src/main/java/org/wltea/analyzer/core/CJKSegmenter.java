@@ -40,9 +40,11 @@ class CJKSegmenter implements ISegmenter {
 	//待处理的分词hit队列
 	private List<Hit> tmpHits;
 
+	private final Dictionary dictionary;
 
-	CJKSegmenter() {
-		this.tmpHits = new LinkedList<Hit>();
+	CJKSegmenter(Dictionary dictionary) {
+		this.tmpHits = new LinkedList<>();
+		this.dictionary = dictionary;
 	}
 
 	/** (non-Javadoc)
@@ -75,7 +77,7 @@ class CJKSegmenter implements ISegmenter {
 			}
 
 			//再对当前指针位置的字符进行单字匹配
-			Hit singleCharHit = Dictionary.getDictionary().matchInMainDict(context.getSegmentBuff(), context.getCursor(), 1);
+			Hit singleCharHit = this.dictionary.matchInMainDict(context.getSegmentBuff(), context.getCursor(), 1);
 			//首字为词前缀
 			//前缀匹配则放入hit列表
 			if (singleCharHit.isMatch()) {//首字成词

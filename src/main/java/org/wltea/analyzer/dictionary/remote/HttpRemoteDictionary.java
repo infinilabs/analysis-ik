@@ -12,7 +12,6 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
-import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
@@ -21,7 +20,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,12 +40,10 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
     private static final Map<String, Modifier> MODIFIER_MAPPING = new ConcurrentHashMap<>();
 
-    HttpRemoteDictionary(Configuration configuration) {
-        super(configuration);
-    }
-
     @Override
-    public Set<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
+    public Set<String> getRemoteWords(org.wltea.analyzer.dictionary.Dictionary dictionary,
+                                      DictionaryType dictionaryType,
+                                      URI uri) {
         logger.info("[Remote DictFile Loading] for {}", uri);
         Set<String> words = new HashSet<>();
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
@@ -97,7 +97,9 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
      * ⑤休眠1min，返回第①步
      */
     @Override
-    public void reloadRemoteDictionary(DictionaryType dictionaryType, URI uri) {
+    public void reloadRemoteDictionary(Dictionary dictionary,
+                                       DictionaryType dictionaryType,
+                                       URI uri) {
         logger.info("[Remote DictFile reloading] for {}", uri);
         //超时设置
         final RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
@@ -140,7 +142,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
                 if ((Objects.nonNull(lastHeader) && !lastHeader.getValue().equalsIgnoreCase(lastModified))
                         || (Objects.nonNull(eTag) && !eTag.getValue().equalsIgnoreCase(eTags))) {
                     // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-                    Dictionary.getDictionary().reload(dictionaryType);
+                    dictionary.reload(dictionaryType);
                     lastModified = Objects.isNull(lastHeader) ? null : lastHeader.getValue();
                     eTags = Objects.isNull(eTag) ? null : eTag.getValue();
                     MODIFIER_MAPPING.put(location, new Modifier(lastModified, eTags));
@@ -156,7 +158,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
                     response.close();
                 }
             } catch (IOException e) {
-                logger.error(e.getMessage(), e);
+                logger.error("remote_ext_dict response close error", e);
             }
         }
     }

@@ -24,7 +24,6 @@
 package org.wltea.analyzer.core;
 
 import org.wltea.analyzer.configuration.Configuration;
-import org.wltea.analyzer.dictionary.Dictionary;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -307,7 +306,7 @@ class AnalyzeContext {
 		while (result != null) {
 			//数量词合并
 			this.compound(result);
-			if (Dictionary.getDictionary().isStopWord(this.segmentBuff, result.getBegin(), result.getLength())) {
+			if (this.configuration.getDictionary().isStopWord(this.segmentBuff, result.getBegin(), result.getLength())) {
 				//是停止词继续取列表的下一个
 				result = this.results.pollFirst();
 			} else {

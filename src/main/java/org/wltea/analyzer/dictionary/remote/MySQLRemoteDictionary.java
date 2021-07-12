@@ -2,14 +2,15 @@ package org.wltea.analyzer.dictionary.remote;
 
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.logging.log4j.Logger;
-import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
 import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.sql.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * MySQLRemoteDictionary
@@ -23,13 +24,15 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
 
     private final HikariDataSource dataSource;
 
-    MySQLRemoteDictionary(Configuration configuration) {
-        super(configuration);
+    MySQLRemoteDictionary() {
         this.dataSource = this.initDataSource();
     }
 
     @Override
-    public Set<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
+    public Set<String> getRemoteWords(org.wltea.analyzer.dictionary.Dictionary dictionary,
+                                      DictionaryType dictionaryType,
+                                      String schema,
+                                      String authority) {
         logger.info("[Remote DictFile Loading] For schema 'mysql' and tableName {}", authority);
         Set<String> words = new HashSet<>();
         Connection connection = null;
@@ -45,8 +48,7 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
             }
             logger.info("[Remote DictFile Loading] append {} words.", words.size());
         } catch (SQLException e) {
-            e.printStackTrace();
-            logger.error(" [Remote DictFile Loading] Error {}", e.getLocalizedMessage());
+            logger.error(" [Remote DictFile Loading] error =>", e);
         } finally {
             this.closeResources(connection, statement, resultSet);
         }
@@ -54,7 +56,9 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public void reloadRemoteDictionary(DictionaryType dictionaryType, String authority) {
+    public void reloadRemoteDictionary(Dictionary dictionary,
+                                       DictionaryType dictionaryType,
+                                       String authority) {
         logger.info("[Remote DictFile Reloading] For schema 'mysql' and path[TableName] {}", authority);
         Connection connection = null;
         PreparedStatement statement = null;
@@ -79,11 +83,10 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
                 sql = String.format("UPDATE ik_sequence SET %s", sql);
                 logger.info("sql {}", sql);
                 statement.execute(sql);
-                Dictionary.getDictionary().reload(dictionaryType);
+                dictionary.reload(dictionaryType);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            logger.error(" [Remote DictFile Reloading] Error {}", e.getLocalizedMessage());
+            logger.error(" [Remote DictFile Reloading] error =>", e);
         } finally {
             this.closeResources(connection, statement, resultSet);
         }
@@ -116,8 +119,7 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
                 resultSet.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-            logger.error("[Remote DictFile 'mysql'] closeResources error {}", e.getLocalizedMessage());
+            logger.error("[Remote DictFile 'mysql'] closeResources error =>", e);
         }
     }
 }

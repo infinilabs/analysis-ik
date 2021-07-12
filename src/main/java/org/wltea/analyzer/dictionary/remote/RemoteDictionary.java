@@ -1,7 +1,6 @@
 package org.wltea.analyzer.dictionary.remote;
 
 import org.apache.logging.log4j.Logger;
-import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.net.URI;
@@ -27,11 +26,11 @@ public final class RemoteDictionary {
         logger.info("The Remote Dictionary For schema {} is loaded!", schema);
     }
 
-    public static void prepare(Configuration configuration) {
-        addRemoteDictionary(new HttpRemoteDictionary(configuration));
-        addRemoteDictionary(new RedisRemoteDictionary(configuration));
-        addRemoteDictionary(new MySQLRemoteDictionary(configuration));
-        logger.info("Remote Dictionary Preparing...");
+    public static void initial() {
+        addRemoteDictionary(new HttpRemoteDictionary());
+        addRemoteDictionary(new RedisRemoteDictionary());
+        addRemoteDictionary(new MySQLRemoteDictionary());
+        logger.info("Remote Dictionary Initialed");
     }
 
     public static AbstractRemoteDictionary getRemoteDictionary(URI uri) {

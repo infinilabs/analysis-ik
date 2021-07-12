@@ -10,7 +10,9 @@ import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
+import org.wltea.analyzer.dictionary.DefaultDictionary;
 import org.wltea.analyzer.dictionary.Dictionary;
+import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -26,55 +28,55 @@ import java.security.PrivilegedAction;
 public class Configuration {
 	
 	private static final Logger logger = ESPluginLoggerFactory.getLogger(Configuration.class.getName());
-	
-	private Environment environment;
-	private Settings settings;
 
 	//是否启用智能分词
 	private boolean useSmart;
 
 	//是否启用远程词典加载
-	private boolean enableRemoteDict = false;
+	private boolean enableRemoteDict;
 
 	//是否启用小写处理
-	private boolean enableLowercase = true;
+	private boolean enableLowercase;
+
+	private String domain;
 	
 	private final static String IKANALYZER_YML = "ikanalyzer.yml";
 
-	private static boolean isLoaded = false;
-	private ConfigurationProperties properties;
-	private String dictRoot;
+	private static Boolean initialed = false;
+	private static ConfigurationProperties properties;
+	private static String dictRootPath;
+	private Dictionary dictionary;
 
 	@Inject
 	public Configuration(Environment env, Settings settings) {
-		if (Configuration.isLoaded) {
-			logger.info("the ik configuration is loaded");
-		}
-		if (!Configuration.isLoaded) {
-			this.environment = env;
-			this.settings = settings;
-
-			this.useSmart = "true".equals(settings.get("use_smart", "false"));
-			this.enableLowercase = "true".equals(settings.get("enable_lowercase", "true"));
-			this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
-
-			this.parserConfigurationProperties(env);
-			Dictionary.initial(this);
-			Configuration.isLoaded = true;
-		}
+		// 从 settings 中获取部分配置
+		this.useSmart = "true".equals(settings.get("use_smart", "false"));
+		this.enableLowercase = "true".equals(settings.get("enable_lowercase", "true"));
+		this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
+		this.domain = settings.get("domain", "");
+		// 配置初始化
+		Configuration.initial(env);
+		// 初始化默认词库
+		DefaultDictionary defaultDictionary = DefaultDictionary.initial(properties);
+		this.dictionary = Dictionary.initial(this, defaultDictionary);
 	}
-	
-	private void parserConfigurationProperties(Environment env) {
-		Path configurationDirectory = env.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
-		this.dictRoot = configurationDirectory.toAbsolutePath().toString();
-		Path configFile = configurationDirectory.resolve(IKANALYZER_YML);
+
+	private static void initial(Environment env) {
+		if (!Configuration.initialed) {
+			logger.info("the properties is initialed");
+			return;
+		}
+		// 加载配置文件
+		Path pluginPath = env.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		Configuration.dictRootPath = pluginPath.toAbsolutePath().toString();
+		Path configFile = pluginPath.resolve(IKANALYZER_YML);
 		InputStream input = null;
 		try {
 			logger.info("try load config from {}", configFile);
 			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
-			configurationDirectory = this.getConfigInPluginDir();
-			configFile = configurationDirectory.resolve(IKANALYZER_YML);
+			pluginPath = getConfigInPluginDir();
+			configFile = pluginPath.resolve(IKANALYZER_YML);
 			try {
 				logger.info("try load config from {}", configFile);
 				input = new FileInputStream(configFile.toFile());
@@ -86,11 +88,15 @@ public class Configuration {
 		if (input != null) {
 			InputStream finalInput = input;
 			SpecialPermission.check();
-			this.properties = AccessController.doPrivileged ((PrivilegedAction<ConfigurationProperties>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())).loadAs(finalInput, ConfigurationProperties.class));
+			Configuration.properties = AccessController.doPrivileged((PrivilegedAction<ConfigurationProperties>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())).loadAs(finalInput, ConfigurationProperties.class));
 		}
+
+		// 远程词典初始化准备
+		RemoteDictionary.initial();
+		Configuration.initialed = true;
 	}
 
-	public Path getConfigInPluginDir() {
+	public static Path getConfigInPluginDir() {
 		return PathUtils
 				.get(new File(AnalysisIkPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
 						.getParent(), "config")
@@ -106,14 +112,6 @@ public class Configuration {
 		return this;
 	}
 
-	public Environment getEnvironment() {
-		return environment;
-	}
-
-	public Settings getSettings() {
-		return settings;
-	}
-
 	public boolean isEnableRemoteDict() {
 		return enableRemoteDict;
 	}
@@ -122,15 +120,27 @@ public class Configuration {
 		return enableLowercase;
 	}
 
-	public ConfigurationProperties getProperties() {
+	public String getDomain() {
+		return domain;
+	}
+
+	public Dictionary getDictionary() {
+		return dictionary;
+	}
+
+	public static ConfigurationProperties getProperties() {
 		return properties;
 	}
 
-	public Path getBaseOnDictRoot(String name) {
-		return this.get(this.dictRoot, name);
+	public static Path getBaseOnDictRoot(String name) {
+		return Configuration.getPath(dictRootPath, name);
 	}
 
-	public Path get(String first, String... more) {
+	public static String getDictRootPath() {
+		return dictRootPath;
+	}
+
+	public static Path getPath(String first, String... more) {
 		return PathUtils.get(first, more);
 	}
 }

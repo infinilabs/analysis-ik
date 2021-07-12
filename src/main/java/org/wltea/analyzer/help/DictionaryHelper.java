@@ -3,6 +3,7 @@ package org.wltea.analyzer.help;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
 import org.wltea.analyzer.configuration.Configuration;
+import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.dictionary.remote.AbstractRemoteDictionary;
 import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
@@ -29,10 +30,10 @@ public final class DictionaryHelper {
 
 	private static final Logger logger = ESPluginLoggerFactory.getLogger(DictionaryHelper.class.getName());
 
-	public static List<String> walkFiles(List<String> files, Configuration configuration) {
+	public static List<String> walkFiles(List<String> files) {
 		List<String> extDictFiles = new ArrayList<>(files.size());
 		files.forEach(filePath -> {
-			Path path = configuration.getBaseOnDictRoot(filePath);
+			Path path = Configuration.getBaseOnDictRoot(filePath);
 			if (Files.isRegularFile(path)) {
 				extDictFiles.add(path.toString());
 			} else if (Files.isDirectory(path)) {
@@ -60,7 +61,9 @@ public final class DictionaryHelper {
 		return StringHelper.filterBlank(extDictFiles);
 	}
 
-	public static Set<String> getRemoteWords(DictionaryType dictionaryType, String location) {
+	public static Set<String> getRemoteWords(Dictionary dictionary,
+											 DictionaryType dictionaryType,
+											 String location) {
 		URI uri = toUri(location);
 		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
 		Set<String> remoteWords = Collections.emptySet();
@@ -68,11 +71,13 @@ public final class DictionaryHelper {
 			return remoteWords;
 		}
 		SpecialPermission.check();
-		remoteWords = AccessController.doPrivileged((PrivilegedAction<Set<String>>) () -> remoteDictionary.getRemoteWords(dictionaryType, uri));
+		remoteWords = AccessController.doPrivileged((PrivilegedAction<Set<String>>) () -> remoteDictionary.getRemoteWords(dictionary, dictionaryType, uri));
 		return StringHelper.filterBlank(remoteWords);
 	}
 
-	public static void reloadRemoteDictionary(DictionaryType dictionaryType, String location) {
+	public static void reloadRemoteDictionary(Dictionary dictionary,
+											  DictionaryType dictionaryType,
+											  String location) {
 		URI uri = toUri(location);
 		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
 		if (Objects.isNull(remoteDictionary)) {
@@ -80,7 +85,7 @@ public final class DictionaryHelper {
 		}
 		SpecialPermission.check();
 		AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-			remoteDictionary.reloadRemoteDictionary(dictionaryType, uri);
+			remoteDictionary.reloadRemoteDictionary(dictionary, dictionaryType, uri);
 			return null;
 		});
 	}

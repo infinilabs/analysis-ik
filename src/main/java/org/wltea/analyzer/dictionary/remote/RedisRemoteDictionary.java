@@ -6,7 +6,6 @@ import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.apache.logging.log4j.Logger;
-import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
 import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.DictionaryType;
@@ -29,15 +28,17 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
 
     private final StatefulRedisConnection<String, String> redisConnection;
 
-    RedisRemoteDictionary(Configuration configuration) {
-        super(configuration);
+    RedisRemoteDictionary() {
         // lettuce 默认支持connection的重连
         // 在es中并无多线程情况，使用单连接即可
         this.redisConnection = this.getRedisConnection();
     }
 
     @Override
-    public Set<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
+    public Set<String> getRemoteWords(Dictionary dictionary,
+                                      DictionaryType dictionaryType,
+                                      String schema,
+                                      String authority) {
         logger.info("[Remote DictFile reloading] For schema 'redis' path {}", authority);
         RedisCommands<String, String> sync = this.redisConnection.sync();
         List<String> words = sync.lrange(authority, 0, -1);
@@ -45,7 +46,9 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public void reloadRemoteDictionary(DictionaryType dictionaryType, String authority) {
+    public void reloadRemoteDictionary(Dictionary dictionary,
+                                       DictionaryType dictionaryType,
+                                       String authority) {
         logger.info("[Remote DictFile reloading] For schema 'redis'");
         RedisCommands<String, String> sync = this.redisConnection.sync();
         // 当前 对应的 *-state key为true时，进行reload
@@ -62,7 +65,7 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
         for (Object ret : exec) {
             logger.info("Redis TransactionResult {}", ret);
             if ("OK".equals(ret.toString()) && reload) {
-                Dictionary.getDictionary().reload(dictionaryType);
+                dictionary.reload(dictionaryType);
             }
             break;
         }

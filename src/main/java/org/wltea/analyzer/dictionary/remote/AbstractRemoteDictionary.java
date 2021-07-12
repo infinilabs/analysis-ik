@@ -2,11 +2,11 @@ package org.wltea.analyzer.dictionary.remote;
 
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
+import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.DictionaryType;
 
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,50 +30,50 @@ public abstract class AbstractRemoteDictionary {
         }
     }
 
-    final Configuration configuration;
-
-    AbstractRemoteDictionary(Configuration configuration) {
-        this.configuration = configuration;
-    }
-
     ConfigurationProperties getConfigurationProperties() {
-        return this.configuration.getProperties();
+        return Configuration.getProperties();
     }
 
     /**
      * 获取远程词库
+     * @param dictionary 词典
      * @param dictionaryType 词典类型
      * @param uri 远程地址
      * @return words
      */
-    public Set<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
-        return this.getRemoteWords(dictionaryType, uri.getScheme(), uri.getAuthority());
+    public Set<String> getRemoteWords(Dictionary dictionary, DictionaryType dictionaryType, URI uri) {
+        return this.getRemoteWords(dictionary, dictionaryType, uri.getScheme(), uri.getAuthority());
     }
 
     /**
      * 获取远程词库
+     * @param dictionary 词典
      * @param dictionaryType 词典类型
      * @param schema 远程地址schema
      * @param authority 远程地址path
      * @return words
      */
-    public Set<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
+    public Set<String> getRemoteWords(Dictionary dictionary, DictionaryType dictionaryType, String schema, String authority) {
         return Collections.emptySet();
     }
 
     /**
      * 重新加载词库
+     * @param dictionary 词典
      * @param dictionaryType 词典类型
      * @param uri 远程地址
      */
-    public void reloadRemoteDictionary(DictionaryType dictionaryType, URI uri) {
-        this.reloadRemoteDictionary(dictionaryType, uri.getAuthority());
+    public void reloadRemoteDictionary(Dictionary dictionary,  DictionaryType dictionaryType, URI uri) {
+        this.reloadRemoteDictionary(dictionary, dictionaryType, uri.getAuthority());
     }
 
     /**
      * 重新加载词库
+     * @param dictionary 词典
+     * @param dictionaryType 词典类型
+     * @param authority redis key 或 or db table name
      */
-    public void reloadRemoteDictionary(DictionaryType dictionaryType, String authority) {
+    public void reloadRemoteDictionary(Dictionary dictionary, DictionaryType dictionaryType, String authority) {
 
     }
 
