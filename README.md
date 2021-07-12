@@ -1,8 +1,55 @@
 IK Analysis for Elasticsearch
 =============================
 
-### 2021.7.9
-`jre/lib/security/java.policy`的grant中加入 `permission java.security.AllPermission;`
+### 2021.7.12更新 by Qicz
+
+- 改造使用yml配置文件；
+
+```yaml
+dict: # 扩展词库配置
+  local: # 本地扩展词典配置
+    main: # 本地主词典扩展词典文件
+      - extra_main.dic
+      - extra_single_word.dic
+      - extra_single_word_full.dic
+      - extra_single_word_low_freq.dic
+    stop: # 本地stop词典扩展词典文件
+      - extra_stopword.dic
+  remote: # 远程扩展词典配置
+    # schema: http or redis or mysql
+    # redis://words-key, eg: redis://ik-main-words or redis://ik-stop-words
+    # mysql://tableName, eg: mysql://ik_main_words or mysql://ik_stop_words
+    main: # 远程主词典扩展词典文件
+      - # http://....
+      - # redis://
+      - # mysql://
+    stop: # 远程stop词典扩展词典文件
+      - # http://....
+      - # redis://
+      - # mysql://
+    refresh: # 刷新配置
+      delay: 10 # 延迟时间，单位s
+      period: 60 # 周期时间，单位s
+
+mysql:
+  url: jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8
+  username: root
+  password: dbadmin
+
+redis:
+  host: localhost
+  port: 6379
+  database: 0
+  username:
+  password:
+```
+
+- 调整和优化Dictionary实现；
+- 扩展RemoteDictionary，提供可配置的基于Http、MySQL、Redis的扩展词库更新方式
+
+> `jre/lib/security/java.policy`的grant中加入 `permission java.security.AllPermission;`
+
+#### TODO 提供基于SpringBoot的MySQL、Redis扩展词库写入starter
 
 The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.
 
