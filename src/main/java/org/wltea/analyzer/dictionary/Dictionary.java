@@ -29,8 +29,6 @@ import org.wltea.analyzer.configuration.ConfigurationProperties;
 import org.wltea.analyzer.help.DictionaryHelper;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -68,31 +66,25 @@ public class Dictionary {
 	}
 
 	private void initial(Configuration configuration) {
-		ConfigurationProperties properties = Configuration.getProperties();
-		this.loadMainDict(properties);
-		this.loadStopWordDict(properties);
+		this.loadMainDict();
+		this.loadStopWordDict();
 
 		if (configuration.isEnableRemoteDict()) {
 			logger.info("Remote Dictionary enabled!");
-			// 建立监控线程
-			List<String> mainRemoteExtDictFiles = properties.getMainRemoteExtDictFiles();
-			List<String> remoteStopDictFiles = properties.getRemoteStopDictFiles();
-
-			Set<String> allRemoteDictFiles = new HashSet<>();
-			allRemoteDictFiles.addAll(mainRemoteExtDictFiles);
-			allRemoteDictFiles.addAll(remoteStopDictFiles);
-			ConfigurationProperties.RemoteDictFile.Refresh remoteRefresh = properties.getRemoteRefresh();
-			allRemoteDictFiles.forEach(location -> {
-				DictionaryType dictionaryType = DictionaryType.MAIN_WORDS;
-				if (remoteStopDictFiles.contains(location)) {
-					dictionaryType = DictionaryType.STOP_WORDS;
-				}
-				pool.scheduleAtFixedRate(
-						new Monitor(this, dictionaryType, location),
-						remoteRefresh.getDelay(),
-						remoteRefresh.getPeriod(),
-						TimeUnit.SECONDS);
-			});
+			ConfigurationProperties properties = Configuration.getProperties();
+			ConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
+			// 建立监控线程 - 主词库
+			pool.scheduleAtFixedRate(
+					new Monitor(this, DictionaryType.MAIN_WORDS, this.domain),
+					remoteRefresh.getDelay(),
+					remoteRefresh.getPeriod(),
+					TimeUnit.SECONDS);
+			// 建立监控线程 - stop词库
+			pool.scheduleAtFixedRate(
+					new Monitor(this, DictionaryType.STOP_WORDS, this.domain),
+					remoteRefresh.getDelay(),
+					remoteRefresh.getPeriod(),
+					TimeUnit.SECONDS);
 		}
 	}
 
@@ -147,43 +139,38 @@ public class Dictionary {
 	/**
 	 * 加载主词典及扩展词典
 	 */
-	private void loadMainDict(ConfigurationProperties properties) {
+	private void loadMainDict() {
 		// 建立一个主词典实例
 		this.mainDictionary = new DictSegment((char) 0);
 
 		// 加载远程自定义词库
-		List<String> mainRemoteExtDictFiles = properties.getMainRemoteExtDictFiles();
-		this.loadRemoteExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS, mainRemoteExtDictFiles);
+		this.loadRemoteExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS);
 	}
 
 	/**
 	 * 加载用户扩展的停止词词典
 	 */
-	private void loadStopWordDict(ConfigurationProperties properties) {
+	private void loadStopWordDict() {
 		// 建立主词典实例
 		this.stopWordsDictionary = new DictSegment((char) 0);
 
 		// 加载远程停用词典
-		List<String> remoteStopDictFiles = properties.getRemoteStopDictFiles();
-		this.loadRemoteExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS, remoteStopDictFiles);
+		this.loadRemoteExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS);
 	}
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
-								   DictionaryType dictionaryType,
-								   List<String> remoteDictFiles) {
-		remoteDictFiles.forEach(location -> {
-			logger.info("[Remote DictFile Loading] " + location);
-			Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, location);
-			// 如果找不到扩展的字典，则忽略
-			if (remoteWords.isEmpty()) {
-				logger.error("[Remote DictFile Loading] " + location + " load failed");
-				return;
-			}
-			remoteWords.forEach(word -> {
-				// 加载远程词典数据到主内存中
-				logger.info("[New Word] {}", word);
-				dictSegment.fillSegment(word.toLowerCase().toCharArray());
-			});
+								   DictionaryType dictionaryType) {
+		logger.info("[Remote DictFile Loading] for domain {}", this.domain);
+		Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, this.domain);
+		// 如果找不到扩展的字典，则忽略
+		if (remoteWords.isEmpty()) {
+			logger.error("[Remote DictFile Loading] " + this.domain + " load failed");
+			return;
+		}
+		remoteWords.forEach(word -> {
+			// 加载远程词典数据到主内存中
+			logger.info("[New Word] {}", word);
+			dictSegment.fillSegment(word.toLowerCase().toCharArray());
 		});
 	}
 
@@ -198,21 +185,20 @@ public class Dictionary {
 		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary, domain);
-		ConfigurationProperties properties = configuration.getProperties();
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
-				tmpDict.loadMainDict(properties);
+				tmpDict.loadMainDict();
 				this.mainDictionary = tmpDict.mainDictionary;
 			}
 				break;
 			case STOP_WORDS: {
-				tmpDict.loadStopWordDict(properties);
+				tmpDict.loadStopWordDict();
 				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
 			}
 				break;
 			default: {
-				tmpDict.loadMainDict(properties);
-				tmpDict.loadStopWordDict(properties);
+				tmpDict.loadMainDict();
+				tmpDict.loadStopWordDict();
 				this.mainDictionary = tmpDict.mainDictionary;
 				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
 			}

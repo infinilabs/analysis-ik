@@ -7,7 +7,6 @@ package org.wltea.analyzer.dictionary;
  * @since 2021/7/12 15:36
  */
 public enum DictionaryType {
-	ALL,
 	MAIN_WORDS,
 	STOP_WORDS
 }

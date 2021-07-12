@@ -63,8 +63,9 @@ public final class DictionaryHelper {
 
 	public static Set<String> getRemoteWords(Dictionary dictionary,
 											 DictionaryType dictionaryType,
-											 String location) {
-		URI uri = toUri(location);
+											 String domain) {
+		// TODO domain find remote dictionary
+		URI uri = toUri(domain);
 		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
 		Set<String> remoteWords = Collections.emptySet();
 		if (Objects.isNull(remoteDictionary)) {
@@ -77,8 +78,8 @@ public final class DictionaryHelper {
 
 	public static void reloadRemoteDictionary(Dictionary dictionary,
 											  DictionaryType dictionaryType,
-											  String location) {
-		URI uri = toUri(location);
+											  String domain) {
+		URI uri = toUri(domain);
 		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
 		if (Objects.isNull(remoteDictionary)) {
 			return;

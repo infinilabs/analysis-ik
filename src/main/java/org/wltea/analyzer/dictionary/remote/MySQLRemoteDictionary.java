@@ -99,7 +99,7 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
 
     private HikariDataSource initDataSource() {
         HikariDataSource dataSource = new HikariDataSource();
-        ConfigurationProperties.MySQL mysql = this.getConfigurationProperties().getMysql();
+        ConfigurationProperties.MySQL mysql = this.getRemoteDictFile().getMysql();
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setJdbcUrl(mysql.getUrl());
         dataSource.setUsername(mysql.getUsername());

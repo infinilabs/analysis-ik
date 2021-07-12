@@ -20,16 +20,6 @@ public class ConfigurationProperties {
 	 */
 	Dict dict = new Dict();
 
-	/**
-	 * mysql 配置
-	 */
-	MySQL mysql = new MySQL();
-
-	/**
-	 * redis 配置
-	 */
-	Redis redis = new Redis();
-
 	public final List<String> getMainExtDictFiles() {
 		return StringHelper.filterBlank(dict.local.main);
 	}
@@ -38,15 +28,7 @@ public class ConfigurationProperties {
 		return StringHelper.filterBlank(dict.local.stop);
 	}
 
-	public final List<String> getMainRemoteExtDictFiles() {
-		return StringHelper.filterBlank(dict.remote.main);
-	}
-
-	public final List<String> getRemoteStopDictFiles() {
-		return StringHelper.filterBlank(dict.remote.stop);
-	}
-
-	public final RemoteDictFile.Refresh getRemoteRefresh() {
+	public final Remote.Refresh getRemoteRefresh() {
 		return this.dict.remote.getRefresh();
 	}
 
@@ -61,11 +43,23 @@ public class ConfigurationProperties {
 		/**
 		 * 远程词库文件
 		 */
-		RemoteDictFile remote = new RemoteDictFile();
+		Remote remote = new Remote();
 	}
 
 	@Data
-	public static class RemoteDictFile extends DictFile {
+	public static class Remote {
+
+		String http;
+
+		/**
+		 * mysql 配置
+		 */
+		MySQL mysql = new MySQL();
+
+		/**
+		 * redis 配置
+		 */
+		Redis redis = new Redis();
 
 		Refresh refresh = new Refresh();
 

@@ -8,29 +8,18 @@ dict: # 扩展词库配置
     stop: # 本地stop词典扩展词典文件
       - extra_stopword.dic
   remote: # 远程扩展词典配置
-    # schema: http or redis or mysql
-    # redis://words-key, eg: redis://ik-main-words or redis://ik-stop-words
-    # mysql://tableName, eg: mysql://ik_main_words or mysql://ik_stop_words
-    main: # 远程主词典扩展词典文件
-      - # http://....
-      - # redis://
-      - # mysql://
-    stop: # 远程stop词典扩展词典文件
-      - # http://....
-      - # redis://
-      - # mysql://
+    http: http://localhost
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      username:
+      password:
+    mysql:
+      url: jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8
+      username: root
+      password: dbadmin
     refresh: # 刷新配置
       delay: 10 # 延迟时间，单位s
       period: 60 # 周期时间，单位s
 
-mysql:
-  url: jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8
-  username: root
-  password: dbadmin
-
-redis:
-  host: localhost
-  port: 6379
-  database: 0
-  username:
-  password:

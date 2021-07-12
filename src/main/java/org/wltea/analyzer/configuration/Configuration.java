@@ -51,7 +51,7 @@ public class Configuration {
 		this.useSmart = "true".equals(settings.get("use_smart", "false"));
 		this.enableLowercase = "true".equals(settings.get("enable_lowercase", "true"));
 		this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
-		String domain = settings.get("domain", "");
+		String domain = settings.get("domain", "default-domain");
 		// 配置初始化
 		Configuration.initial(env);
 		// 初始化默认词库

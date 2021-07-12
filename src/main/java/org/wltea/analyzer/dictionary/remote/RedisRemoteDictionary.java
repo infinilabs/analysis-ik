@@ -77,7 +77,7 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     private StatefulRedisConnection<String, String> getRedisConnection() {
-        ConfigurationProperties.Redis redis = this.getConfigurationProperties().getRedis();
+        ConfigurationProperties.Redis redis = this.getRemoteDictFile().getRedis();
         RedisURI.Builder builder = RedisURI.builder()
                 .withHost(redis.getHost())
                 .withPort(redis.getPort())

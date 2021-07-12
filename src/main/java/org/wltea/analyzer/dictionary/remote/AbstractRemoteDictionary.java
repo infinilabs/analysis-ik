@@ -34,6 +34,10 @@ public abstract class AbstractRemoteDictionary {
         return Configuration.getProperties();
     }
 
+    ConfigurationProperties.Remote getRemoteDictFile() {
+        return Configuration.getProperties().getDict().getRemote();
+    }
+
     /**
      * 获取远程词库
      * @param dictionary 词典
