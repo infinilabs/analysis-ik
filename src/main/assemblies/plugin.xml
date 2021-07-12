@@ -42,6 +42,7 @@
                 <include>org.projectlombok:lombok</include>
                 <include>mysql:mysql-connector-java</include>
                 <include>com.zaxxer:HikariCP</include>
+                <include>io.lettuce:lettuce-core</include>
             </includes>
         </dependencySet>
     </dependencySets>

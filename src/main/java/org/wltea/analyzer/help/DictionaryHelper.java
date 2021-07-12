@@ -17,10 +17,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * DictionaryHelper
@@ -63,15 +60,15 @@ public final class DictionaryHelper {
 		return StringHelper.filterBlank(extDictFiles);
 	}
 
-	public static List<String> getRemoteWords(DictionaryType dictionaryType, String location) {
+	public static Set<String> getRemoteWords(DictionaryType dictionaryType, String location) {
 		URI uri = toUri(location);
 		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
-		List<String> remoteWords = Collections.emptyList();
+		Set<String> remoteWords = Collections.emptySet();
 		if (Objects.isNull(remoteDictionary)) {
 			return remoteWords;
 		}
 		SpecialPermission.check();
-		remoteWords = AccessController.doPrivileged((PrivilegedAction<List<String>>) () -> remoteDictionary.getRemoteWords(dictionaryType, uri));
+		remoteWords = AccessController.doPrivileged((PrivilegedAction<Set<String>>) () -> remoteDictionary.getRemoteWords(dictionaryType, uri));
 		return StringHelper.filterBlank(remoteWords);
 	}
 

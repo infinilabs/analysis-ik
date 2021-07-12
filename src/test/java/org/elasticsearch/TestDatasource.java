@@ -1,6 +1,9 @@
 package org.elasticsearch;
 
 import com.zaxxer.hikari.HikariDataSource;
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.sync.RedisCommands;
 import org.junit.Test;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
 
@@ -8,6 +11,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * TestDatasource
@@ -43,5 +49,19 @@ public class TestDatasource {
 		}
 		long maxId = resultSet.getLong("max_id");
 		long currentId = resultSet.getLong("current_id");
+	}
+
+	private RedisClient initRedisClient() {
+		RedisURI.Builder builder = RedisURI.builder()
+				.withHost("localhost");
+		return RedisClient.create(builder.build());
+	}
+
+	@Test
+	public void testRedis() {
+		RedisClient redisClient = initRedisClient();
+		RedisCommands<String, String> sync = redisClient.connect().sync();
+		List<String> ik = sync.lrange("ik", 0, -1);
+		System.out.println(new HashSet<>(ik));
 	}
 }

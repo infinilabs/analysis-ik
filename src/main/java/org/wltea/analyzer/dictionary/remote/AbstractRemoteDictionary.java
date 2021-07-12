@@ -7,6 +7,7 @@ import org.wltea.analyzer.dictionary.DictionaryType;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * AbstractRemoteDictionary
@@ -45,7 +46,7 @@ public abstract class AbstractRemoteDictionary {
      * @param uri 远程地址
      * @return words
      */
-    public List<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
+    public Set<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
         return this.getRemoteWords(dictionaryType, uri.getScheme(), uri.getAuthority());
     }
 
@@ -56,8 +57,8 @@ public abstract class AbstractRemoteDictionary {
      * @param authority 远程地址path
      * @return words
      */
-    public List<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
-        return Collections.emptyList();
+    public Set<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
+        return Collections.emptySet();
     }
 
     /**

@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * HttpRemoteDictionary
@@ -47,9 +49,9 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public List<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
+    public Set<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
         logger.info("[Remote DictFile Loading] for {}", uri);
-        List<String> words = new ArrayList<>();
+        Set<String> words = new HashSet<>();
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
                 .setSocketTimeout(60 * 1000).build();
         CloseableHttpClient httpclient = HttpClients.createDefault();

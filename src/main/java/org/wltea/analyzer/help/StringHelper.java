@@ -1,9 +1,6 @@
 package org.wltea.analyzer.help;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,5 +20,12 @@ public final class StringHelper {
 			return Collections.emptyList();
 		}
 		return strings.stream().filter(StringHelper::nonBlank).map(String::trim).collect(Collectors.toList());
+	}
+
+	public static Set<String> filterBlank(Set<String> strings) {
+		if (Objects.isNull(strings)) {
+			return Collections.emptySet();
+		}
+		return strings.stream().filter(StringHelper::nonBlank).map(String::trim).collect(Collectors.toSet());
 	}
 }

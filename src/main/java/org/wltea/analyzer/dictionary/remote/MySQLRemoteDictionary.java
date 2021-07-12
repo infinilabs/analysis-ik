@@ -9,9 +9,7 @@ import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * MySQLRemoteDictionary
@@ -31,9 +29,9 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public List<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
+    public Set<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
         logger.info("[Remote DictFile Loading] For schema 'mysql' and tableName {}", authority);
-        List<String> words = new ArrayList<>();
+        Set<String> words = new HashSet<>();
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -74,7 +72,13 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
             }
             long maxId = resultSet.getLong("max_id");
             long currentId = resultSet.getLong("current_id");
+            logger.info("[Remote DictFile] maxId {} currentId {}", maxId, currentId);
             if (maxId != currentId) {
+                // 更新currentId
+                sql = String.format("current_id = %s WHERE dictionary = '%s'", maxId, authority);
+                sql = String.format("UPDATE ik_sequence SET %s", sql);
+                logger.info("sql {}", sql);
+                statement.execute(sql);
                 Dictionary.getDictionary().reload(dictionaryType);
             }
         } catch (SQLException e) {

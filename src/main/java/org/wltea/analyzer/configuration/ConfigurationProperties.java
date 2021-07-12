@@ -107,8 +107,9 @@ public class ConfigurationProperties {
 	@Data
 	public static class Redis {
 
-		private String host;
+		private String host = "localhost";
 		private Integer port = 6379;
+		private String username;
 		private String password;
 		private Integer database = 0;
 	}

@@ -244,7 +244,7 @@ public class Dictionary {
 								   List<String> remoteDictFiles) {
 		remoteDictFiles.forEach(location -> {
 			logger.info("[Remote DictFile Loading] " + location);
-			List<String> remoteWords = DictionaryHelper.getRemoteWords(dictionaryType, location);
+			Set<String> remoteWords = DictionaryHelper.getRemoteWords(dictionaryType, location);
 			// 如果找不到扩展的字典，则忽略
 			if (remoteWords.isEmpty()) {
 				logger.error("[Remote DictFile Loading] " + location + " load failed");
