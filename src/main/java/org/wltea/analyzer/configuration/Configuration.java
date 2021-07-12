@@ -38,8 +38,6 @@ public class Configuration {
 	//是否启用小写处理
 	private boolean enableLowercase;
 
-	private String domain;
-	
 	private final static String IKANALYZER_YML = "ikanalyzer.yml";
 
 	private static Boolean initialed = false;
@@ -53,15 +51,15 @@ public class Configuration {
 		this.useSmart = "true".equals(settings.get("use_smart", "false"));
 		this.enableLowercase = "true".equals(settings.get("enable_lowercase", "true"));
 		this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
-		this.domain = settings.get("domain", "");
+		String domain = settings.get("domain", "");
 		// 配置初始化
 		Configuration.initial(env);
 		// 初始化默认词库
 		DefaultDictionary defaultDictionary = DefaultDictionary.initial(properties);
-		this.dictionary = Dictionary.initial(this, defaultDictionary);
+		this.dictionary = Dictionary.initial(this, defaultDictionary, domain);
 	}
 
-	private static void initial(Environment env) {
+	private synchronized static void initial(Environment env) {
 		if (Configuration.initialed) {
 			logger.info("the properties is initialed");
 			return;
@@ -118,10 +116,6 @@ public class Configuration {
 
 	public boolean isEnableLowercase() {
 		return enableLowercase;
-	}
-
-	public String getDomain() {
-		return domain;
 	}
 
 	public Dictionary getDictionary() {

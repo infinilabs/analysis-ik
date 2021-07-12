@@ -54,13 +54,16 @@ public class Dictionary {
 
 	private final DefaultDictionary defaultDictionary;
 
-	public static Dictionary initial(Configuration configuration, DefaultDictionary defaultDictionary) {
-		return new Dictionary(configuration, defaultDictionary);
+	private final String domain;
+
+	public static Dictionary initial(Configuration configuration, DefaultDictionary defaultDictionary, String domain) {
+		return new Dictionary(configuration, defaultDictionary, domain);
 	}
 
-	private Dictionary(Configuration configuration, DefaultDictionary defaultDictionary) {
+	private Dictionary(Configuration configuration, DefaultDictionary defaultDictionary, String domain) {
 		this.configuration = configuration;
 		this.defaultDictionary = defaultDictionary;
+		this.domain = domain;
 		this.initial(configuration);
 	}
 
@@ -184,13 +187,17 @@ public class Dictionary {
 		});
 	}
 
+	public String getDomain() {
+		return domain;
+	}
+
 	/**
 	 * 重新加载词典
 	 */
 	public synchronized void reload(DictionaryType dictionaryType) {
 		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
-		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary);
+		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary, domain);
 		ConfigurationProperties properties = configuration.getProperties();
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
