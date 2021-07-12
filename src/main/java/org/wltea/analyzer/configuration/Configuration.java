@@ -62,7 +62,7 @@ public class Configuration {
 	}
 
 	private static void initial(Environment env) {
-		if (!Configuration.initialed) {
+		if (Configuration.initialed) {
 			logger.info("the properties is initialed");
 			return;
 		}
