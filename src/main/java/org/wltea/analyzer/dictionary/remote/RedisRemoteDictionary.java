@@ -2,6 +2,7 @@ package org.wltea.analyzer.dictionary.remote;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
+import io.lettuce.core.TransactionResult;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.apache.logging.log4j.Logger;
@@ -49,11 +50,21 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
         RedisCommands<String, String> sync = this.redisConnection.sync();
         // 当前 对应的 *-state key为true时，进行reload
         String state = String.format("%s-state", authority);
+        sync.multi();
         String currentState = sync.get(state);
         logger.info("[Remote Dict File] state {} = {}", state, currentState);
+        boolean reload = false;
         if ("true".equals(currentState)) {
             sync.set(state, "false");
-            Dictionary.getDictionary().reload(dictionaryType);
+            reload = true;
+        }
+        TransactionResult exec = sync.exec();
+        for (Object ret : exec) {
+            logger.info("Redis TransactionResult {}", ret);
+            if ("OK".equals(ret.toString()) && reload) {
+                Dictionary.getDictionary().reload(dictionaryType);
+            }
+            break;
         }
     }
 

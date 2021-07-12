@@ -1,7 +1,10 @@
 package org.wltea.analyzer.dictionary.remote;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -18,10 +21,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * HttpRemoteDictionary
@@ -35,14 +36,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
     private static final CloseableHttpClient httpclient = HttpClients.createDefault();
 
-    /*
-     * 上次更改时间
-     */
-    private String lastModified;
-    /*
-     * 资源属性
-     */
-    private String eTags;
+    private static final Map<String, Modifier> MODIFIER_MAPPING = new ConcurrentHashMap<>();
 
     HttpRemoteDictionary(Configuration configuration) {
         super(configuration);
@@ -106,12 +100,21 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     public void reloadRemoteDictionary(DictionaryType dictionaryType, URI uri) {
         logger.info("[Remote DictFile reloading] for {}", uri);
         //超时设置
-        RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
+        final RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
                 .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
 
         String location = uri.toString();
         HttpHead head = new HttpHead(location);
         head.setConfig(rc);
+        // 上次更改时间
+        String lastModified = null;
+        // 资源属性
+        String eTags = null;
+        Modifier modifier = MODIFIER_MAPPING.get(location);
+        if (Objects.nonNull(modifier)) {
+            lastModified = modifier.lastModified;
+            eTags = modifier.eTags;
+        }
 
         //设置请求头
         if (lastModified != null) {
@@ -123,27 +126,28 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
         CloseableHttpResponse response = null;
         try {
-
             response = httpclient.execute(head);
-
-            //返回200 才做操作
-            if (response.getStatusLine().getStatusCode() == 200) {
-
-                if (((response.getLastHeader("Last-Modified") != null) && !response.getLastHeader("Last-Modified").getValue().equalsIgnoreCase(lastModified))
-                        || ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
-
-                    // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-                    Dictionary.getDictionary().reload(dictionaryType);
-                    lastModified = response.getLastHeader("Last-Modified") == null ? null : response.getLastHeader("Last-Modified").getValue();
-                    eTags = response.getLastHeader("ETag") == null ? null : response.getLastHeader("ETag").getValue();
-                }
-            } else if (response.getStatusLine().getStatusCode() == 304) {
-                //没有修改，不做操作
-                //noop
-            } else {
-                logger.info("remote_ext_dict {} return bad code {}", location, response.getStatusLine().getStatusCode());
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
+                logger.info("[Remote DictFile Reloading] Not modified!");
+                return;
             }
 
+            //返回200 才做操作
+            if (statusCode == HttpStatus.SC_OK) {
+                Header lastHeader = response.getLastHeader("Last-Modified");
+                Header eTag = response.getLastHeader("ETag");
+                if ((Objects.nonNull(lastHeader) && !lastHeader.getValue().equalsIgnoreCase(lastModified))
+                        || (Objects.nonNull(eTag) && !eTag.getValue().equalsIgnoreCase(eTags))) {
+                    // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
+                    Dictionary.getDictionary().reload(dictionaryType);
+                    lastModified = Objects.isNull(lastHeader) ? null : lastHeader.getValue();
+                    eTags = Objects.isNull(eTag) ? null : eTag.getValue();
+                    MODIFIER_MAPPING.put(location, new Modifier(lastModified, eTags));
+                }
+                return;
+            }
+            logger.info("remote_ext_dict {} return bad code {}", location, statusCode);
         } catch (Exception e) {
             logger.error("remote_ext_dict error {} location {} !", e, location);
         } finally {
@@ -160,5 +164,18 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     @Override
     public String schema() {
         return RemoteDictionarySchema.HTTP.schema;
+    }
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    static class Modifier {
+        /*
+         * 上次更改时间
+         */
+        String lastModified;
+        /*
+         * 资源属性
+         */
+        String eTags;
     }
 }
