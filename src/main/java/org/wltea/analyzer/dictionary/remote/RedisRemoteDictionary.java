@@ -2,6 +2,7 @@ package org.wltea.analyzer.dictionary.remote;
 
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
+import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.util.List;
@@ -21,13 +22,13 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public List<String> getRemoteWords(String schema, String path) {
-        logger.info("[Remote DictFile reloading] For schema 'redis' path {}", path);
+    public List<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
+        logger.info("[Remote DictFile reloading] For schema 'redis' path {}", authority);
         return null;
     }
 
     @Override
-    public void reloadRemoteDictionary() {
+    public void reloadRemoteDictionary(DictionaryType dictionaryType, String authority) {
         logger.info("[Remote DictFile reloading] For schema 'redis'");
     }
 

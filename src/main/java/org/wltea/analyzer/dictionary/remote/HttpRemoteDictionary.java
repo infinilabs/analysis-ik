@@ -11,6 +11,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.dictionary.Dictionary;
+import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.io.BufferedReader;
@@ -46,7 +47,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public List<String> getRemoteWords(URI uri) {
+    public List<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
         logger.info("[Remote DictFile Loading] for {}", uri);
         List<String> words = new ArrayList<>();
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
@@ -100,7 +101,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
      * ⑤休眠1min，返回第①步
      */
     @Override
-    public void reloadRemoteDictionary(URI uri) {
+    public void reloadRemoteDictionary(DictionaryType dictionaryType, URI uri) {
         logger.info("[Remote DictFile reloading] for {}", uri);
         //超时设置
         RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
@@ -130,7 +131,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
                         || ((response.getLastHeader("ETag") != null) && !response.getLastHeader("ETag").getValue().equalsIgnoreCase(eTags))) {
 
                     // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-                    Dictionary.getDictionary().reloadMainDict();
+                    Dictionary.getDictionary().reload(dictionaryType);
                     lastModified = response.getLastHeader("Last-Modified") == null ? null : response.getLastHeader("Last-Modified").getValue();
                     eTags = response.getLastHeader("ETag") == null ? null : response.getLastHeader("ETag").getValue();
                 }

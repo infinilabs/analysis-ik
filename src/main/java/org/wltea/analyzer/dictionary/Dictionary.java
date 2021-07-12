@@ -32,10 +32,7 @@ import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.wltea.analyzer.help.StringHelper;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -87,14 +84,24 @@ public class Dictionary {
 					if (configuration.isEnableRemoteDict()) {
 						logger.info("Remote Dictionary enabled!");
 						// 建立监控线程
-						List<String> mainRemoteExtDictFiles = dictionary.configurationProperties.getMainRemoteExtDictFiles();
-						List<String> remoteStopDictFiles = dictionary.configurationProperties.getRemoteStopDictFiles();
-						List<String> allRemoteDictFiles = new ArrayList<>();
+						ConfigurationProperties configurationProperties = dictionary.configurationProperties;
+						List<String> mainRemoteExtDictFiles = configurationProperties.getMainRemoteExtDictFiles();
+						List<String> remoteStopDictFiles = configurationProperties.getRemoteStopDictFiles();
+
+						Set<String> allRemoteDictFiles = new HashSet<>();
 						allRemoteDictFiles.addAll(mainRemoteExtDictFiles);
 						allRemoteDictFiles.addAll(remoteStopDictFiles);
+						ConfigurationProperties.RemoteDictFile.Refresh remoteRefresh = configurationProperties.getRemoteRefresh();
 						allRemoteDictFiles.forEach(location -> {
-							// 10 秒是初始延迟可以修改的 60是间隔时间 单位秒
-							pool.scheduleAtFixedRate(new Monitor(location), 10, 60, TimeUnit.SECONDS);
+							DictionaryType dictionaryType = DictionaryType.MAIN_WORDS;
+							if (remoteStopDictFiles.contains(location)) {
+								dictionaryType = DictionaryType.STOP_WORDS;
+							}
+							pool.scheduleAtFixedRate(
+									new Monitor(dictionaryType, location),
+									remoteRefresh.getDelay(),
+									remoteRefresh.getPeriod(),
+									TimeUnit.SECONDS);
 						});
 					}
 				}
@@ -198,7 +205,7 @@ public class Dictionary {
 
 		// 加载远程自定义词库
 		List<String> mainRemoteExtDictFiles = this.configurationProperties.getMainRemoteExtDictFiles();
-		this.loadRemoteExtDict(this.mainDictionary, mainRemoteExtDictFiles);
+		this.loadRemoteExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS, mainRemoteExtDictFiles);
 	}
 
 	/**
@@ -218,7 +225,7 @@ public class Dictionary {
 
 		// 加载远程停用词典
 		List<String> remoteStopDictFiles = this.configurationProperties.getRemoteStopDictFiles();
-		this.loadRemoteExtDict(this.stopWordsDictionary, remoteStopDictFiles);
+		this.loadRemoteExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS, remoteStopDictFiles);
 	}
 
 	private void loadLocalExtDict(DictSegment dictSegment, List<String> extDictFiles, String name) {
@@ -233,10 +240,11 @@ public class Dictionary {
 	}
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
+								   DictionaryType dictionaryType,
 								   List<String> remoteDictFiles) {
 		remoteDictFiles.forEach(location -> {
 			logger.info("[Remote DictFile Loading] " + location);
-			List<String> remoteWords = DictionaryHelper.getRemoteWords(location);
+			List<String> remoteWords = DictionaryHelper.getRemoteWords(dictionaryType, location);
 			// 如果找不到扩展的字典，则忽略
 			if (remoteWords.isEmpty()) {
 				logger.error("[Remote DictFile Loading] " + location + " load failed");
@@ -264,15 +272,29 @@ public class Dictionary {
 	/**
 	 * 重新加载词典
 	 */
-	public void reloadMainDict() {
-		logger.info("begin to reload ik dictionary.");
+	public synchronized void reload(DictionaryType dictionaryType) {
+		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(configuration);
 		tmpDict.configuration = getDictionary().configuration;
-		tmpDict.loadMainDict();
-		tmpDict.loadStopWordDict();
-		this.mainDictionary = tmpDict.mainDictionary;
-		this.stopWordsDictionary = tmpDict.stopWordsDictionary;
-		logger.info("reload ik dictionary finished.");
+		switch (dictionaryType) {
+			case MAIN_WORDS: {
+				tmpDict.loadMainDict();
+				this.mainDictionary = tmpDict.mainDictionary;
+			}
+				break;
+			case STOP_WORDS: {
+				tmpDict.loadStopWordDict();
+				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
+			}
+				break;
+			default: {
+				tmpDict.loadMainDict();
+				tmpDict.loadStopWordDict();
+				this.mainDictionary = tmpDict.mainDictionary;
+				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
+			}
+		}
+		logger.info("Reload ik {} dictionary finished.", dictionaryType);
 	}
 }

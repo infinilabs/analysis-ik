@@ -2,6 +2,7 @@ package org.wltea.analyzer.dictionary.remote;
 
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
+import org.wltea.analyzer.dictionary.DictionaryType;
 
 import java.net.URI;
 import java.util.Collections;
@@ -40,35 +41,38 @@ public abstract class AbstractRemoteDictionary {
 
     /**
      * 获取远程词库
+     * @param dictionaryType 词典类型
      * @param uri 远程地址
      * @return words
      */
-    public List<String> getRemoteWords(URI uri) {
-        return this.getRemoteWords(uri.getScheme(), uri.getPath());
+    public List<String> getRemoteWords(DictionaryType dictionaryType, URI uri) {
+        return this.getRemoteWords(dictionaryType, uri.getScheme(), uri.getAuthority());
     }
 
     /**
      * 获取远程词库
+     * @param dictionaryType 词典类型
      * @param schema 远程地址schema
-     * @param path 远程地址path
+     * @param authority 远程地址path
      * @return words
      */
-    public List<String> getRemoteWords(String schema, String path) {
+    public List<String> getRemoteWords(DictionaryType dictionaryType, String schema, String authority) {
         return Collections.emptyList();
     }
 
     /**
      * 重新加载词库
+     * @param dictionaryType 词典类型
      * @param uri 远程地址
      */
-    public void reloadRemoteDictionary(URI uri) {
-        this.reloadRemoteDictionary();
+    public void reloadRemoteDictionary(DictionaryType dictionaryType, URI uri) {
+        this.reloadRemoteDictionary(dictionaryType, uri.getAuthority());
     }
 
     /**
      * 重新加载词库
      */
-    public void reloadRemoteDictionary() {
+    public void reloadRemoteDictionary(DictionaryType dictionaryType, String authority) {
 
     }
 

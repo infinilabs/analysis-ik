@@ -10,7 +10,7 @@ dict: # 扩展词库配置
   remote: # 远程扩展词典配置
     # schema: http or redis or mysql
     # redis://words-key, eg: redis://ik-main-words or redis://ik-stop-words
-    # mysql://tableName, eg: mysql://ik-main-words or mysql://ik-stop-words
+    # mysql://tableName, eg: mysql://ik_main_words or mysql://ik_stop_words
     main: # 远程主词典扩展词典文件
       - # http://....
       - # redis://
@@ -19,6 +19,9 @@ dict: # 扩展词库配置
       - # http://....
       - # redis://
       - # mysql://
+    refresh: # 刷新配置
+      delay: 10 # 延迟时间，单位s
+      period: 60 # 周期时间，单位s
 
 mysql:
   url: jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8

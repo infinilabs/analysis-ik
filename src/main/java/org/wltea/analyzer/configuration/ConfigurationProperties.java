@@ -3,6 +3,7 @@ package org.wltea.analyzer.configuration;
 import lombok.Data;
 import org.wltea.analyzer.help.StringHelper;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,17 +18,17 @@ public class ConfigurationProperties {
 	/**
 	 * 扩展词库
 	 */
-	private Dict dict;
+	Dict dict = new Dict();
 
 	/**
 	 * mysql 配置
 	 */
-	private MySQL mysql;
+	MySQL mysql = new MySQL();
 
 	/**
 	 * redis 配置
 	 */
-	private Redis redis;
+	Redis redis = new Redis();
 
 	public final List<String> getMainExtDictFiles() {
 		return StringHelper.filterBlank(dict.local.main);
@@ -45,18 +46,37 @@ public class ConfigurationProperties {
 		return StringHelper.filterBlank(dict.remote.stop);
 	}
 
+	public final RemoteDictFile.Refresh getRemoteRefresh() {
+		return this.dict.remote.getRefresh();
+	}
+
 	@Data
 	public static class Dict {
 
 		/**
 		 * 本地词库文件
 		 */
-		private DictFile local;
+		DictFile local = new DictFile();
 
 		/**
 		 * 远程词库文件
 		 */
-		private DictFile remote;
+		RemoteDictFile remote = new RemoteDictFile();
+	}
+
+	@Data
+	public static class RemoteDictFile extends DictFile {
+
+		Refresh refresh = new Refresh();
+
+		/**
+		 * 默认延迟10s，周期60s
+		 */
+		@Data
+		public static class Refresh {
+			Integer delay = 10;
+			Integer period = 60;
+		}
 	}
 
 	/**
@@ -68,12 +88,12 @@ public class ConfigurationProperties {
 		/**
 		 * 主词典文件
 		 */
-		private List<String> main;
+		List<String> main = Collections.emptyList();
 
 		/**
 		 * stop词典文件
 		 */
-		private List<String> stop;
+		List<String> stop = Collections.emptyList();
 	}
 
 	@Data
@@ -88,8 +108,8 @@ public class ConfigurationProperties {
 	public static class Redis {
 
 		private String host;
-		private Integer port;
+		private Integer port = 6379;
 		private String password;
-		private Integer database;
+		private Integer database = 0;
 	}
 }

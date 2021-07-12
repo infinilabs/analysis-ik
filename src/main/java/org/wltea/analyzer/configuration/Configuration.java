@@ -11,7 +11,6 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.dictionary.Dictionary;
-import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;

@@ -40,6 +40,8 @@
             <includes>
                 <include>org.apache.httpcomponents:httpclient</include>
                 <include>org.projectlombok:lombok</include>
+                <include>mysql:mysql-connector-java</include>
+                <include>com.zaxxer:HikariCP</include>
             </includes>
         </dependencySet>
     </dependencySets>
