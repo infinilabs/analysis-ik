@@ -1,6 +1,10 @@
 IK Analysis for Elasticsearch
 =============================
 
+The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.
+
+Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
+
 ### 2021.7.12更新 by Qicz
 
 - 改造使用yml配置文件；
@@ -44,16 +48,15 @@ redis:
   password:
 ```
 
-- 调整和优化Dictionary实现；
-- 扩展RemoteDictionary，提供可配置的基于Http、MySQL、Redis的扩展词库更新方式
+- 调整优化重构Dictionary实现；
+- 修复和重构Http扩展词提供方式的bug；
+- 扩展RemoteDictionary，提供可配置的基于MySQL、Redis的扩展词库更新方式；
 
 > `jre/lib/security/java.policy`的grant中加入 `permission java.security.AllPermission;`
 
-#### TODO 提供基于SpringBoot的MySQL、Redis扩展词库写入starter
+#### TODO by Qicz
 
-The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.
-
-Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
+提供基于SpringBoot的MySQL、Redis扩展词库写入starter
 
 Versions
 --------
