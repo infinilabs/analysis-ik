@@ -1,7 +1,6 @@
 package org.wltea.analyzer.dictionary.remote;
 
 import lombok.Getter;
-import org.apache.http.protocol.HTTP;
 
 /**
  * RemoteDictionaryEtymology

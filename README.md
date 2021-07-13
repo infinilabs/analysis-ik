@@ -59,12 +59,10 @@ PUT es-ik-index
         }
     },
     "mappings": {
-        "_doc": {
-            "properties": {
-                "field1": {
-                    "type": "text",
-                    "analyzer": "ik_smart"
-                }
+        "properties": {
+            "field": {
+                "type": "text",
+                "analyzer": "ik_smart"
             }
         }
     }

@@ -23,7 +23,6 @@
  */
 package org.wltea.analyzer.dictionary;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
@@ -31,8 +30,11 @@ import org.wltea.analyzer.help.DictionaryHelper;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 import java.net.URI;
-import java.util.HashSet;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,37 +52,40 @@ public class Dictionary {
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
 	private DictSegment mainDictionary;
-	private Set<String> mainWords;
+	private DictSegment quantifierDictionary;
 	private DictSegment stopWordsDictionary;
-	private Set<String> stopWords;
-	private Configuration configuration;
-
-	private final DefaultDictionary defaultDictionary;
 
 	private final URI domainUri;
 
-	public static Dictionary initial(Configuration configuration,
-									 DefaultDictionary defaultDictionary,
-									 URI domainUri) {
-		return new Dictionary(configuration, defaultDictionary, domainUri);
+	private static final String PATH_DIC_MAIN = "main.dic";
+	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
+	private static final String PATH_DIC_STOP = "stopword.dic";
+	private final boolean enableRemoteDict;
+
+	private final static Map<String, Dictionary> DOMAIN_DICTIONARY_MAPPING = new ConcurrentHashMap<>();
+
+	public static synchronized Dictionary initial(boolean enableRemoteDict, URI domainUri) {
+		String key = domainUri.toString();
+		Dictionary dictionary = null;
+		if (!DOMAIN_DICTIONARY_MAPPING.containsKey(key)) {
+			dictionary = new Dictionary(enableRemoteDict, domainUri);
+			DOMAIN_DICTIONARY_MAPPING.put(key, dictionary);
+		}
+		return dictionary;
 	}
 
-	private Dictionary(Configuration configuration,
-					   DefaultDictionary defaultDictionary,
-					   URI domainUri) {
-		this.configuration = configuration;
-		this.defaultDictionary = defaultDictionary;
+	private Dictionary(boolean enableRemoteDict, URI domainUri) {
+		this.enableRemoteDict = enableRemoteDict;
 		this.domainUri = domainUri;
-		this.mainWords = new HashSet<>();
-		this.stopWords = new HashSet<>();
-		this.initial(configuration);
+		this.initial(enableRemoteDict);
 	}
 
-	private void initial(Configuration configuration) {
+	private void initial(boolean enableRemoteDict) {
 		this.loadMainDict();
+		this.loadQuantifierDict();
 		this.loadStopWordDict();
 
-		if (configuration.isEnableRemoteDict()) {
+		if (enableRemoteDict) {
 			logger.info("Remote Dictionary enabled!");
 			ConfigurationProperties properties = Configuration.getProperties();
 			ConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
@@ -105,10 +110,6 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray) {
-		Hit hit = this.defaultDictionary.matchInMainDict(charArray);
-		if (hit.isMatch()) {
-			return hit;
-		}
 		return this.mainDictionary.match(charArray);
 	}
 
@@ -119,11 +120,6 @@ public class Dictionary {
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
 		logger.info("matchInMainDict for {}", this.domainUri);
-		Hit hit = this.defaultDictionary.matchInMainDict(charArray, begin, length);
-		logger.info("hit {} isMatch {}", hit, hit.isMatch());
-		if (hit.isMatch()) {
-			return hit;
-		}
 		return this.mainDictionary.match(charArray, begin, length);
 	}
 
@@ -134,7 +130,7 @@ public class Dictionary {
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
 		logger.info("matchInQuantifierDict for {}", this.domainUri);
-		return this.defaultDictionary.matchInQuantifierDict(charArray, begin, length);
+		return this.quantifierDictionary.match(charArray, begin, length);
 	}
 
 	/**
@@ -144,10 +140,6 @@ public class Dictionary {
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
 		logger.info("isStopWord for {}", this.domainUri);
-		boolean stopWord = this.defaultDictionary.isStopWord(charArray, begin, length);
-		if (!stopWord) {
-			return true;
-		}
 		return this.stopWordsDictionary.match(charArray, begin, length).isMatch();
 	}
 
@@ -158,8 +150,26 @@ public class Dictionary {
 		// 建立一个主词典实例
 		this.mainDictionary = new DictSegment((char) 0);
 
+		// 读取主词典文件
+		Path file = Configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
+		this.mainDictionary.fillSegment(file, "Main DictFile");
+		// 加载扩展词典
+		List<String> mainExtDictFiles = Configuration.getProperties().getMainExtDictFiles();
+		this.loadLocalExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS, mainExtDictFiles, "Main Extra DictFile");
+
 		// 加载远程自定义词库
 		this.loadRemoteExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS);
+	}
+
+	/**
+	 * 加载量词词典
+	 */
+	private void loadQuantifierDict() {
+		// 建立一个量词典实例
+		this.quantifierDictionary = new DictSegment((char) 0);
+		// 读取量词词典文件
+		Path file = Configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_QUANTIFIER);
+		this.quantifierDictionary.fillSegment(file,  "Quantifier");
 	}
 
 	/**
@@ -168,16 +178,37 @@ public class Dictionary {
 	private void loadStopWordDict() {
 		// 建立主词典实例
 		this.stopWordsDictionary = new DictSegment((char) 0);
+		// 读取主词典文件
+		Path file = Configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_STOP);
+		this.stopWordsDictionary.fillSegment(file, "Main Stopwords");
+
+		// 加载扩展停止词典
+		List<String> extStopDictFiles = Configuration.getProperties().getExtStopDictFiles();
+		this.loadLocalExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS, extStopDictFiles, "Extra Stopwords");
 
 		// 加载远程停用词典
 		this.loadRemoteExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS);
+	}
+
+	private void loadLocalExtDict(DictSegment dictSegment,
+								  DictionaryType dictionaryType,
+								  List<String> extDictFiles,
+								  String name) {
+		// 加载扩展词典配置
+		extDictFiles = DictionaryHelper.walkFiles(extDictFiles);
+		extDictFiles.forEach(extDictName -> {
+			// 读取扩展词典文件
+			logger.info("[Local DictFile Loading] " + extDictName);
+			Path file = Configuration.getPath(extDictName);
+			dictSegment.fillSegment(file, name);
+		});
 	}
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   DictionaryType dictionaryType) {
 		logger.info("[Remote DictFile Loading] for domain {}", this.domainUri);
 		Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, this.domainUri);
-		this.cleanWords(remoteWords, dictionaryType);
+		//this.addWords(remoteWords, dictionaryType, true);
 		// 如果找不到扩展的字典，则忽略
 		if (remoteWords.isEmpty()) {
 			logger.info("[Remote DictFile Loading] no new words for {}", this.domainUri);
@@ -191,28 +222,12 @@ public class Dictionary {
 	}
 
 	/**
-	 * 清理已加入词库的词
-	 * @param newWords 新的词
-	 * @param dictionaryType 词典类型
-	 */
-	private void cleanWords(Set<String> newWords,
-								   DictionaryType dictionaryType) {
-		if (DictionaryType.MAIN_WORDS.equals(dictionaryType)) {
-			newWords.removeIf(word -> this.mainWords.contains(word));
-			this.mainWords.addAll(newWords);
-		} else {
-			newWords.removeIf(word -> this.stopWords.contains(word));
-			this.stopWords.addAll(newWords);
-		}
-	}
-
-	/**
 	 * 重新加载词典
 	 */
 	public synchronized void reload(DictionaryType dictionaryType) {
 		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
-		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary, domainUri);
+		Dictionary tmpDict = new Dictionary(enableRemoteDict, domainUri);
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
 				tmpDict.loadMainDict();
