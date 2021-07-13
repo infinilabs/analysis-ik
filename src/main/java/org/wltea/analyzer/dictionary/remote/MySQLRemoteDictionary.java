@@ -33,7 +33,7 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
                                       DictionaryType dictionaryType,
                                       String etymology,
                                       String domain) {
-        logger.info("[Remote DictFile Loading] For etymology 'mysql' and domain {}", domain);
+        logger.info("[Remote DictFile Loading] For etymology 'mysql' and domain '{}'", domain);
         Set<String> words = new HashSet<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -61,7 +61,7 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
     public void reloadRemoteDictionary(Dictionary dictionary,
                                        DictionaryType dictionaryType,
                                        String domain) {
-        logger.info("[Remote DictFile Reloading] For etymology 'mysql' and domain {}", domain);
+        logger.info("[Remote DictFile Reloading] For etymology 'mysql' and domain '{}'", domain);
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -72,17 +72,17 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
             statement.setString(1, domain);
             resultSet = statement.executeQuery();
             if (!resultSet.next()) {
-                logger.info("Cannot find the `ik_sequence` and dictionary {} data", domain);
+                logger.info("Cannot find the `ik_sequence` and dictionary '{}' data", domain);
                 return;
             }
             long maxId = resultSet.getLong("max_id");
             long currentId = resultSet.getLong("current_id");
-            logger.info("[Remote DictFile] maxId {} currentId {}", maxId, currentId);
+            logger.info("[Remote DictFile] maxId '{}' currentId '{}'", maxId, currentId);
             if (maxId != currentId) {
                 // 更新currentId
                 sql = String.format("current_id = %s WHERE domain = '%s'", maxId, domain);
                 sql = String.format("UPDATE ik_sequence SET %s", sql);
-                logger.info("sql {}", sql);
+                logger.info("sql '{}'", sql);
                 statement.execute(sql);
                 dictionary.reload(dictionaryType);
             }

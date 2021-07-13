@@ -48,7 +48,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     public Set<String> getRemoteWords(org.wltea.analyzer.dictionary.Dictionary dictionary,
                                       DictionaryType dictionaryType,
                                       URI domainUri) {
-        logger.info("[Remote DictFile Loading] For etymology 'http' and domain {}", domainUri);
+        logger.info("[Remote DictFile Loading] For etymology 'http' and domain '{}'", domainUri);
         Set<String> words = new HashSet<>();
         CloseableHttpResponse response;
         BufferedReader in;
@@ -84,7 +84,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
             }
             response.close();
         } catch (IllegalStateException | IOException e) {
-            logger.error("getRemoteWords error {} location {}", e, location);
+            logger.error("getRemoteWords error '{}' location '{}'", e, location);
         }
         return words;
     }
@@ -100,7 +100,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     public void reloadRemoteDictionary(Dictionary dictionary,
                                        DictionaryType dictionaryType,
                                        URI domainUri) {
-        logger.info("[Remote DictFile Reloading] For etymology 'http' and domain {}", domainUri);
+        logger.info("[Remote DictFile Reloading] For etymology 'http' and domain '{}'", domainUri);
         String location = this.getLocation(dictionaryType, domainUri);
         HttpHead head = new HttpHead(location);
         head.setConfig(REQUEST_CONFIG);
@@ -145,9 +145,9 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
                 }
                 return;
             }
-            logger.info("remote_ext_dict {} return bad code {}", location, statusCode);
+            logger.info("remote_ext_dict '{}' return bad code '{}'", location, statusCode);
         } catch (Exception e) {
-            logger.error("remote_ext_dict error {} location {} !", e, location);
+            logger.error("remote_ext_dict error '{}' location '{}' !", e, location);
         } finally {
             try {
                 if (response != null) {

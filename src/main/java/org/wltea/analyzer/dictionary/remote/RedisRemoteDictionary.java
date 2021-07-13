@@ -27,7 +27,7 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
 
     private final StatefulRedisConnection<String, String> redisConnection;
 
-    private final String KEY_PREFIX = "es-ik-words";
+    private final static String KEY_PREFIX = "es-ik-words";
 
     RedisRemoteDictionary() {
         // lettuce 默认支持connection的重连
@@ -40,7 +40,7 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
                                       DictionaryType dictionaryType,
                                       String etymology,
                                       String domain) {
-        logger.info("[Remote DictFile reloading] For etymology 'redis' domain {}", domain);
+        logger.info("[Remote DictFile reloading] For etymology 'redis' domain '{}'", domain);
         RedisCommands<String, String> sync = this.redisConnection.sync();
         String key = this.getKey(dictionaryType, domain);
         List<String> words = sync.lrange(key, 0, -1);
@@ -51,13 +51,13 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
     public void reloadRemoteDictionary(Dictionary dictionary,
                                        DictionaryType dictionaryType,
                                        String domain) {
-        logger.info("[Remote DictFile reloading] For etymology 'redis'");
+        logger.info("[Remote DictFile reloading] For etymology 'redis' and domain '{}'", domain);
         RedisCommands<String, String> sync = this.redisConnection.sync();
         // 当前 对应的 *-state key为true时，进行reload
         String key = this.getKey(dictionaryType, domain);
         String state = String.format("%s:state", key);
         String currentState = sync.get(state);
-        logger.info("[Remote Dict File] state {} = {}", state, currentState);
+        logger.info("[Remote Dict File] state '{}' = '{}'", state, currentState);
         if ("true".equals(currentState)) {
             sync.set(state, "false");
             dictionary.reload(dictionaryType);

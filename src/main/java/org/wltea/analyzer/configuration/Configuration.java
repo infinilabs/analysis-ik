@@ -62,7 +62,7 @@ public class Configuration {
 		Asserts.check(Objects.nonNull(settingEtymology), message);
 		// 领域
 		String domain = settings.get("domain", "default-domain");
-		logger.info("new configuration for domain {} etymology {}", domain, etymology);
+		logger.info("new configuration for domain '{}' etymology '{}'", domain, etymology);
 		// 配置初始化
 		Configuration.initial(env);
 		// 构造词源及领域

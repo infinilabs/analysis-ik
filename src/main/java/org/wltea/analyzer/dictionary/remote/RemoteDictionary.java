@@ -23,7 +23,7 @@ public final class RemoteDictionary {
     private static void addRemoteDictionary(AbstractRemoteDictionary remoteDictionary) {
         String etymology = remoteDictionary.etymology();
         REMOTE_DICTIONARY.put(etymology, remoteDictionary);
-        logger.info("The Remote Dictionary For etymology {} is loaded!", etymology);
+        logger.info("The Remote Dictionary For etymology '{}' is loaded!", etymology);
     }
 
     public static void initial() {
@@ -35,7 +35,7 @@ public final class RemoteDictionary {
 
     public static AbstractRemoteDictionary getRemoteDictionary(URI uri) {
         String etymology = uri.getScheme();
-        logger.info("Remote Dictionary etymology {}", etymology);
+        logger.info("Remote Dictionary etymology '{}'", etymology);
         AbstractRemoteDictionary remoteDictionary = REMOTE_DICTIONARY.get(etymology);
         if (Objects.isNull(remoteDictionary)) {
             logger.error("Load Remote Dictionary Error");

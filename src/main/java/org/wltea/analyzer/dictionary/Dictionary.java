@@ -88,7 +88,7 @@ public class Dictionary {
 		this.loadStopWordDict();
 
 		if (enableRemoteDict) {
-			logger.info("Remote Dictionary enabled!");
+			logger.info("Remote Dictionary enabled for '{}'!", this.domainUri);
 			ConfigurationProperties properties = Configuration.getProperties();
 			ConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
 			// 建立监控线程 - 主词库
@@ -121,7 +121,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
-		logger.info("matchInMainDict for {}", this.domainUri);
+		logger.info("matchInMainDict for '{}'", this.domainUri);
 		return this.mainDictionary.match(charArray, begin, length);
 	}
 
@@ -131,7 +131,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
-		logger.info("matchInQuantifierDict for {}", this.domainUri);
+		logger.info("matchInQuantifierDict for '{}'", this.domainUri);
 		return this.quantifierDictionary.match(charArray, begin, length);
 	}
 
@@ -141,7 +141,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
-		logger.info("isStopWord for {}", this.domainUri);
+		logger.info("isStopWord for '{}'", this.domainUri);
 		return this.stopWordsDictionary.match(charArray, begin, length).isMatch();
 	}
 
@@ -157,7 +157,7 @@ public class Dictionary {
 		this.mainDictionary.fillSegment(file, "Main DictFile");
 		// 加载扩展词典
 		List<String> mainExtDictFiles = Configuration.getProperties().getMainExtDictFiles();
-		this.loadLocalExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS, mainExtDictFiles, "Main Extra DictFile");
+		this.loadLocalExtDict(this.mainDictionary, mainExtDictFiles, "Main Extra DictFile");
 
 		// 加载远程自定义词库
 		this.loadRemoteExtDict(this.mainDictionary, DictionaryType.MAIN_WORDS);
@@ -186,14 +186,13 @@ public class Dictionary {
 
 		// 加载扩展停止词典
 		List<String> extStopDictFiles = Configuration.getProperties().getExtStopDictFiles();
-		this.loadLocalExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS, extStopDictFiles, "Extra Stopwords");
+		this.loadLocalExtDict(this.stopWordsDictionary, extStopDictFiles, "Extra Stopwords");
 
 		// 加载远程停用词典
 		this.loadRemoteExtDict(this.stopWordsDictionary, DictionaryType.STOP_WORDS);
 	}
 
 	private void loadLocalExtDict(DictSegment dictSegment,
-								  DictionaryType dictionaryType,
 								  List<String> extDictFiles,
 								  String name) {
 		// 加载扩展词典配置
@@ -208,17 +207,16 @@ public class Dictionary {
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   DictionaryType dictionaryType) {
-		logger.info("[Remote DictFile Loading] for domain {}", this.domainUri);
+		logger.info("[Remote DictFile Loading] for domain '{}'", this.domainUri);
 		Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, this.domainUri);
-		//this.addWords(remoteWords, dictionaryType, true);
 		// 如果找不到扩展的字典，则忽略
 		if (remoteWords.isEmpty()) {
-			logger.info("[Remote DictFile Loading] no new words for {}", this.domainUri);
+			logger.info("[Remote DictFile Loading] no new words for '{}'", this.domainUri);
 			return;
 		}
 		remoteWords.forEach(word -> {
 			// 加载远程词典数据到主内存中
-			logger.info("[New {} Word] {}", dictionaryType.dictName, word);
+			logger.info("[New '{}' Word] '{}'", dictionaryType.dictName, word);
 			dictSegment.fillSegment(word.toLowerCase().toCharArray());
 		});
 	}
@@ -227,7 +225,7 @@ public class Dictionary {
 	 * 重新加载词典
 	 */
 	public synchronized void reload(DictionaryType dictionaryType) {
-		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
+		logger.info("[Begin to reload] ik '{}' dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(enableRemoteDict, domainUri);
 		switch (dictionaryType) {
@@ -248,6 +246,6 @@ public class Dictionary {
 				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
 			}
 		}
-		logger.info("Reload ik {} dictionary finished.", dictionaryType);
+		logger.info("Reload ik '{}' dictionary finished.", dictionaryType);
 	}
 }
