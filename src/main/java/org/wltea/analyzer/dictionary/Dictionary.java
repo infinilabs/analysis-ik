@@ -70,6 +70,8 @@ public class Dictionary {
 		if (!DOMAIN_DICTIONARY_MAPPING.containsKey(key)) {
 			dictionary = new Dictionary(enableRemoteDict, domainUri);
 			DOMAIN_DICTIONARY_MAPPING.put(key, dictionary);
+		} else {
+			dictionary = DOMAIN_DICTIONARY_MAPPING.get(key);
 		}
 		return dictionary;
 	}
