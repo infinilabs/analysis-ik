@@ -2,6 +2,8 @@ package org.wltea.analyzer.dictionary.remote;
 
 import lombok.Getter;
 
+import java.util.stream.Stream;
+
 /**
  * RemoteDictionaryEtymology
  *
@@ -22,5 +24,10 @@ public enum RemoteDictionaryEtymology {
 
 	RemoteDictionaryEtymology(String etymology) {
 		this.etymology = etymology;
+	}
+
+	public static RemoteDictionaryEtymology newEtymology(String etymology) {
+		return Stream.of(values()).filter(e -> e.etymology.equals(etymology)).findFirst().orElse(null
+		);
 	}
 }

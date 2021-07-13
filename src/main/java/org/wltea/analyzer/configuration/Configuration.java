@@ -3,7 +3,9 @@
  */
 package org.wltea.analyzer.configuration;
 
+import org.apache.http.util.Asserts;
 import org.apache.logging.log4j.Logger;
+import org.elasticsearch.Assertions;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.io.PathUtils;
@@ -25,6 +27,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Objects;
 
 public class Configuration {
 	
@@ -54,6 +57,9 @@ public class Configuration {
 		this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
 		// 词源
 		String etymology = settings.get("etymology", RemoteDictionaryEtymology.DEFAULT.getEtymology());
+		RemoteDictionaryEtymology settingEtymology = RemoteDictionaryEtymology.newEtymology(etymology);
+		String message = String.format("the etymology '%s' config is invalid, just support 'redis','mysql','http'.", etymology);
+		Asserts.check(Objects.nonNull(settingEtymology), message);
 		// 领域
 		String domain = settings.get("domain", "default-domain");
 		logger.info("new configuration for domain {} etymology {}", domain, etymology);
