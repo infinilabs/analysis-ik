@@ -51,7 +51,7 @@ PUT es-ik-index
     "settings": {
         "analysis.analyzer": {
             "ik_smart": {
-            		"type":"ik_smart",
+                "type": "ik_smart",
                 "enable_remote_dict": true,
                 "domain": "order", # 业务领域
                 "etymology": "redis" # 词源，可取值：redis，http，mysql，默认为redis
