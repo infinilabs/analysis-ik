@@ -17,23 +17,6 @@ import java.util.Set;
  */
 public abstract class AbstractRemoteDictionary {
 
-    enum RemoteDictionarySchema {
-
-        HTTP("http"),
-        REDIS("redis"),
-        MYSQL("mysql");
-
-        String schema;
-
-        RemoteDictionarySchema(String schema) {
-            this.schema = schema;
-        }
-    }
-
-    ConfigurationProperties getConfigurationProperties() {
-        return Configuration.getProperties();
-    }
-
     ConfigurationProperties.Remote getRemoteDictFile() {
         return Configuration.getProperties().getDict().getRemote();
     }
@@ -42,22 +25,30 @@ public abstract class AbstractRemoteDictionary {
      * 获取远程词库
      * @param dictionary 词典
      * @param dictionaryType 词典类型
-     * @param uri 远程地址
+     * @param domainUri 领域词源Uri
      * @return words
      */
-    public Set<String> getRemoteWords(Dictionary dictionary, DictionaryType dictionaryType, URI uri) {
-        return this.getRemoteWords(dictionary, dictionaryType, uri.getScheme(), uri.getAuthority());
+    public Set<String> getRemoteWords(Dictionary dictionary,
+                                      DictionaryType dictionaryType,
+                                      URI domainUri) {
+        return this.getRemoteWords(dictionary,
+                dictionaryType,
+                domainUri.getScheme(),
+                domainUri.getAuthority());
     }
 
     /**
      * 获取远程词库
      * @param dictionary 词典
      * @param dictionaryType 词典类型
-     * @param schema 远程地址schema
-     * @param authority 远程地址path
+     * @param etymology 词源
+     * @param domain 领域
      * @return words
      */
-    public Set<String> getRemoteWords(Dictionary dictionary, DictionaryType dictionaryType, String schema, String authority) {
+    public Set<String> getRemoteWords(Dictionary dictionary,
+                                      DictionaryType dictionaryType,
+                                      String etymology,
+                                      String domain) {
         return Collections.emptySet();
     }
 
@@ -65,24 +56,30 @@ public abstract class AbstractRemoteDictionary {
      * 重新加载词库
      * @param dictionary 词典
      * @param dictionaryType 词典类型
-     * @param uri 远程地址
+     * @param domainUri 领域词源Uri
      */
-    public void reloadRemoteDictionary(Dictionary dictionary,  DictionaryType dictionaryType, URI uri) {
-        this.reloadRemoteDictionary(dictionary, dictionaryType, uri.getAuthority());
+    public void reloadRemoteDictionary(Dictionary dictionary,
+                                       DictionaryType dictionaryType,
+                                       URI domainUri) {
+        this.reloadRemoteDictionary(dictionary,
+                dictionaryType,
+                domainUri.getAuthority());
     }
 
     /**
      * 重新加载词库
      * @param dictionary 词典
      * @param dictionaryType 词典类型
-     * @param authority redis key 或 or db table name
+     * @param domain 领域
      */
-    public void reloadRemoteDictionary(Dictionary dictionary, DictionaryType dictionaryType, String authority) {
+    public void reloadRemoteDictionary(Dictionary dictionary,
+                                       DictionaryType dictionaryType,
+                                       String domain) {
 
     }
 
     /**
-     * 词典schema
+     * 词典词源
      */
-    abstract String schema();
+    abstract String etymology();
 }

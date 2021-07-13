@@ -31,16 +31,18 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
     @Override
     public Set<String> getRemoteWords(org.wltea.analyzer.dictionary.Dictionary dictionary,
                                       DictionaryType dictionaryType,
-                                      String schema,
-                                      String authority) {
-        logger.info("[Remote DictFile Loading] For schema 'mysql' and tableName {}", authority);
+                                      String etymology,
+                                      String domain) {
+        logger.info("[Remote DictFile Loading] For etymology 'mysql' and domain {}", domain);
         Set<String> words = new HashSet<>();
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
             connection = this.dataSource.getConnection();
-            statement = connection.prepareStatement(String.format("SELECT word FROM %s", authority));
+            statement = connection.prepareStatement("SELECT word FROM ik_words WHERE domain = ? AND word_type = ?");
+            statement.setString(1, domain);
+            statement.setInt(2, dictionaryType.getType());
             resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 String word = resultSet.getString("word");
@@ -58,20 +60,19 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
     @Override
     public void reloadRemoteDictionary(Dictionary dictionary,
                                        DictionaryType dictionaryType,
-                                       String authority) {
-        logger.info("[Remote DictFile Reloading] For schema 'mysql' and path[TableName] {}", authority);
+                                       String domain) {
+        logger.info("[Remote DictFile Reloading] For etymology 'mysql' and domain {}", domain);
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
             connection = this.dataSource.getConnection();
-            String sql = String.format("SELECT MAX(dict.id) max_id, seq.current_id current_id FROM %s dict, ik_sequence seq", authority);
-            sql = String.format("%s WHERE seq.dictionary = ? LIMIT 1", sql);
+            String sql = "SELECT MAX(words.id) max_id, seq.current_id current_id FROM ik_words words, ik_sequence seq WHERE seq.domain = ? LIMIT 1";
             statement = connection.prepareStatement(sql);
-            statement.setString(1, authority);
+            statement.setString(1, domain);
             resultSet = statement.executeQuery();
             if (!resultSet.next()) {
-                logger.info("Cannot find the `ik_sequence` and dictionary {} data", authority);
+                logger.info("Cannot find the `ik_sequence` and dictionary {} data", domain);
                 return;
             }
             long maxId = resultSet.getLong("max_id");
@@ -79,7 +80,7 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
             logger.info("[Remote DictFile] maxId {} currentId {}", maxId, currentId);
             if (maxId != currentId) {
                 // 更新currentId
-                sql = String.format("current_id = %s WHERE dictionary = '%s'", maxId, authority);
+                sql = String.format("current_id = %s WHERE domain = '%s'", maxId, domain);
                 sql = String.format("UPDATE ik_sequence SET %s", sql);
                 logger.info("sql {}", sql);
                 statement.execute(sql);
@@ -93,8 +94,8 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public String schema() {
-        return RemoteDictionarySchema.MYSQL.schema;
+    public String etymology() {
+        return RemoteDictionaryEtymology.MYSQL.etymology;
     }
 
     private HikariDataSource initDataSource() {

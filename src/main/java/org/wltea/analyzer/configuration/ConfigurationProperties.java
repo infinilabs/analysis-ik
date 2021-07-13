@@ -49,7 +49,10 @@ public class ConfigurationProperties {
 	@Data
 	public static class Remote {
 
-		String http;
+		/**
+		 * http 配置
+		 */
+		Http http;
 
 		/**
 		 * mysql 配置
@@ -88,6 +91,11 @@ public class ConfigurationProperties {
 		 * stop词典文件
 		 */
 		List<String> stop = Collections.emptyList();
+	}
+
+	@Data
+	public static class Http {
+		String base = "http://localhost";
 	}
 
 	@Data

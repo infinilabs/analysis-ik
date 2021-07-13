@@ -13,6 +13,7 @@ import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.dictionary.DefaultDictionary;
 import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
+import org.wltea.analyzer.dictionary.remote.RemoteDictionaryEtymology;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -21,9 +22,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Objects;
 
 public class Configuration {
 	
@@ -39,10 +42,12 @@ public class Configuration {
 	private boolean enableLowercase;
 
 	private final static String IKANALYZER_YML = "ikanalyzer.yml";
+	private final String DEFAULT_DOMAIN = "default-domain";
 
 	private static Boolean initialed = false;
 	private static ConfigurationProperties properties;
 	private static String dictRootPath;
+	private static Dictionary DEFAULT_DOMAIN_DICTIONARY;
 	private Dictionary dictionary;
 
 	@Inject
@@ -51,17 +56,28 @@ public class Configuration {
 		this.useSmart = "true".equals(settings.get("use_smart", "false"));
 		this.enableLowercase = "true".equals(settings.get("enable_lowercase", "true"));
 		this.enableRemoteDict = "true".equals(settings.get("enable_remote_dict", "true"));
-		String domain = settings.get("domain", "default-domain");
+		// 词源
+		String etymology = settings.get("etymology", RemoteDictionaryEtymology.DEFAULT.getEtymology());
+		// 领域
+		String domain = settings.get("domain", DEFAULT_DOMAIN);
 		// 配置初始化
 		Configuration.initial(env);
 		// 初始化默认词库
 		DefaultDictionary defaultDictionary = DefaultDictionary.initial(properties);
-		this.dictionary = Dictionary.initial(this, defaultDictionary, domain);
+		// 构造词源及领域
+		URI domainUri = URI.create(String.format("%s://%s", etymology, domain));
+		if (DEFAULT_DOMAIN.equals(domain)) {
+			if (Objects.isNull(DEFAULT_DOMAIN_DICTIONARY)) {
+				DEFAULT_DOMAIN_DICTIONARY = Dictionary.initial(this, defaultDictionary, domainUri);
+			}
+			this.dictionary = DEFAULT_DOMAIN_DICTIONARY;
+		} else {
+			this.dictionary = Dictionary.initial(this, defaultDictionary, domainUri);
+		}
 	}
 
 	private synchronized static void initial(Environment env) {
 		if (Configuration.initialed) {
-			logger.info("the properties is initialed");
 			return;
 		}
 		// 加载配置文件

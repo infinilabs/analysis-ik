@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.Logger;
+import org.wltea.analyzer.configuration.ConfigurationProperties;
 import org.wltea.analyzer.dictionary.Dictionary;
 import org.wltea.analyzer.dictionary.DictionaryType;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
@@ -36,28 +37,27 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
     private static final Logger logger = ESPluginLoggerFactory.getLogger(HttpRemoteDictionary.class.getName());
 
-    private static final CloseableHttpClient httpclient = HttpClients.createDefault();
+    private static final CloseableHttpClient HTTP_CLIENT = HttpClients.createDefault();
+    //超时设置
+    private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
+            .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
 
     private static final Map<String, Modifier> MODIFIER_MAPPING = new ConcurrentHashMap<>();
 
     @Override
     public Set<String> getRemoteWords(org.wltea.analyzer.dictionary.Dictionary dictionary,
                                       DictionaryType dictionaryType,
-                                      URI uri) {
-        logger.info("[Remote DictFile Loading] for {}", uri);
+                                      URI domainUri) {
+        logger.info("[Remote DictFile Loading] For etymology 'http' and domain {}", domainUri);
         Set<String> words = new HashSet<>();
-        RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000).setConnectTimeout(10 * 1000)
-                .setSocketTimeout(60 * 1000).build();
-        CloseableHttpClient httpclient = HttpClients.createDefault();
         CloseableHttpResponse response;
         BufferedReader in;
-        String location = uri.toString();
+        String location = this.getLocation(dictionaryType, domainUri);
         HttpGet get = new HttpGet(location);
-        get.setConfig(rc);
+        get.setConfig(REQUEST_CONFIG);
         try {
-            response = httpclient.execute(get);
-            if (response.getStatusLine().getStatusCode() == 200) {
-
+            response = HTTP_CLIENT.execute(get);
+            if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
                 String charset = "UTF-8";
                 // 获取编码，默认为utf-8
                 HttpEntity entity = response.getEntity();
@@ -99,15 +99,11 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     @Override
     public void reloadRemoteDictionary(Dictionary dictionary,
                                        DictionaryType dictionaryType,
-                                       URI uri) {
-        logger.info("[Remote DictFile reloading] for {}", uri);
-        //超时设置
-        final RequestConfig rc = RequestConfig.custom().setConnectionRequestTimeout(10 * 1000)
-                .setConnectTimeout(10 * 1000).setSocketTimeout(15 * 1000).build();
-
-        String location = uri.toString();
+                                       URI domainUri) {
+        logger.info("[Remote DictFile Reloading] For etymology 'http' and domain {}", domainUri);
+        String location = this.getLocation(dictionaryType, domainUri);
         HttpHead head = new HttpHead(location);
-        head.setConfig(rc);
+        head.setConfig(REQUEST_CONFIG);
         // 上次更改时间
         String lastModified = null;
         // 资源属性
@@ -128,7 +124,7 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
 
         CloseableHttpResponse response = null;
         try {
-            response = httpclient.execute(head);
+            response = HTTP_CLIENT.execute(head);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode == HttpStatus.SC_NOT_MODIFIED) {
                 logger.info("[Remote DictFile Reloading] Not modified!");
@@ -164,8 +160,15 @@ class HttpRemoteDictionary extends AbstractRemoteDictionary {
     }
 
     @Override
-    public String schema() {
-        return RemoteDictionarySchema.HTTP.schema;
+    public String etymology() {
+        return RemoteDictionaryEtymology.HTTP.etymology;
+    }
+
+    private String getLocation(DictionaryType dictionaryType, URI domainUri) {
+        ConfigurationProperties.Http http = this.getRemoteDictFile().getHttp();
+        // path: ${base}/es-dict/${main}/{domain}
+        // or path: ${base}/es-dict/${stop}/{domain}
+        return String.format("%s/es-dict/%s/%s", http.getBase(), dictionaryType.getDictName(), domainUri.getAuthority());
     }
 
     @AllArgsConstructor

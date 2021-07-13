@@ -63,30 +63,27 @@ public final class DictionaryHelper {
 
 	public static Set<String> getRemoteWords(Dictionary dictionary,
 											 DictionaryType dictionaryType,
-											 String domain) {
-		// TODO domain find remote dictionary
-		URI uri = toUri(domain);
-		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
+											 URI domainUri) {
+		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(domainUri);
 		Set<String> remoteWords = Collections.emptySet();
 		if (Objects.isNull(remoteDictionary)) {
 			return remoteWords;
 		}
 		SpecialPermission.check();
-		remoteWords = AccessController.doPrivileged((PrivilegedAction<Set<String>>) () -> remoteDictionary.getRemoteWords(dictionary, dictionaryType, uri));
+		remoteWords = AccessController.doPrivileged((PrivilegedAction<Set<String>>) () -> remoteDictionary.getRemoteWords(dictionary, dictionaryType, domainUri));
 		return StringHelper.filterBlank(remoteWords);
 	}
 
 	public static void reloadRemoteDictionary(Dictionary dictionary,
 											  DictionaryType dictionaryType,
-											  String domain) {
-		URI uri = toUri(domain);
-		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(uri);
+											  URI domainUri) {
+		AbstractRemoteDictionary remoteDictionary = RemoteDictionary.getRemoteDictionary(domainUri);
 		if (Objects.isNull(remoteDictionary)) {
 			return;
 		}
 		SpecialPermission.check();
 		AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
-			remoteDictionary.reloadRemoteDictionary(dictionary, dictionaryType, uri);
+			remoteDictionary.reloadRemoteDictionary(dictionary, dictionaryType, domainUri);
 			return null;
 		});
 	}

@@ -8,8 +8,14 @@ dict: # 扩展词库配置
     stop: # 本地stop词典扩展词典文件
       - extra_stopword.dic
   remote: # 远程扩展词典配置
-    http: http://localhost
+    http:
+      # http 服务地址
+      # main-words path: ${base}/es-dict/main-words/{domain}
+      # stop-words path: ${base}/es-dict/stop-words/{domain}
+      base: http://localhost
     redis:
+      # main-words key: es-ik-words:{domain}:main-words
+      # stop-words key: es-ik-words:{domain}:stop-words
       host: localhost
       port: 6379
       database: 0

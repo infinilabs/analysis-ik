@@ -23,12 +23,15 @@
  */
 package org.wltea.analyzer.dictionary;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import org.apache.logging.log4j.Logger;
 import org.wltea.analyzer.configuration.Configuration;
 import org.wltea.analyzer.configuration.ConfigurationProperties;
 import org.wltea.analyzer.help.DictionaryHelper;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
+import java.net.URI;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -47,21 +50,29 @@ public class Dictionary {
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
 	private DictSegment mainDictionary;
+	private Set<String> mainWords;
 	private DictSegment stopWordsDictionary;
+	private Set<String> stopWords;
 	private Configuration configuration;
 
 	private final DefaultDictionary defaultDictionary;
 
-	private final String domain;
+	private final URI domainUri;
 
-	public static Dictionary initial(Configuration configuration, DefaultDictionary defaultDictionary, String domain) {
-		return new Dictionary(configuration, defaultDictionary, domain);
+	public static Dictionary initial(Configuration configuration,
+									 DefaultDictionary defaultDictionary,
+									 URI domainUri) {
+		return new Dictionary(configuration, defaultDictionary, domainUri);
 	}
 
-	private Dictionary(Configuration configuration, DefaultDictionary defaultDictionary, String domain) {
+	private Dictionary(Configuration configuration,
+					   DefaultDictionary defaultDictionary,
+					   URI domainUri) {
 		this.configuration = configuration;
 		this.defaultDictionary = defaultDictionary;
-		this.domain = domain;
+		this.domainUri = domainUri;
+		this.mainWords = new HashSet<>();
+		this.stopWords = new HashSet<>();
 		this.initial(configuration);
 	}
 
@@ -75,13 +86,13 @@ public class Dictionary {
 			ConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
 			// 建立监控线程 - 主词库
 			pool.scheduleAtFixedRate(
-					new Monitor(this, DictionaryType.MAIN_WORDS, this.domain),
+					new Monitor(this, DictionaryType.MAIN_WORDS, this.domainUri),
 					remoteRefresh.getDelay(),
 					remoteRefresh.getPeriod(),
 					TimeUnit.SECONDS);
 			// 建立监控线程 - stop词库
 			pool.scheduleAtFixedRate(
-					new Monitor(this, DictionaryType.STOP_WORDS, this.domain),
+					new Monitor(this, DictionaryType.STOP_WORDS, this.domainUri),
 					remoteRefresh.getDelay(),
 					remoteRefresh.getPeriod(),
 					TimeUnit.SECONDS);
@@ -107,7 +118,9 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
+		logger.info("matchInMainDict for {}", this.domainUri);
 		Hit hit = this.defaultDictionary.matchInMainDict(charArray, begin, length);
+		logger.info("hit {} isMatch {}", hit, hit.isMatch());
 		if (hit.isMatch()) {
 			return hit;
 		}
@@ -120,6 +133,7 @@ public class Dictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
+		logger.info("matchInQuantifierDict for {}", this.domainUri);
 		return this.defaultDictionary.matchInQuantifierDict(charArray, begin, length);
 	}
 
@@ -129,6 +143,7 @@ public class Dictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
+		logger.info("isStopWord for {}", this.domainUri);
 		boolean stopWord = this.defaultDictionary.isStopWord(charArray, begin, length);
 		if (!stopWord) {
 			return true;
@@ -160,22 +175,35 @@ public class Dictionary {
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   DictionaryType dictionaryType) {
-		logger.info("[Remote DictFile Loading] for domain {}", this.domain);
-		Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, this.domain);
+		logger.info("[Remote DictFile Loading] for domain {}", this.domainUri);
+		Set<String> remoteWords = DictionaryHelper.getRemoteWords(this, dictionaryType, this.domainUri);
+		this.cleanWords(remoteWords, dictionaryType);
 		// 如果找不到扩展的字典，则忽略
 		if (remoteWords.isEmpty()) {
-			logger.error("[Remote DictFile Loading] " + this.domain + " load failed");
+			logger.info("[Remote DictFile Loading] no new words for {}", this.domainUri);
 			return;
 		}
 		remoteWords.forEach(word -> {
 			// 加载远程词典数据到主内存中
-			logger.info("[New Word] {}", word);
+			logger.info("[New {} Word] {}", dictionaryType.dictName, word);
 			dictSegment.fillSegment(word.toLowerCase().toCharArray());
 		});
 	}
 
-	public String getDomain() {
-		return domain;
+	/**
+	 * 清理已加入词库的词
+	 * @param newWords 新的词
+	 * @param dictionaryType 词典类型
+	 */
+	private void cleanWords(Set<String> newWords,
+								   DictionaryType dictionaryType) {
+		if (DictionaryType.MAIN_WORDS.equals(dictionaryType)) {
+			newWords.removeIf(word -> this.mainWords.contains(word));
+			this.mainWords.addAll(newWords);
+		} else {
+			newWords.removeIf(word -> this.stopWords.contains(word));
+			this.stopWords.addAll(newWords);
+		}
 	}
 
 	/**
@@ -184,7 +212,7 @@ public class Dictionary {
 	public synchronized void reload(DictionaryType dictionaryType) {
 		logger.info("[Begin to reload] ik {} dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
-		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary, domain);
+		Dictionary tmpDict = new Dictionary(configuration, defaultDictionary, domainUri);
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
 				tmpDict.loadMainDict();

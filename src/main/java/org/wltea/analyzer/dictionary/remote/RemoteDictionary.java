@@ -21,9 +21,9 @@ public final class RemoteDictionary {
     private static final Map<String, AbstractRemoteDictionary> REMOTE_DICTIONARY = new HashMap<>();
 
     private static void addRemoteDictionary(AbstractRemoteDictionary remoteDictionary) {
-        String schema = remoteDictionary.schema();
-        REMOTE_DICTIONARY.put(schema, remoteDictionary);
-        logger.info("The Remote Dictionary For schema {} is loaded!", schema);
+        String etymology = remoteDictionary.etymology();
+        REMOTE_DICTIONARY.put(etymology, remoteDictionary);
+        logger.info("The Remote Dictionary For etymology {} is loaded!", etymology);
     }
 
     public static void initial() {
@@ -34,9 +34,9 @@ public final class RemoteDictionary {
     }
 
     public static AbstractRemoteDictionary getRemoteDictionary(URI uri) {
-        String schema = uri.getScheme();
-        logger.info("Remote Dictionary schema {}", schema);
-        AbstractRemoteDictionary remoteDictionary = REMOTE_DICTIONARY.get(schema);
+        String etymology = uri.getScheme();
+        logger.info("Remote Dictionary etymology {}", etymology);
+        AbstractRemoteDictionary remoteDictionary = REMOTE_DICTIONARY.get(etymology);
         if (Objects.isNull(remoteDictionary)) {
             logger.error("Load Remote Dictionary Error");
         }

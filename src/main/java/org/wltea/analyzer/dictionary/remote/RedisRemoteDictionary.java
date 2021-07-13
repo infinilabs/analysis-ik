@@ -28,6 +28,8 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
 
     private final StatefulRedisConnection<String, String> redisConnection;
 
+    private final String KEY_PREFIX = "es-ik-words";
+
     RedisRemoteDictionary() {
         // lettuce 默认支持connection的重连
         // 在es中并无多线程情况，使用单连接即可
@@ -37,43 +39,41 @@ class RedisRemoteDictionary extends AbstractRemoteDictionary {
     @Override
     public Set<String> getRemoteWords(Dictionary dictionary,
                                       DictionaryType dictionaryType,
-                                      String schema,
-                                      String authority) {
-        logger.info("[Remote DictFile reloading] For schema 'redis' path {}", authority);
+                                      String etymology,
+                                      String domain) {
+        logger.info("[Remote DictFile reloading] For etymology 'redis' domain {}", domain);
         RedisCommands<String, String> sync = this.redisConnection.sync();
-        List<String> words = sync.lrange(authority, 0, -1);
+        String key = this.getKey(dictionaryType, domain);
+        List<String> words = sync.lrange(key, 0, -1);
         return new HashSet<>(words);
     }
 
     @Override
     public void reloadRemoteDictionary(Dictionary dictionary,
                                        DictionaryType dictionaryType,
-                                       String authority) {
-        logger.info("[Remote DictFile reloading] For schema 'redis'");
+                                       String domain) {
+        logger.info("[Remote DictFile reloading] For etymology 'redis'");
         RedisCommands<String, String> sync = this.redisConnection.sync();
         // 当前 对应的 *-state key为true时，进行reload
-        String state = String.format("%s-state", authority);
-        sync.multi();
+        String key = this.getKey(dictionaryType, domain);
+        String state = String.format("%s:state", key);
         String currentState = sync.get(state);
         logger.info("[Remote Dict File] state {} = {}", state, currentState);
-        boolean reload = false;
         if ("true".equals(currentState)) {
             sync.set(state, "false");
-            reload = true;
-        }
-        TransactionResult exec = sync.exec();
-        for (Object ret : exec) {
-            logger.info("Redis TransactionResult {}", ret);
-            if ("OK".equals(ret.toString()) && reload) {
-                dictionary.reload(dictionaryType);
-            }
-            break;
+            dictionary.reload(dictionaryType);
         }
     }
 
     @Override
-    public String schema() {
-        return RemoteDictionarySchema.REDIS.schema;
+    public String etymology() {
+        return RemoteDictionaryEtymology.REDIS.etymology;
+    }
+
+    private String getKey(DictionaryType dictionaryType, String domain) {
+        // # main-words key: es-ik-words:{domain}:main-words
+        // # stop-words key: es-ik-words:{domain}:stop-words
+        return String.format("%s:%s:%s", KEY_PREFIX, domain, dictionaryType.getDictName());
     }
 
     private StatefulRedisConnection<String, String> getRedisConnection() {
