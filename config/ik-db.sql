@@ -8,13 +8,15 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
--- Table structure for ik_sequence
+-- Table structure for ik_dict_state
 -- ----------------------------
-DROP TABLE IF EXISTS `ik_sequence`;
-CREATE TABLE `ik_sequence` (
-  `current_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+DROP TABLE IF EXISTS `ik_dict_state`;
+CREATE TABLE `ik_dict_state` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain` varchar(100) NOT NULL COMMENT '所属领域',
-  PRIMARY KEY (`current_id`) USING BTREE
+  `state` varchar(5) NOT NULL COMMENT 'true有更新false无更新',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `domain` (`domain`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------

@@ -5,7 +5,6 @@ package org.wltea.analyzer.configuration;
 
 import org.apache.http.util.Asserts;
 import org.apache.logging.log4j.Logger;
-import org.elasticsearch.Assertions;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.io.PathUtils;

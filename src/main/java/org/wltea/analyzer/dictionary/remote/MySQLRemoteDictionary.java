@@ -67,22 +67,20 @@ class MySQLRemoteDictionary extends AbstractRemoteDictionary {
         ResultSet resultSet = null;
         try {
             connection = this.dataSource.getConnection();
-            String sql = "SELECT MAX(words.id) max_id, seq.current_id current_id FROM ik_words words, ik_sequence seq WHERE seq.domain = ? LIMIT 1";
+            String sql = "SELECT state FROM ik_dict_state WHERE domain = ? LIMIT 1";
             statement = connection.prepareStatement(sql);
             statement.setString(1, domain);
             resultSet = statement.executeQuery();
             if (!resultSet.next()) {
-                logger.info("Cannot find the `ik_sequence` and dictionary '{}' data", domain);
+                logger.info("Cannot find the `ik_dict_state` and dictionary '{}' data", domain);
                 return;
             }
-            long maxId = resultSet.getLong("max_id");
-            long currentId = resultSet.getLong("current_id");
-            logger.info("[Remote DictFile] maxId '{}' currentId '{}'", maxId, currentId);
-            if (maxId != currentId) {
-                // 更新currentId
-                sql = String.format("current_id = %s WHERE domain = '%s'", maxId, domain);
-                sql = String.format("UPDATE ik_sequence SET %s", sql);
-                logger.info("sql '{}'", sql);
+            String state = resultSet.getString("state");
+            logger.info("[Remote DictFile] state '{}'", state);
+            if ("true".equals(state)) {
+                // 更新 state
+                sql = String.format("UPDATE ik_dict_state SET state = 'false' WHERE domain = '%s'", domain);
+                logger.info("update ik_dict_state sql '{}'", sql);
                 statement.execute(sql);
                 dictionary.reload(dictionaryType);
             }
