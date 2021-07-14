@@ -113,10 +113,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 > `jre/lib/security/java.policy`的grant中加入 `permission java.security.AllPermission;`
 
-#### TODO by Qicz
-
-- 整理一个完成的使用手册
-- 提供基于SpringBoot的MySQL、Redis扩展词库写入starter
+- 【TODO】 整理一个完成的使用手册
+- [基于SpringBoot的MySQL、Redis扩展词库写入starter](https://github.com/OpeningO/es-ik-redict-spring-boot-starter)
 
 Versions
 --------
