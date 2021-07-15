@@ -10,6 +10,7 @@ import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
+import org.openingo.jdkits.validate.AssertKit;
 import org.openingo.redip.configuration.RedipConfigurationProperties;
 import org.openingo.redip.constants.RemoteDictionaryEtymology;
 import org.openingo.redip.dictionary.remote.RemoteDictionary;
@@ -55,10 +56,8 @@ public class Configuration {
 		// 词源
 		String etymology = settings.get("etymology", RemoteDictionaryEtymology.DEFAULT.getEtymology());
 		RemoteDictionaryEtymology settingEtymology = RemoteDictionaryEtymology.newEtymology(etymology);
-		if (Objects.isNull(settingEtymology)) {
-			String message = String.format("the etymology '%s' config is invalid, just support 'redis','mysql','http'.", etymology);
-			throw new IllegalStateException(message);
-		}
+		String message = String.format("the etymology '%s' config is invalid, just support 'redis','mysql','http'.", etymology);
+		AssertKit.notNull(settingEtymology, message);
 		// 领域
 		String domain = settings.get("domain", "default-domain");
 		log.info("new configuration for domain '{}' etymology '{}'", domain, etymology);
