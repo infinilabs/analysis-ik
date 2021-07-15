@@ -40,7 +40,7 @@
             <includes>
                 <include>org.apache.httpcomponents:httpclient</include>
                 <include>org.projectlombok:lombok</include>
-                <include>org.openingo:redip</include>
+                <include>org.openingo.kits:redip</include>
             </includes>
         </dependencySet>
     </dependencySets>

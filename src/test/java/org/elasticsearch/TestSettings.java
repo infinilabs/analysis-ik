@@ -1,12 +1,15 @@
 package org.elasticsearch;
 
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.env.Environment;
 import org.junit.Test;
 import org.openingo.redip.configuration.RedipConfigurationProperties;
+import org.wltea.analyzer.configuration.Configuration;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
@@ -41,5 +44,19 @@ public class TestSettings {
 		InputStream resourceAsStream = TestSettings.class.getClassLoader().getResourceAsStream("ikanalyzer.yml");
 		RedipConfigurationProperties map = yaml.loadAs(resourceAsStream, RedipConfigurationProperties.class);
 		System.out.println(map);
+	}
+
+	@Test
+	public void load() throws IOException {
+		String path = System.getProperty("user.dir");
+		path += "";
+		Environment environment = new Environment(Settings.builder().put("path.home", path).build(), null);
+		Settings settings = Settings.builder()
+				.put("use_smart", false)
+				.put("enable_lowercase", false)
+				.put("enable_remote_dict", true)
+				.build();
+		new Configuration(environment, settings).setUseSmart(false);
+		System.in.read();
 	}
 }

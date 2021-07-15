@@ -23,14 +23,13 @@
  */
 package org.wltea.analyzer.dictionary;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.SpecialPermission;
 import org.openingo.redip.configuration.RedipConfigurationProperties;
 import org.openingo.redip.constants.DictionaryType;
 import org.openingo.redip.dictionary.IDictionary;
 import org.openingo.redip.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.configuration.Configuration;
-import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.wltea.analyzer.help.StringHelper;
 
 import java.io.IOException;
@@ -55,10 +54,9 @@ import java.util.concurrent.TimeUnit;
  * @author Qicz
  * @since 2021/7/12 23:34
  */
+@Slf4j
 public class Dictionary implements IDictionary {
-
-	private static final Logger logger = ESPluginLoggerFactory.getLogger(Dictionary.class.getName());
-
+	
 	private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
 
 	private DictSegment mainDictionary;
@@ -98,7 +96,7 @@ public class Dictionary implements IDictionary {
 		this.loadStopWordDict();
 
 		if (enableRemoteDict) {
-			logger.info("Remote Dictionary enabled for '{}'!", this.domainUri);
+			log.info("Remote Dictionary enabled for '{}'!", this.domainUri);
 			RedipConfigurationProperties properties = Configuration.getProperties();
 			RedipConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
 			// 建立监控线程 - 主词库
@@ -121,7 +119,7 @@ public class Dictionary implements IDictionary {
 	 */
 	@Override
 	public synchronized void reload(DictionaryType dictionaryType) {
-		logger.info("[Begin to reload] ik '{}' dictionary.", dictionaryType);
+		log.info("[Begin to reload] ik '{}' dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		Dictionary tmpDict = new Dictionary(enableRemoteDict, domainUri);
 		switch (dictionaryType) {
@@ -142,7 +140,7 @@ public class Dictionary implements IDictionary {
 				this.stopWordsDictionary = tmpDict.stopWordsDictionary;
 			}
 		}
-		logger.info("Reload ik '{}' dictionary finished.", dictionaryType);
+		log.info("Reload ik '{}' dictionary finished.", dictionaryType);
 	}
 
 	/**
@@ -160,7 +158,7 @@ public class Dictionary implements IDictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInMainDict(char[] charArray, int begin, int length) {
-		logger.info("matchInMainDict for '{}'", this.domainUri);
+		log.info("matchInMainDict for '{}'", this.domainUri);
 		return this.mainDictionary.match(charArray, begin, length);
 	}
 
@@ -170,7 +168,7 @@ public class Dictionary implements IDictionary {
 	 * @return Hit 匹配结果描述
 	 */
 	public Hit matchInQuantifierDict(char[] charArray, int begin, int length) {
-		logger.info("matchInQuantifierDict for '{}'", this.domainUri);
+		log.info("matchInQuantifierDict for '{}'", this.domainUri);
 		return this.quantifierDictionary.match(charArray, begin, length);
 	}
 
@@ -180,7 +178,7 @@ public class Dictionary implements IDictionary {
 	 * @return boolean
 	 */
 	public boolean isStopWord(char[] charArray, int begin, int length) {
-		logger.info("isStopWord for '{}'", this.domainUri);
+		log.info("isStopWord for '{}'", this.domainUri);
 		return this.stopWordsDictionary.match(charArray, begin, length).isMatch();
 	}
 
@@ -238,7 +236,7 @@ public class Dictionary implements IDictionary {
 		extDictFiles = this.walkFiles(extDictFiles);
 		extDictFiles.forEach(extDictName -> {
 			// 读取扩展词典文件
-			logger.info("[Local DictFile Loading] " + extDictName);
+			log.info("[Local DictFile Loading] " + extDictName);
 			Path file = Configuration.getPath(extDictName);
 			dictSegment.fillSegment(file, name);
 		});
@@ -246,17 +244,17 @@ public class Dictionary implements IDictionary {
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   DictionaryType dictionaryType) {
-		logger.info("[Remote DictFile Loading] for domain '{}'", this.domainUri);
+		log.info("[Remote DictFile Loading] for domain '{}'", this.domainUri);
 		SpecialPermission.check();
 		Set<String> remoteWords = RemoteDictionary.getRemoteWords(this, dictionaryType, this.domainUri);
 		// 如果找不到扩展的字典，则忽略
 		if (remoteWords.isEmpty()) {
-			logger.info("[Remote DictFile Loading] no new words for '{}'", this.domainUri);
+			log.info("[Remote DictFile Loading] no new words for '{}'", this.domainUri);
 			return;
 		}
 		remoteWords.forEach(word -> {
 			// 加载远程词典数据到主内存中
-			logger.info("[New '{}' Word] '{}'", dictionaryType.getDictName(), word);
+			log.info("[New '{}' Word] '{}'", dictionaryType.getDictName(), word);
 			dictSegment.fillSegment(word.toLowerCase().toCharArray());
 		});
 	}
@@ -278,15 +276,15 @@ public class Dictionary implements IDictionary {
 
 						@Override
 						public FileVisitResult visitFileFailed(Path file, IOException e) {
-							logger.error("[Ext Loading] listing files", e);
+							log.error("[Ext Loading] listing files", e);
 							return FileVisitResult.CONTINUE;
 						}
 					});
 				} catch (IOException e) {
-					logger.error("[Ext Loading] listing files", e);
+					log.error("[Ext Loading] listing files", e);
 				}
 			} else {
-				logger.warn("[Ext Loading] file not found: " + path);
+				log.warn("[Ext Loading] file not found: " + path);
 			}
 		});
 		return StringHelper.filterBlank(extDictFiles);

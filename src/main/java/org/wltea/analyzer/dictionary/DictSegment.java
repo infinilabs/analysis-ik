@@ -23,8 +23,7 @@
  */
 package org.wltea.analyzer.dictionary;
 
-import org.apache.logging.log4j.Logger;
-import org.wltea.analyzer.help.ESPluginLoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -36,10 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 词典树分段，表示词典树的一个分枝
  */
+@Slf4j
 class DictSegment implements Comparable<DictSegment> {
-
-	private static final Logger logger = ESPluginLoggerFactory.getLogger(DictSegment.class.getName());
-
+	
 	// 公用字典表，存储汉字
 	private static final Map<Character, Character> CHAR_MAP = new ConcurrentHashMap<Character, Character>(16, 0.95f);
 	// 数组大小上限
@@ -201,10 +199,10 @@ class DictSegment implements Comparable<DictSegment> {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			logger.error("ik-analyzer: " + fileName + " not found", e);
+			log.error("ik-analyzer: " + fileName + " not found", e);
 			throw new RuntimeException("ik-analyzer: " + fileName + " not found!!!", e);
 		} catch (IOException e) {
-			logger.error("ik-analyzer: " + fileName + " loading failed", e);
+			log.error("ik-analyzer: " + fileName + " loading failed", e);
 		}
 	}
 

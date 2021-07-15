@@ -14,7 +14,7 @@ DROP TABLE IF EXISTS `ik_dict_state`;
 CREATE TABLE `ik_dict_state` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `domain` varchar(100) NOT NULL COMMENT '所属领域',
-  `state` varchar(5) NOT NULL COMMENT 'true有更新false无更新',
+  `state` varchar(10) NOT NULL COMMENT 'newly有更新non-newly无更新',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE KEY `domain` (`domain`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -30,7 +30,7 @@ CREATE TABLE `ik_words` (
   `domain` varchar(100) NOT NULL COMMENT '所属领域',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `domain_word` (`word`,`domain`) USING BTREE
+  UNIQUE KEY `domain` (`domain`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;

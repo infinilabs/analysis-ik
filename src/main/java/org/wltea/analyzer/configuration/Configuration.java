@@ -3,8 +3,7 @@
  */
 package org.wltea.analyzer.configuration;
 
-import org.apache.http.util.Asserts;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.io.PathUtils;
@@ -15,7 +14,6 @@ import org.openingo.redip.configuration.RedipConfigurationProperties;
 import org.openingo.redip.constants.RemoteDictionaryEtymology;
 import org.openingo.redip.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.dictionary.Dictionary;
-import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
@@ -29,10 +27,9 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Objects;
 
+@Slf4j
 public class Configuration {
 	
-	private static final Logger logger = ESPluginLoggerFactory.getLogger(Configuration.class.getName());
-
 	//是否启用智能分词
 	private boolean useSmart;
 
@@ -58,11 +55,13 @@ public class Configuration {
 		// 词源
 		String etymology = settings.get("etymology", RemoteDictionaryEtymology.DEFAULT.getEtymology());
 		RemoteDictionaryEtymology settingEtymology = RemoteDictionaryEtymology.newEtymology(etymology);
-		String message = String.format("the etymology '%s' config is invalid, just support 'redis','mysql','http'.", etymology);
-		Asserts.check(Objects.nonNull(settingEtymology), message);
+		if (Objects.isNull(settingEtymology)) {
+			String message = String.format("the etymology '%s' config is invalid, just support 'redis','mysql','http'.", etymology);
+			throw new IllegalStateException(message);
+		}
 		// 领域
 		String domain = settings.get("domain", "default-domain");
-		logger.info("new configuration for domain '{}' etymology '{}'", domain, etymology);
+		log.info("new configuration for domain '{}' etymology '{}'", domain, etymology);
 		// 配置初始化
 		Configuration.initial(env);
 		// 构造词源及领域
@@ -80,17 +79,17 @@ public class Configuration {
 		Path configFile = pluginPath.resolve(IKANALYZER_YML);
 		InputStream input = null;
 		try {
-			logger.info("try load config from {}", configFile);
+			log.info("try load config from {}", configFile);
 			input = new FileInputStream(configFile.toFile());
 		} catch (FileNotFoundException e) {
 			pluginPath = getConfigInPluginDir();
 			configFile = pluginPath.resolve(IKANALYZER_YML);
 			try {
-				logger.info("try load config from {}", configFile);
+				log.info("try load config from {}", configFile);
 				input = new FileInputStream(configFile.toFile());
 			} catch (FileNotFoundException ex) {
 				// We should report origin exception
-				logger.error("ik-analyzer", ex);
+				log.error("ik-analyzer", ex);
 			}
 		}
 		if (input != null) {
