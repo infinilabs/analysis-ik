@@ -40,9 +40,7 @@
             <includes>
                 <include>org.apache.httpcomponents:httpclient</include>
                 <include>org.projectlombok:lombok</include>
-                <include>mysql:mysql-connector-java</include>
-                <include>com.zaxxer:HikariCP</include>
-                <include>io.lettuce:lettuce-core</include>
+                <include>org.openingo:redip</include>
             </includes>
         </dependencySet>
     </dependencySets>

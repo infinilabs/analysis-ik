@@ -11,9 +11,10 @@ import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
+import org.openingo.redip.configuration.RedipConfigurationProperties;
+import org.openingo.redip.constants.RemoteDictionaryEtymology;
+import org.openingo.redip.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.dictionary.Dictionary;
-import org.wltea.analyzer.dictionary.remote.RemoteDictionary;
-import org.wltea.analyzer.dictionary.remote.RemoteDictionaryEtymology;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -44,7 +45,7 @@ public class Configuration {
 	private final static String IKANALYZER_YML = "ikanalyzer.yml";
 
 	private static Boolean initialed = false;
-	private static ConfigurationProperties properties;
+	private static RedipConfigurationProperties properties;
 	private static String dictRootPath;
 	private Dictionary dictionary;
 
@@ -95,11 +96,11 @@ public class Configuration {
 		if (input != null) {
 			InputStream finalInput = input;
 			SpecialPermission.check();
-			Configuration.properties = AccessController.doPrivileged((PrivilegedAction<ConfigurationProperties>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())).loadAs(finalInput, ConfigurationProperties.class));
+			Configuration.properties = AccessController.doPrivileged((PrivilegedAction<RedipConfigurationProperties>) () -> new Yaml(new CustomClassLoaderConstructor(Configuration.class.getClassLoader())).loadAs(finalInput, RedipConfigurationProperties.class));
 		}
 
 		// 远程词典初始化准备
-		RemoteDictionary.initial();
+		RemoteDictionary.initial(Configuration.properties);
 		Configuration.initialed = true;
 	}
 
@@ -131,7 +132,7 @@ public class Configuration {
 		return dictionary;
 	}
 
-	public static ConfigurationProperties getProperties() {
+	public static RedipConfigurationProperties getProperties() {
 		return properties;
 	}
 

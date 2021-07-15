@@ -5,7 +5,7 @@ import io.lettuce.core.RedisClient;
 import io.lettuce.core.RedisURI;
 import io.lettuce.core.api.sync.RedisCommands;
 import org.junit.Test;
-import org.wltea.analyzer.configuration.ConfigurationProperties;
+import org.openingo.redip.configuration.RedipConfigurationProperties;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,7 +24,7 @@ public class TestDatasource {
 
 	private HikariDataSource initDataSource() {
 		HikariDataSource dataSource = new HikariDataSource();
-		ConfigurationProperties.MySQL mysql = new ConfigurationProperties.MySQL();
+		RedipConfigurationProperties.MySQL mysql = new RedipConfigurationProperties.MySQL();
 		mysql.setUrl("jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8");
 		mysql.setUsername("root");
 		mysql.setPassword("dbadmin");

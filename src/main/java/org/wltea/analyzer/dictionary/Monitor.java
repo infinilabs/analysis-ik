@@ -1,6 +1,8 @@
 package org.wltea.analyzer.dictionary;
 
-import org.wltea.analyzer.help.DictionaryHelper;
+import org.elasticsearch.SpecialPermission;
+import org.openingo.redip.constants.DictionaryType;
+import org.openingo.redip.dictionary.remote.RemoteDictionary;
 
 import java.net.URI;
 
@@ -18,6 +20,7 @@ public class Monitor implements Runnable {
 
 	@Override
 	public void run() {
-		DictionaryHelper.reloadRemoteDictionary(this.dictionary, this.dictionaryType, this.domainUri);
+		SpecialPermission.check();
+		RemoteDictionary.reloadRemoteDictionary(this.dictionary, this.dictionaryType, this.domainUri);
 	}
 }

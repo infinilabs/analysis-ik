@@ -2,7 +2,7 @@ package org.elasticsearch;
 
 import org.elasticsearch.common.settings.Settings;
 import org.junit.Test;
-import org.wltea.analyzer.configuration.ConfigurationProperties;
+import org.openingo.redip.configuration.RedipConfigurationProperties;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
@@ -37,9 +37,9 @@ public class TestSettings {
 
 	@Test
 	public void loadYml() {
-		Yaml yaml = new Yaml(new CustomClassLoaderConstructor(ConfigurationProperties.class, TestSettings.class.getClassLoader()));
+		Yaml yaml = new Yaml(new CustomClassLoaderConstructor(RedipConfigurationProperties.class, TestSettings.class.getClassLoader()));
 		InputStream resourceAsStream = TestSettings.class.getClassLoader().getResourceAsStream("ikanalyzer.yml");
-		ConfigurationProperties map = yaml.loadAs(resourceAsStream, ConfigurationProperties.class);
+		RedipConfigurationProperties map = yaml.loadAs(resourceAsStream, RedipConfigurationProperties.class);
 		System.out.println(map);
 	}
 }
