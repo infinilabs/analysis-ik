@@ -193,7 +193,7 @@ public class Dictionary implements IDictionary {
 		Path file = Configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
 		this.mainDictionary.fillSegment(file, "Main DictFile");
 		// 加载扩展词典
-		List<String> mainExtDictFiles = Configuration.getProperties().getMainExtDictFiles();
+		List<String> mainExtDictFiles = Configuration.getProperties().getLocalMainExtDictFiles();
 		this.loadLocalExtDict(this.mainDictionary, mainExtDictFiles, "Main Extra DictFile");
 
 		// 加载远程自定义词库
@@ -222,7 +222,7 @@ public class Dictionary implements IDictionary {
 		this.stopWordsDictionary.fillSegment(file, "Main Stopwords");
 
 		// 加载扩展停止词典
-		List<String> extStopDictFiles = Configuration.getProperties().getExtStopDictFiles();
+		List<String> extStopDictFiles = Configuration.getProperties().getLocalStopExtDictFiles();
 		this.loadLocalExtDict(this.stopWordsDictionary, extStopDictFiles, "Extra Stopwords");
 
 		// 加载远程停用词典
@@ -246,7 +246,7 @@ public class Dictionary implements IDictionary {
 								   DictionaryType dictionaryType) {
 		log.info("[Remote DictFile Loading] for domain '{}'", this.domainUri);
 		SpecialPermission.check();
-		Set<String> remoteWords = RemoteDictionary.getRemoteWords(this, dictionaryType, this.domainUri);
+		Set<String> remoteWords = RemoteDictionary.getRemoteWords(dictionaryType, this.domainUri);
 		// 如果找不到扩展的字典，则忽略
 		if (remoteWords.isEmpty()) {
 			log.info("[Remote DictFile Loading] no new words for '{}'", this.domainUri);

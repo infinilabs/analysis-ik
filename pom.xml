@@ -91,7 +91,7 @@
         <dependency>
             <groupId>org.openingo.kits</groupId>
             <artifactId>redip</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
 
         <dependency>

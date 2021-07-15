@@ -30,7 +30,7 @@ CREATE TABLE `ik_words` (
   `domain` varchar(100) NOT NULL COMMENT '所属领域',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `domain` (`domain`) USING BTREE
+  KEY `domain` (`domain`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 SET FOREIGN_KEY_CHECKS = 1;
