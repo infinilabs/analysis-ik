@@ -4,6 +4,9 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.junit.Test;
 import org.openingo.redip.configuration.RedipConfigurationProperties;
+import org.openingo.redip.constants.DictionaryType;
+import org.openingo.redip.constants.RemoteDictionaryEtymology;
+import org.openingo.redip.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.configuration.Configuration;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
@@ -13,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
 
 /**
  * TestSettings
@@ -47,16 +51,28 @@ public class TestSettings {
 	}
 
 	@Test
-	public void load() throws IOException {
+	public void load() throws Exception {
 		String path = System.getProperty("user.dir");
-		path += "";
 		Environment environment = new Environment(Settings.builder().put("path.home", path).build(), null);
 		Settings settings = Settings.builder()
 				.put("use_smart", false)
 				.put("enable_lowercase", false)
 				.put("enable_remote_dict", true)
+				.put("domain", "ik-domain")
 				.build();
 		new Configuration(environment, settings).setUseSmart(false);
-		System.in.read();
+
+		int idx = 0;
+		while (true) {
+			TimeUnit.SECONDS.sleep(3);
+
+			RemoteDictionary.addWord(RemoteDictionaryEtymology.REDIS,
+					DictionaryType.MAIN_WORDS, "ik-domain", "新词来了"+idx, "有一个新词来了"+idx);
+
+
+			RemoteDictionary.addWord(RemoteDictionaryEtymology.REDIS,
+					DictionaryType.STOP_WORDS, "ik-domain", "新词stop来了"+idx, "有一个新词stop来了"+idx);
+			idx++;
+		}
 	}
 }
