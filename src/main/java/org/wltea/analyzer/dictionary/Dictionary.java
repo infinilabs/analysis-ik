@@ -69,7 +69,6 @@ public class Dictionary implements IDictionary {
 	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
 	private static final String PATH_DIC_STOP = "stopword.dic";
 	private final boolean enableRemoteDict;
-	private final boolean enableMonitor;
 
 	private final static Map<String, Dictionary> DOMAIN_DICTIONARY_MAPPING = new ConcurrentHashMap<>();
 
@@ -91,17 +90,16 @@ public class Dictionary implements IDictionary {
 
 	private Dictionary(boolean enableRemoteDict, boolean enableMonitor, URI domainUri) {
 		this.enableRemoteDict = enableRemoteDict;
-		this.enableMonitor = enableMonitor;
 		this.domainUri = domainUri;
-		this.initial();
+		this.initial(enableMonitor);
 	}
 
-	private void initial() {
+	private void initial(boolean enableMonitor) {
 		this.loadMainDict();
 		this.loadQuantifierDict();
 		this.loadStopWordDict();
 
-		if (this.enableRemoteDict && this.enableMonitor) {
+		if (this.enableRemoteDict && enableMonitor) {
 			log.info("Remote Dictionary enabled for '{}'!", this.domainUri);
 			RedipConfigurationProperties properties = Configuration.getProperties();
 			RedipConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
