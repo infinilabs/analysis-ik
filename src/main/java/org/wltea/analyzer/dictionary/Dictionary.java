@@ -69,6 +69,7 @@ public class Dictionary implements IDictionary {
 	private static final String PATH_DIC_QUANTIFIER = "quantifier.dic";
 	private static final String PATH_DIC_STOP = "stopword.dic";
 	private final boolean enableRemoteDict;
+	private final boolean enableMonitor;
 
 	private final static Map<String, Dictionary> DOMAIN_DICTIONARY_MAPPING = new ConcurrentHashMap<>();
 
@@ -85,17 +86,22 @@ public class Dictionary implements IDictionary {
 	}
 
 	private Dictionary(boolean enableRemoteDict, URI domainUri) {
-		this.enableRemoteDict = enableRemoteDict;
-		this.domainUri = domainUri;
-		this.initial(enableRemoteDict);
+		this(enableRemoteDict, enableRemoteDict, domainUri);
 	}
 
-	private void initial(boolean enableRemoteDict) {
+	private Dictionary(boolean enableRemoteDict, boolean enableMonitor, URI domainUri) {
+		this.enableRemoteDict = enableRemoteDict;
+		this.enableMonitor = enableMonitor;
+		this.domainUri = domainUri;
+		this.initial();
+	}
+
+	private void initial() {
 		this.loadMainDict();
 		this.loadQuantifierDict();
 		this.loadStopWordDict();
 
-		if (enableRemoteDict) {
+		if (this.enableRemoteDict && this.enableMonitor) {
 			log.info("Remote Dictionary enabled for '{}'!", this.domainUri);
 			RedipConfigurationProperties properties = Configuration.getProperties();
 			RedipConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
@@ -121,7 +127,8 @@ public class Dictionary implements IDictionary {
 	public synchronized void reload(DictionaryType dictionaryType) {
 		log.info("[Begin to reload] ik '{}' dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
-		Dictionary tmpDict = new Dictionary(enableRemoteDict, domainUri);
+		// 无需多余的monitor
+		Dictionary tmpDict = new Dictionary(this.enableRemoteDict, false, domainUri);
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
 				tmpDict.loadMainDict();
@@ -244,6 +251,9 @@ public class Dictionary implements IDictionary {
 
 	private void loadRemoteExtDict(DictSegment dictSegment,
 								   DictionaryType dictionaryType) {
+		if (!this.enableRemoteDict) {
+			return;
+		}
 		log.info("[Remote DictFile Loading] for domain '{}'", this.domainUri);
 		SpecialPermission.check();
 		Set<String> remoteWords = RemoteDictionary.getRemoteWords(dictionaryType, this.domainUri);
