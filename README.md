@@ -105,7 +105,7 @@ CREATE TABLE `ik_words` (
   `word` varchar(200) NOT NULL,
   `word_type` tinyint(4) unsigned NOT NULL COMMENT 'word类型，1主词库，2stop词库',
   `domain` varchar(100) NOT NULL COMMENT '所属领域',
-  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`id`),
   KEY `domain` (`domain`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

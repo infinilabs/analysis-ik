@@ -26,7 +26,6 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Objects;
 
 @Slf4j
 public class Configuration {
