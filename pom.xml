@@ -91,7 +91,7 @@
         <dependency>
             <groupId>org.openingo.kits</groupId>
             <artifactId>redip</artifactId>
-            <version>1.0.2</version>
+            <version>1.0.3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/log4j-over-slf4j -->
         <dependency>
