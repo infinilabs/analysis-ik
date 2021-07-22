@@ -5,6 +5,151 @@ The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/i
 
 Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
 
+### 2021.7.22 适配xml配置 by Qicz
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>IK Analyzer 扩展配置</comment>
+    <!--用户可以在这里配置自己的扩展字典 -->
+    <entry key="ext_dict"></entry>
+    <!--用户可以在这里配置自己的扩展停止词字典-->
+    <entry key="ext_stopwords"></entry>
+    <!--用户可以在这里配置远程扩展字典 -->
+    <!-- <entry key="remote_ext_dict">words_location</entry> -->
+    <entry key="remote_ext_dict"></entry>
+    <!--用户可以在这里配置远程扩展停止词字典-->
+    <!-- <entry key="remote_ext_stopwords">words_location</entry> -->
+    <!-- redis 配置 -->
+    <entry key="redis.host"></entry>
+    <entry key="redis.port">6379</entry>
+    <entry key="redis.username"></entry>
+    <entry key="redis.password"></entry>
+    <entry key="redis.database">0</entry>
+    <!-- mysql 配置 <![CDATA[ 这里写url信息 ]]-->
+    <entry key="mysql.url"><![CDATA[  ]]></entry>
+    <entry key="mysql.username">root</entry>
+    <entry key="mysql.password">dbadmin</entry>
+    <!-- 刷新配置 -->
+    <entry key="refresh.delay">10</entry>
+    <entry key="refresh.period">60</entry>
+</properties>
+```
+
+### 2021.7.12更新 by Qicz
+
+- 改造使用yml配置文件；
+
+```yaml
+dict: # 扩展词库配置
+  local: # 本地扩展词典配置
+    main: # 本地主词典扩展词典文件
+      - extra_main.dic
+      - extra_single_word.dic
+      - extra_single_word_full.dic
+      - extra_single_word_low_freq.dic
+    stop: # 本地stop词典扩展词典文件
+      - extra_stopword.dic
+  remote: # 远程扩展词典配置
+    http:
+      # http 服务地址
+      # main-words path: ${base}/es-dict/main-words/{domain}
+      # stop-words path: ${base}/es-dict/stop-words/{domain}
+      base: http://localhost
+    redis:
+      # main-words key: es-ik-words:{domain}:main-words
+      # stop-words key: es-ik-words:{domain}:stop-words
+      host: localhost
+      port: 6379
+      database: 0
+      username:
+      password:
+    mysql:
+      url: jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8
+      username: root
+      password: dbadmin
+    refresh: # 刷新配置
+      delay: 10 # 延迟时间，单位s
+      period: 60 # 周期时间，单位s
+```
+
+- 调整优化重构Dictionary实现；
+- 支持根据不同的业务指定远程动态词源
+
+```bash
+PUT es-ik-index
+{
+    "settings": {
+        "analysis.analyzer": {
+            "ik_smart": {
+                "type": "ik_smart",
+                "enable_remote_dict": true,
+                "domain": "order", # 业务领域
+                "etymology": "redis" # 词源，可取值：redis，http，mysql，默认为http(xml配置适配)
+            }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "field": {
+                "type": "text",
+                "analyzer": "ik_smart"
+            }
+        }
+    }
+}
+```
+
+
+
+- 修复和重构Http扩展词提供方式的bug；
+- 扩展RemoteDictionary，提供可配置的基于MySQL、Redis的扩展词库更新方式；
+
+```sql
+/*
+ @author Qicz
+
+ Date: 13/07/2021 10:18:19
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for ik_dict_state
+-- ----------------------------
+DROP TABLE IF EXISTS `ik_dict_state`;
+CREATE TABLE `ik_dict_state` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `domain` varchar(100) NOT NULL COMMENT '所属领域',
+  `state` varchar(10) NOT NULL COMMENT 'newly有更新non-newly无更新',
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE KEY `domain` (`domain`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
+-- Table structure for ik_words
+-- ----------------------------
+DROP TABLE IF EXISTS `ik_words`;
+CREATE TABLE `ik_words` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `word` varchar(200) NOT NULL,
+  `word_type` tinyint(4) unsigned NOT NULL COMMENT 'word类型，1主词库，2stop词库',
+  `domain` varchar(100) NOT NULL COMMENT '所属领域',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `domain` (`domain`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+SET FOREIGN_KEY_CHECKS = 1;
+```
+
+> `jre/lib/security/java.policy`的grant中加入 `permission java.security.AllPermission;`
+
+- 【TODO】 整理一个完成的使用手册
+- [基于SpringBoot的MySQL、Redis扩展词库写入starter](https://github.com/OpeningO/redip)
+
 Versions
 --------
 
@@ -224,7 +369,7 @@ mvn compile
 mvn package
 ```
 
-拷贝和解压release下的文件: #{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-*.zip 到你的 elasticsearch 插件目录, 如: plugins/ik
+拷贝和解压release下的文件: #{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-*.zip 到你的 elasticsearch 插件目录, 如: plugins/analysis-ik
 重启elasticsearch
 
 3.分词测试失败
