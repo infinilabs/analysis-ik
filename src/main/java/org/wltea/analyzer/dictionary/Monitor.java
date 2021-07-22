@@ -7,9 +7,7 @@ import org.openingo.redip.constants.RemoteDictionaryEtymology;
 import org.openingo.redip.dictionary.remote.RemoteDictionary;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
