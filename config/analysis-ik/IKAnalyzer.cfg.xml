@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>IK Analyzer 扩展配置</comment>
+    <!--用户可以在这里配置自己的扩展字典 -->
+    <entry key="ext_dict"></entry>
+    <!--用户可以在这里配置自己的扩展停止词字典-->
+    <entry key="ext_stopwords"></entry>
+    <!--用户可以在这里配置远程扩展字典 -->
+    <!-- <entry key="remote_ext_dict">words_location</entry> -->
+    <!--用户可以在这里配置远程扩展停止词字典-->
+    <!-- <entry key="remote_ext_stopwords">words_location</entry> -->
+    <!-- redis 配置 -->
+    <entry key="redis.host"></entry>
+    <entry key="redis.port">6379</entry>
+    <entry key="redis.username"></entry>
+    <entry key="redis.password"></entry>
+    <entry key="redis.database">0</entry>
+    <!-- mysql 配置 <![CDATA[ 这里写url信息 ]]-->
+    <entry key="mysql.url"><![CDATA[  ]]></entry>
+    <entry key="mysql.username">root</entry>
+    <entry key="mysql.password">dbadmin</entry>
+    <!-- 刷新配置 -->
+    <entry key="refresh.delay">10</entry>
+    <entry key="refresh.period">60</entry>
+</properties>

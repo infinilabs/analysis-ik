@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.StringJoiner;
@@ -63,13 +65,14 @@ public class TestIk {
 				.put("enable_lowercase", false)
 				.put("enable_remote_dict", true)
 				.put("domain", "ik-domain")
+				.put("etymology", "redis")
 				.build();
 		final Configuration configuration = new Configuration(environment, settings).setUseSmart(false);
 
 
 		TimeUnit.SECONDS.sleep(3);
 
-		String text = "新词来了";
+		String text = "有一个新词来了";
 
 		RemoteDictionary.addWord(RemoteDictionaryEtymology.REDIS,
 				DictionaryType.MAIN_WORDS, "ik-domain", text, "有一个新词来了");
@@ -77,6 +80,27 @@ public class TestIk {
 
 		RemoteDictionary.addWord(RemoteDictionaryEtymology.REDIS,
 				DictionaryType.STOP_WORDS, "ik-domain", "新词stop来了", "有一个新词stop来了");
+		this.analyze(configuration, text);
+		System.in.read();
+	}
+
+	@Test
+	public void xmlAnalyze() throws Exception {
+		String path = System.getProperty("user.dir");
+		Environment environment = new Environment(Settings.builder().put("path.home", path).build(), null);
+		Settings settings = Settings.builder()
+				.put("use_smart", false)
+				.put("enable_lowercase", false)
+				.put("enable_remote_dict", true)
+				.put("domain", "xml")
+				.put("etymology", "http")
+				.build();
+		final Configuration configuration = new Configuration(environment, settings).setUseSmart(false);
+
+
+		TimeUnit.SECONDS.sleep(3);
+
+		String text = "我了个去";
 		this.analyze(configuration, text);
 		System.in.read();
 	}
@@ -103,5 +127,23 @@ public class TestIk {
 			stringJoiner.add(lexemeText);
 		}
 		System.out.println(stringJoiner);
+	}
+
+	@Test
+	public void testUri() {
+		String uri = "jdbc:mysql://username/password@x.x.x.1";
+		try {
+			final URI uri1 = new URI(uri);
+
+			final String schemeSpecificPart = uri1.getSchemeSpecificPart();
+			if (schemeSpecificPart.startsWith("mysql")) {
+				System.out.println(schemeSpecificPart);
+			}
+
+			System.out.println(uri1.getScheme());
+			System.out.println(uri1.getAuthority());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 	}
 }

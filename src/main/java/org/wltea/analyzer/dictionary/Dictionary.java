@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.SpecialPermission;
 import org.openingo.redip.configuration.RedipConfigurationProperties;
 import org.openingo.redip.constants.DictionaryType;
+import org.openingo.redip.constants.RemoteDictionaryEtymology;
 import org.openingo.redip.dictionary.IDictionary;
 import org.openingo.redip.dictionary.remote.RemoteDictionary;
 import org.wltea.analyzer.configuration.Configuration;
@@ -39,10 +40,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -63,6 +61,9 @@ public class Dictionary implements IDictionary {
 	private DictSegment quantifierDictionary;
 	private DictSegment stopWordsDictionary;
 
+	private final Set<String> httpRemoteMainDict;
+	private final Set<String> httpRemoteStopDict;
+
 	private final URI domainUri;
 
 	private static final String PATH_DIC_MAIN = "main.dic";
@@ -72,11 +73,11 @@ public class Dictionary implements IDictionary {
 
 	private final static Map<String, Dictionary> DOMAIN_DICTIONARY_MAPPING = new ConcurrentHashMap<>();
 
-	public static synchronized Dictionary initial(boolean enableRemoteDict, URI domainUri) {
+	public static synchronized Dictionary initial(boolean enableRemoteDict, URI domainUri, Set<String> httpRemoteMainDict, Set<String> httpRemoteStopDict) {
 		String key = domainUri.toString();
 		Dictionary dictionary = null;
 		if (!DOMAIN_DICTIONARY_MAPPING.containsKey(key)) {
-			dictionary = new Dictionary(enableRemoteDict, domainUri);
+			dictionary = new Dictionary(enableRemoteDict, domainUri, httpRemoteMainDict, httpRemoteStopDict);
 			DOMAIN_DICTIONARY_MAPPING.put(key, dictionary);
 		} else {
 			dictionary = DOMAIN_DICTIONARY_MAPPING.get(key);
@@ -84,13 +85,15 @@ public class Dictionary implements IDictionary {
 		return dictionary;
 	}
 
-	private Dictionary(boolean enableRemoteDict, URI domainUri) {
-		this(enableRemoteDict, enableRemoteDict, domainUri);
+	private Dictionary(boolean enableRemoteDict, URI domainUri, Set<String> httpRemoteMainDict, Set<String> httpRemoteStopDict) {
+		this(enableRemoteDict, enableRemoteDict, domainUri, httpRemoteMainDict, httpRemoteStopDict);
 	}
 
-	private Dictionary(boolean enableRemoteDict, boolean enableMonitor, URI domainUri) {
+	private Dictionary(boolean enableRemoteDict, boolean enableMonitor, URI domainUri, Set<String> httpRemoteMainDict, Set<String> httpRemoteStopDict) {
 		this.enableRemoteDict = enableRemoteDict;
 		this.domainUri = domainUri;
+		this.httpRemoteMainDict = httpRemoteMainDict;
+		this.httpRemoteStopDict = httpRemoteStopDict;
 		this.initial(enableMonitor);
 	}
 
@@ -105,13 +108,21 @@ public class Dictionary implements IDictionary {
 			RedipConfigurationProperties.Remote.Refresh remoteRefresh = properties.getRemoteRefresh();
 			// 建立监控线程 - 主词库
 			pool.scheduleAtFixedRate(
-					new Monitor(this, DictionaryType.MAIN_WORDS, this.domainUri),
+					new Monitor(this,
+							DictionaryType.MAIN_WORDS,
+							this.domainUri,
+							this.httpRemoteMainDict,
+							this.httpRemoteStopDict),
 					remoteRefresh.getDelay(),
 					remoteRefresh.getPeriod(),
 					TimeUnit.SECONDS);
 			// 建立监控线程 - stop词库
 			pool.scheduleAtFixedRate(
-					new Monitor(this, DictionaryType.STOP_WORDS, this.domainUri),
+					new Monitor(this,
+							DictionaryType.STOP_WORDS,
+							this.domainUri,
+							this.httpRemoteMainDict,
+							this.httpRemoteStopDict),
 					remoteRefresh.getDelay(),
 					remoteRefresh.getPeriod(),
 					TimeUnit.SECONDS);
@@ -126,7 +137,8 @@ public class Dictionary implements IDictionary {
 		log.info("[Begin to reload] ik '{}' dictionary.", dictionaryType);
 		// 新开一个实例加载词典，减少加载过程对当前词典使用的影响
 		// 无需多余的monitor
-		Dictionary tmpDict = new Dictionary(this.enableRemoteDict, false, domainUri);
+		Dictionary tmpDict = new Dictionary(this.enableRemoteDict, false,
+				this.domainUri, this.httpRemoteMainDict, this.httpRemoteStopDict);
 		switch (dictionaryType) {
 			case MAIN_WORDS: {
 				tmpDict.loadMainDict();
@@ -198,7 +210,7 @@ public class Dictionary implements IDictionary {
 		Path file = Configuration.getBaseOnDictRoot(Dictionary.PATH_DIC_MAIN);
 		this.mainDictionary.fillSegment(file, "Main DictFile");
 		// 加载扩展词典
-		List<String> mainExtDictFiles = Configuration.getProperties().getLocalMainExtDictFiles();
+		Set<String> mainExtDictFiles = Configuration.getProperties().getLocalMainExtDictFiles();
 		this.loadLocalExtDict(this.mainDictionary, mainExtDictFiles, "Main Extra DictFile");
 
 		// 加载远程自定义词库
@@ -227,7 +239,7 @@ public class Dictionary implements IDictionary {
 		this.stopWordsDictionary.fillSegment(file, "Main Stopwords");
 
 		// 加载扩展停止词典
-		List<String> extStopDictFiles = Configuration.getProperties().getLocalStopExtDictFiles();
+		Set<String> extStopDictFiles = Configuration.getProperties().getLocalStopExtDictFiles();
 		this.loadLocalExtDict(this.stopWordsDictionary, extStopDictFiles, "Extra Stopwords");
 
 		// 加载远程停用词典
@@ -235,7 +247,7 @@ public class Dictionary implements IDictionary {
 	}
 
 	private void loadLocalExtDict(DictSegment dictSegment,
-								  List<String> extDictFiles,
+								  Set<String> extDictFiles,
 								  String name) {
 		// 加载扩展词典配置
 		extDictFiles = this.walkFiles(extDictFiles);
@@ -253,8 +265,25 @@ public class Dictionary implements IDictionary {
 			return;
 		}
 		log.info("[Remote DictFile Loading] for domain '{}'", this.domainUri);
+		Set<String> remoteWords = new HashSet<>();
 		SpecialPermission.check();
-		Set<String> remoteWords = RemoteDictionary.getRemoteWords(dictionaryType, this.domainUri);
+		if (Objects.isNull(this.httpRemoteMainDict) && Objects.isNull(this.httpRemoteStopDict)) {
+			remoteWords = RemoteDictionary.getRemoteWords(dictionaryType, this.domainUri);
+		} else {
+			final String etymology = RemoteDictionaryEtymology.HTTP.getEtymology();
+			if (DictionaryType.MAIN_WORDS.equals(dictionaryType) && Objects.nonNull(this.httpRemoteMainDict)) {
+				for (String location : this.httpRemoteMainDict) {
+					final Set<String> words = RemoteDictionary.getRemoteWords(dictionaryType, URI.create(String.format("%s:%s", etymology, location)));
+					remoteWords.addAll(words);
+				}
+			}
+			if (DictionaryType.STOP_WORDS.equals(dictionaryType) && Objects.nonNull(this.httpRemoteStopDict)) {
+				for (String location : this.httpRemoteStopDict) {
+					final Set<String> words = RemoteDictionary.getRemoteWords(dictionaryType, URI.create(String.format("%s:%s", etymology, location)));
+					remoteWords.addAll(words);
+				}
+			}
+		}
 		// 如果找不到扩展的字典，则忽略
 		if (remoteWords.isEmpty()) {
 			log.info("[Remote DictFile Loading] no new words for '{}'", this.domainUri);
@@ -262,13 +291,13 @@ public class Dictionary implements IDictionary {
 		}
 		remoteWords.forEach(word -> {
 			// 加载远程词典数据到主内存中
-			log.info("[New '{}' Word] '{}'", dictionaryType.getDictName(), word);
+			log.info("[New '{}' Word] '{}' for '{}'", dictionaryType.getDictName(), word, this.domainUri);
 			dictSegment.fillSegment(word.toLowerCase().toCharArray());
 		});
 	}
 
-	private List<String> walkFiles(List<String> files) {
-		List<String> extDictFiles = new ArrayList<>(files.size());
+	private Set<String> walkFiles(Set<String> files) {
+		Set<String> extDictFiles = new HashSet<>(files.size());
 		files.forEach(filePath -> {
 			Path path = Configuration.getBaseOnDictRoot(filePath);
 			if (Files.isRegularFile(path)) {
