@@ -12,6 +12,7 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.openingo.jdkits.lang.StrKit;
 import org.openingo.jdkits.validate.AssertKit;
+import org.openingo.jdkits.validate.ValidateKit;
 import org.openingo.redip.configuration.RedipConfigurationProperties;
 import org.openingo.redip.configuration.RemoteConfiguration;
 import org.openingo.redip.constants.RemoteDictionaryEtymology;
@@ -26,6 +27,8 @@ import java.nio.file.Path;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 public class Configuration {
@@ -156,6 +159,14 @@ public class Configuration {
 			redis.setUsername(redisUsername);
 			redis.setPassword(redisPassword);
 			redis.setDatabase(Integer.valueOf(redisDb));
+			// cluster
+			final String redisClusterNodes = xmlProperties.getProperty("redis.cluster.nodes");
+			final List<String> nodes = Stream.of(redisClusterNodes.split(",")).collect(Collectors.toList());
+			if (ValidateKit.isNotEmpty(nodes)) {
+				final RemoteConfiguration.Redis.Cluster cluster = new RemoteConfiguration.Redis.Cluster();
+				cluster.setNodes(nodes);
+				redis.setCluster(cluster);
+			}
 		}
 		remote.setRedis(redis);
 		// mysql config

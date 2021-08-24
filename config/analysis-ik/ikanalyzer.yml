@@ -21,6 +21,8 @@ dict: # 扩展词库配置
       database: 0
       username:
       password:
+      cluster:
+        nodes:
     mysql:
       url: jdbc:mysql://127.0.0.1/ik-db?useSSL=false&serverTimezone=GMT%2B8
       username: root

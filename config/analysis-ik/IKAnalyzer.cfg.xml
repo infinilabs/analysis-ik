@@ -16,6 +16,8 @@
     <entry key="redis.username"></entry>
     <entry key="redis.password"></entry>
     <entry key="redis.database">0</entry>
+    <!-- nodes配置写到<![CDATA[ 这里：host:port ]]> -->
+    <entry key="redis.cluster.nodes"><![CDATA[  ]]></entry>
     <!-- mysql 配置 <![CDATA[ 这里写url信息 ]]-->
     <entry key="mysql.url"><![CDATA[  ]]></entry>
     <entry key="mysql.username">root</entry>
