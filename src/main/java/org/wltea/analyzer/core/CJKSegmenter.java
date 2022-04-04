@@ -77,22 +77,24 @@ class CJKSegmenter implements ISegmenter {
 			
 			//*********************************
 			//再对当前指针位置的字符进行单字匹配
-			Hit singleCharHit = Dictionary.getSingleton().matchInMainDict(context.getSegmentBuff(), context.getCursor(), 1);
-			if(singleCharHit.isMatch()){//首字成词
-				//输出当前的词
-				Lexeme newLexeme = new Lexeme(context.getBufferOffset() , context.getCursor() , 1 , Lexeme.TYPE_CNWORD);
-				context.addLexeme(newLexeme);
+			List<Hit> singleCharHits = Dictionary.getSingleton().matchInMainDict(context.getMainDict(), context.getSegmentBuff(), context.getCursor(), 1);
+			for (Hit singleCharHit : singleCharHits) {
+				if(singleCharHit.isMatch()){//首字成词
+					//输出当前的词
+					Lexeme newLexeme = new Lexeme(context.getBufferOffset() , context.getCursor() , 1 , Lexeme.TYPE_CNWORD);
+					context.addLexeme(newLexeme);
 
-				//同时也是词前缀
-				if(singleCharHit.isPrefix()){
+					//同时也是词前缀
+					if(singleCharHit.isPrefix()){
+						//前缀匹配则放入hit列表
+						this.tmpHits.add(singleCharHit);
+					}
+				}else if(singleCharHit.isPrefix()){//首字为词前缀
 					//前缀匹配则放入hit列表
 					this.tmpHits.add(singleCharHit);
 				}
-			}else if(singleCharHit.isPrefix()){//首字为词前缀
-				//前缀匹配则放入hit列表
-				this.tmpHits.add(singleCharHit);
 			}
-			
+
 
 		}else{
 			//遇到CHAR_USELESS字符

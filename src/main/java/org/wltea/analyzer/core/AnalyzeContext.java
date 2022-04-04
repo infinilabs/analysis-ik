@@ -1,7 +1,7 @@
 /**
  * IK 中文分词  版本 5.0
  * IK Analyzer release 5.0
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,61 +20,61 @@
  * 源代码由林良益(linliangyi2005@gmail.com)提供
  * 版权声明 2012，乌龙茶工作室
  * provided by Linliangyi and copyright 2012 by Oolong studio
- * 
+ *
  */
 package org.wltea.analyzer.core;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.dic.Dictionary;
 
 /**
- * 
+ *
  * 分词器上下文状态
- * 
+ *
  */
 class AnalyzeContext {
-	
+
 	//默认缓冲区大小
 	private static final int BUFF_SIZE = 4096;
 	//缓冲区耗尽的临界值
-	private static final int BUFF_EXHAUST_CRITICAL = 100;	
-	
- 
+	private static final int BUFF_EXHAUST_CRITICAL = 100;
+
+
 	//字符窜读取缓冲
     private char[] segmentBuff;
     //字符类型数组
     private int[] charTypes;
-    
-    
+
+
     //记录Reader内已分析的字串总长度
     //在分多段分析词元时，该变量累计当前的segmentBuff相对于reader起始位置的位移
-	private int buffOffset;	
+	private int buffOffset;
     //当前缓冲区位置指针
     private int cursor;
     //最近一次读入的,可处理的字串长度
 	private int available;
 
-	
+
 	//子分词器锁
     //该集合非空，说明有子分词器在占用segmentBuff
     private Set<String> buffLocker;
-    
+
     //原始分词结果集合，未经歧义处理
-    private QuickSortSet orgLexemes;    
+    private QuickSortSet orgLexemes;
     //LexemePath位置索引表
-    private Map<Integer , LexemePath> pathMap;    
+    private Map<Integer , LexemePath> pathMap;
     //最终分词结果集
     private LinkedList<Lexeme> results;
 	//分词器配置项
 	private Configuration cfg;
+
+	private final List<String> mainDict;
+	private final List<String> stopWordsDict;
+	private final List<String> quantifierDict;
 
     public AnalyzeContext(Configuration configuration){
         this.cfg = configuration;
@@ -82,30 +82,46 @@ class AnalyzeContext {
     	this.charTypes = new int[BUFF_SIZE];
     	this.buffLocker = new HashSet<String>();
     	this.orgLexemes = new QuickSortSet();
-    	this.pathMap = new HashMap<Integer , LexemePath>();    	
+    	this.pathMap = new HashMap<Integer , LexemePath>();
     	this.results = new LinkedList<Lexeme>();
-    }
-    
+
+        this.mainDict = Optional.ofNullable(configuration.getMainDict()).orElse(Collections.emptyList());
+        this.stopWordsDict = Optional.ofNullable(configuration.getStopWordsDict()).orElse(Collections.emptyList());
+        this.quantifierDict = Optional.ofNullable(configuration.getQuantifierDict()).orElse(Collections.emptyList());
+
+		for (String dicCode : mainDict) {
+			Dictionary.getSingleton().ensureSelfDefinedDic(dicCode);
+		}
+
+		for (String dicCode : stopWordsDict) {
+			Dictionary.getSingleton().ensureSelfDefinedDic(dicCode);
+		}
+
+		for (String dicCode : quantifierDict) {
+			Dictionary.getSingleton().ensureSelfDefinedDic(dicCode);
+		}
+	}
+
     int getCursor(){
     	return this.cursor;
     }
-    
+
     char[] getSegmentBuff(){
     	return this.segmentBuff;
     }
-    
+
     char getCurrentChar(){
     	return this.segmentBuff[this.cursor];
     }
-    
+
     int getCurrentCharType(){
     	return this.charTypes[this.cursor];
     }
-    
+
     int getBufferOffset(){
     	return this.buffOffset;
     }
-	
+
     /**
      * 根据context的上下文情况，填充segmentBuff 
      * @param reader
@@ -126,7 +142,7 @@ class AnalyzeContext {
     		}
     		//继续读取reader ，以onceReadIn - onceAnalyzed为起始位置，继续填充segmentBuff剩余的部分
     		readCount += reader.read(this.segmentBuff , offset , BUFF_SIZE - offset);
-    	}            	
+    	}
     	//记录最后一次从Reader中读入的可用字符长度
     	this.available = readCount;
     	//重置当前指针
@@ -142,7 +158,7 @@ class AnalyzeContext {
     	this.segmentBuff[this.cursor] = CharacterUtil.regularize(this.segmentBuff[this.cursor],cfg.isEnableLowercase());
     	this.charTypes[this.cursor] = CharacterUtil.identifyCharType(this.segmentBuff[this.cursor]);
     }
-    
+
     /**
      * 指针+1
      * 成功返回 true； 指针已经到了buff尾部，不能前进，返回false
@@ -158,7 +174,7 @@ class AnalyzeContext {
     		return false;
     	}
     }
-	
+
     /**
      * 设置当前segmentBuff为锁定状态
      * 加入占用segmentBuff的子分词器名称，表示占用segmentBuff
@@ -167,7 +183,7 @@ class AnalyzeContext {
 	void lockBuffer(String segmenterName){
 		this.buffLocker.add(segmenterName);
 	}
-	
+
 	/**
 	 * 移除指定的子分词器名，释放对segmentBuff的占用
 	 * @param segmenterName
@@ -175,7 +191,7 @@ class AnalyzeContext {
 	void unlockBuffer(String segmenterName){
 		this.buffLocker.remove(segmenterName);
 	}
-	
+
 	/**
 	 * 只要buffLocker中存在segmenterName
 	 * 则buffer被锁定
@@ -193,10 +209,10 @@ class AnalyzeContext {
 	boolean isBufferConsumed(){
 		return this.cursor == this.available - 1;
 	}
-	
+
 	/**
 	 * 判断segmentBuff是否需要读取新数据
-	 * 
+	 *
 	 * 满足一下条件时，
 	 * 1.available == BUFF_SIZE 表示buffer满载
 	 * 2.buffIndex < available - 1 && buffIndex > available - BUFF_EXHAUST_CRITICAL表示当前指针处于临界区内
@@ -205,19 +221,19 @@ class AnalyzeContext {
 	 * @return
 	 */
 	boolean needRefillBuffer(){
-		return this.available == BUFF_SIZE 
-			&& this.cursor < this.available - 1   
+		return this.available == BUFF_SIZE
+			&& this.cursor < this.available - 1
 			&& this.cursor  > this.available - BUFF_EXHAUST_CRITICAL
 			&& !this.isBufferLocked();
 	}
-	
+
 	/**
 	 * 累计当前的segmentBuff相对于reader起始位置的位移
 	 */
 	void markBufferOffset(){
 		this.buffOffset += this.cursor;
 	}
-	
+
 	/**
 	 * 向分词结果集添加词元
 	 * @param lexeme
@@ -225,7 +241,7 @@ class AnalyzeContext {
 	void addLexeme(Lexeme lexeme){
 		this.orgLexemes.addLexeme(lexeme);
 	}
-	
+
 	/**
 	 * 添加分词结果路径
 	 * 路径起始位置 ---> 路径 映射表
@@ -236,8 +252,8 @@ class AnalyzeContext {
 			this.pathMap.put(path.getPathBegin(), path);
 		}
 	}
-	
-	
+
+
 	/**
 	 * 返回原始分词结果
 	 * @return
@@ -245,7 +261,7 @@ class AnalyzeContext {
 	QuickSortSet getOrgLexemes(){
 		return this.orgLexemes;
 	}
-	
+
 	/**
 	 * 推送分词结果到结果集合
 	 * 1.从buff头部遍历到this.cursor已处理位置
@@ -268,7 +284,7 @@ class AnalyzeContext {
 				while(l != null){
 					this.results.add(l);
 					//将index移至lexeme后
-					index = l.getBegin() + l.getLength();					
+					index = l.getBegin() + l.getLength();
 					l = path.pollFirst();
 					if(l != null){
 						//输出path内部，词元间遗漏的单字
@@ -286,13 +302,13 @@ class AnalyzeContext {
 		//清空当前的Map
 		this.pathMap.clear();
 	}
-	
+
 	/**
 	 * 对CJK字符进行单字输出
 	 * @param index
 	 */
 	private void outputSingleCJK(int index){
-		if(CharacterUtil.CHAR_CHINESE == this.charTypes[index]){			
+		if(CharacterUtil.CHAR_CHINESE == this.charTypes[index]){
 			Lexeme singleCharLexeme = new Lexeme(this.buffOffset , index , 1 , Lexeme.TYPE_CNCHAR);
 			this.results.add(singleCharLexeme);
 		}else if(CharacterUtil.CHAR_OTHER_CJK == this.charTypes[index]){
@@ -300,10 +316,10 @@ class AnalyzeContext {
 			this.results.add(singleCharLexeme);
 		}
 	}
-		
+
 	/**
-	 * 返回lexeme 
-	 * 
+	 * 返回lexeme
+	 *
 	 * 同时处理合并
 	 * @return
 	 */
@@ -313,9 +329,9 @@ class AnalyzeContext {
 		while(result != null){
     		//数量词合并
     		this.compound(result);
-    		if(Dictionary.getSingleton().isStopWord(this.segmentBuff ,  result.getBegin() , result.getLength())){
+    		if(Dictionary.getSingleton().isStopWord(this.stopWordsDict, this.segmentBuff ,  result.getBegin() , result.getLength())){
        			//是停止词继续取列表的下一个
-    			result = this.results.pollFirst(); 				
+    			result = this.results.pollFirst();
     		}else{
 	 			//不是停止词, 生成lexeme的词元文本,输出
 	    		result.setLexemeText(String.valueOf(segmentBuff , result.getBegin() , result.getLength()));
@@ -324,11 +340,11 @@ class AnalyzeContext {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * 重置分词上下文状态
 	 */
-	void reset(){		
+	void reset(){
 		this.buffLocker.clear();
         this.orgLexemes = new QuickSortSet();
         this.available =0;
@@ -339,7 +355,7 @@ class AnalyzeContext {
     	this.segmentBuff = new char[BUFF_SIZE];
     	this.pathMap.clear();
 	}
-	
+
 	/**
 	 * 组合词元
 	 */
@@ -363,10 +379,10 @@ class AnalyzeContext {
 				}
 				if(appendOk){
 					//弹出
-					this.results.pollFirst(); 
+					this.results.pollFirst();
 				}
 			}
-			
+
 			//可能存在第二轮合并
 			if(Lexeme.TYPE_CNUM == result.getLexemeType() && !this.results.isEmpty()){
 				Lexeme nextLexeme = this.results.peekFirst();
@@ -374,14 +390,25 @@ class AnalyzeContext {
 				 if(Lexeme.TYPE_COUNT == nextLexeme.getLexemeType()){
 					 //合并中文数词+中文量词
  					appendOk = result.append(nextLexeme, Lexeme.TYPE_CQUAN);
- 				}  
+ 				}
 				if(appendOk){
 					//弹出
-					this.results.pollFirst();   				
+					this.results.pollFirst();
 				}
 			}
 
 		}
 	}
-	
+
+    public List<String> getMainDict() {
+        return mainDict;
+    }
+
+    public List<String> getStopWordsDict() {
+        return stopWordsDict;
+    }
+
+    public List<String> getQuantifierDict() {
+        return quantifierDict;
+    }
 }

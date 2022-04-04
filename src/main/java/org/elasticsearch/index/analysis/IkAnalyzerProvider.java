@@ -9,7 +9,7 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {
     private final IKAnalyzer analyzer;
 
-    public IkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings,boolean useSmart) {
+    public IkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings, boolean useSmart) {
         super(indexSettings, name, settings);
 
         Configuration configuration=new Configuration(env,settings).setUseSmart(useSmart);
