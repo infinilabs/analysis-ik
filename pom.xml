@@ -12,7 +12,7 @@
     <inceptionYear>2011</inceptionYear>
 
     <properties>
-        <elasticsearch.version>7.16.0</elasticsearch.version>
+        <elasticsearch.version>8.4.1</elasticsearch.version>
         <maven.compiler.target>1.8</maven.compiler.target>
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
         <elasticsearch.plugin.name>analysis-ik</elasticsearch.plugin.name>
@@ -34,10 +34,10 @@
 
     <developers>
         <developer>
-            <name>Medcl</name>
-            <email>medcl@elastic.co</email>
-            <organization>elastic</organization>
-            <organizationUrl>http://www.elastic.co</organizationUrl>
+            <name>INFINI Labs</name>
+            <email>hello@infini.ltd</email>
+            <organization>INFINI Labs</organization>
+            <organizationUrl>https://infinilabs.com</organizationUrl>
         </developer>
     </developers>
 
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>2.17.1</version>
+            <version>2.18.0</version>
         </dependency>
 
         <dependency>
