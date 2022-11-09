@@ -51,11 +51,11 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.elasticsearch.SpecialPermission;
-import org.elasticsearch.core.PathUtils;
-import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.cfg.Configuration;
 import org.apache.logging.log4j.Logger;
+import org.opensearch.SpecialPermission;
+import org.opensearch.common.io.PathUtils;
+import org.opensearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.help.ESPluginLoggerFactory;
 
 

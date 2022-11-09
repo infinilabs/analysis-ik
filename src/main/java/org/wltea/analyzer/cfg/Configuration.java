@@ -3,11 +3,11 @@
  */
 package org.wltea.analyzer.cfg;
 
-import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.core.PathUtils;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.env.Environment;
-import org.elasticsearch.plugin.analysis.ik.AnalysisIkPlugin;
+import org.opensearch.common.inject.Inject;
+import org.opensearch.common.settings.Settings;
+import org.opensearch.common.io.PathUtils;
+import org.opensearch.env.Environment;
+import org.opensearch.plugin.analysis.ik.AnalysisIkPlugin;
 import org.wltea.analyzer.dic.Dictionary;
 
 import java.io.File;
