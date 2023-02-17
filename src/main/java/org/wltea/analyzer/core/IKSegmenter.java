@@ -144,4 +144,11 @@ public final class IKSegmenter {
 			segmenter.reset();
 		}
 	}
+
+	/**
+	 * 返回末尾非CJK字符字符数目
+	 */
+	public int getLastUselessCharNum() {
+		return this.context.getLastUselessCharNum();
+	}
 }
