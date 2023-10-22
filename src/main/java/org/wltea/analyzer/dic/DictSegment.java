@@ -33,6 +33,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * 词典树分段，表示词典树的一个分枝
  */
 class DictSegment implements Comparable<DictSegment>{
+	/**
+	 * 把Character对象都缓存起来
+	 */
+	private static final Character[] cache = new Character[Character.MAX_VALUE + 1];
+
 	
 	//公用字典表，存储汉字
 	private static final Map<Character , Character> charMap = new ConcurrentHashMap<Character , Character>(16 , 0.95f);
@@ -52,9 +57,15 @@ class DictSegment implements Comparable<DictSegment>{
 	//storeSize <=ARRAY_LENGTH_LIMIT ，使用数组存储， storeSize >ARRAY_LENGTH_LIMIT ,则使用Map存储
 	private int storeSize = 0;
 	//当前DictSegment状态 ,默认 0 , 1表示从根节点到当前节点的路径表示一个词
-	private int nodeState = 0;	
-	
-	
+	private int nodeState = 0;
+
+
+	static {
+		for (int i = Character.MIN_VALUE; i <= Character.MAX_VALUE; i++) {
+			cache[i] = Character.valueOf((char) i);
+		}
+	}
+
 	DictSegment(Character nodeChar){
 		if(nodeChar == null){
 			throw new IllegalArgumentException("node char cannot be empty");
@@ -62,6 +73,15 @@ class DictSegment implements Comparable<DictSegment>{
 		this.nodeChar = nodeChar;
 	}
 
+	/**
+	 * 获取缓存好的Character不可变对象实例
+	 *
+	 * @param c
+	 * @return
+	 */
+	public static Character valueOf(char c) {
+		return cache[c];
+	}
 	Character getNodeChar() {
 		return nodeChar;
 	}
@@ -115,7 +135,7 @@ class DictSegment implements Comparable<DictSegment>{
 		//设置hit的当前处理位置
 		searchHit.setEnd(begin);
 
-        Character keyChar = Character.valueOf(charArray[begin]);
+        Character keyChar = valueOf(charArray[begin]);
 		DictSegment ds = null;
 		
 		//引用实例变量为本地变量，避免查询时遇到更新的同步问题
@@ -187,7 +207,7 @@ class DictSegment implements Comparable<DictSegment>{
 	 */
 	private synchronized void fillSegment(char[] charArray , int begin , int length , int enabled){
 		//获取字典表中的汉字对象
-		Character beginChar = Character.valueOf(charArray[begin]);
+		Character beginChar = valueOf(charArray[begin]);
 		Character keyChar = charMap.get(beginChar);
 		//字典中没有该字，则将其添加入字典
 		if(keyChar == null){
