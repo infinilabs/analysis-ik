@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Configuration>
+<Configuration status="info" monitorInterval="5">
+  <Appenders>
+    <Console name="console" target="SYSTEM_OUT">
+      <PatternLayout
+        pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}.%M(%F:%L)[%X{serviceId}][%X{bizSeq}][%X{sysSeq}][%X{weup_rmb_ecif_no}][%X{weup_rmb_cooper_branch_code}]  - %m%n" />
+    </Console>
+    <Console name="weupOpLogFileAppender" target="SYSTEM_OUT">
+      <PatternLayout
+        pattern="weupOpLog-%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %c{1}.%M(%F:%L) |%X{weup_rmb_client_ip}|%X{serviceId}|%X{bizSeq}|%X{sysSeq}|%X{weup_rmb_ecif_no}|%X{weup_rmb_id_card_no}|%X{weup_rmb_webank_card_no}|%X{weup_rmb_mobile_no}|%X{WEUP_OPLOG_EXCEPTON_CLASS}|%X{WEUP_OPLOG_EXCEPTON_CAUSE_CLASS}|%m%n" />
+    </Console>
+  </Appenders>
+  <Loggers>
+
+    <Root level="debug">
+      <AppenderRef ref="console" />
+    </Root>
+  </Loggers>
+</Configuration>
