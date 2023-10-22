@@ -9,19 +9,19 @@ public class ESPluginLoggerFactory {
     private ESPluginLoggerFactory() {
     }
 
-    static public Logger getLogger(String name) {
+    public static Logger getLogger(String name) {
         return getLogger("", LogManager.getLogger(name));
     }
 
-    static public Logger getLogger(String prefix, String name) {
+    public static Logger getLogger(String prefix, String name) {
         return getLogger(prefix, LogManager.getLogger(name));
     }
 
-    static public Logger getLogger(String prefix, Class<?> clazz) {
+    public static Logger getLogger(String prefix, Class<?> clazz) {
         return getLogger(prefix, LogManager.getLogger(clazz.getName()));
     }
 
-    static public Logger getLogger(String prefix, Logger logger) {
-        return (Logger)(prefix != null && prefix.length() != 0 ? new PrefixPluginLogger((ExtendedLogger)logger, logger.getName(), prefix) : logger);
+    public static Logger getLogger(String prefix, Logger logger) {
+        return prefix != null && prefix.length() != 0 ? new PrefixPluginLogger((ExtendedLogger) logger, logger.getName(), prefix) : logger;
     }
 }
