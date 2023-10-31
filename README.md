@@ -5,9 +5,7 @@ The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/i
 
 Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
 
-Versions
---------
-> If some version was not released in time, please kindly reach out by join this discord channel: [https://discord.gg/NtZgghfW](https://discord.gg/NtZgghfW), instead of request version by raising issue.
+> If some version was not released in time, instead of request version by raising issue, please kindly reach out by join this discord channel( [https://discord.gg/NtZgghfW](https://discord.gg/NtZgghfW)).
 
 Install
 -------
@@ -236,3 +234,7 @@ Changes
 *自 v5.0.0 起*
 
 - 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
+
+# Community
+
+[https://discord.gg/NtZgghfW](https://discord.gg/NtZgghfW)
