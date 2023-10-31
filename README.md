@@ -7,21 +7,7 @@ Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
 
 Versions
 --------
-
-IK version | ES version
------------|-----------
-master | 7.x -> master
-6.x| 6.x
-5.x| 5.x
-1.10.6 | 2.4.6
-1.9.5 | 2.3.5
-1.8.1 | 2.2.1
-1.7.0 | 2.1.1
-1.5.0 | 2.0.0
-1.2.6 | 1.0.0
-1.2.5 | 0.90.x
-1.1.3 | 0.20.x
-1.0.0 | 0.16.2 -> 0.19.0
+> If some version was not released in time, please kindly reach out by join this discord channel: [https://discord.gg/NtZgghfW](https://discord.gg/NtZgghfW), instead of request version by raising issue.
 
 Install
 -------
@@ -250,12 +236,3 @@ Changes
 *自 v5.0.0 起*
 
 - 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
-
-
-Thanks
-------
-YourKit supports IK Analysis for ElasticSearch project with its full-featured Java Profiler.
-YourKit, LLC is the creator of innovative and intelligent tools for profiling
-Java and .NET applications. Take a look at YourKit's leading software products:
-<a href="http://www.yourkit.com/java/profiler/index.jsp">YourKit Java Profiler</a> and
-<a href="http://www.yourkit.com/.net/profiler/index.jsp">YourKit .NET Profiler</a>.
