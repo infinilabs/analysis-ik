@@ -1,36 +1,13 @@
-IK Analysis for Elasticsearch
-=============================
+IK Analysis for Elasticsearch and OpenSearch
+==================================
 
-The IK Analysis plugin integrates Lucene IK analyzer (http://code.google.com/p/ik-analyzer/) into elasticsearch, support customized dictionary.
+![](./assets/banner.png)
 
-Analyzer: `ik_smart` , `ik_max_word` , Tokenizer: `ik_smart` , `ik_max_word`
+The IK Analysis plugin integrates Lucene IK analyzer, and support customized dictionary.  It supports major versions of Elasticsearch and OpenSearch. Maintained and supported with ❤️ by INFINI Labs.
 
-> If some version was not released in time, instead of request version by raising issue, please kindly reach out by join this discord channel( [https://discord.gg/NtZgghfW](https://discord.gg/NtZgghfW)).
+The plugin comprises analyzer: `ik_smart` , `ik_max_word`, and tokenizer: `ik_smart` , `ik_max_word`
 
-Install
--------
-
-1.download or compile
-
-* optional 1 - download pre-build package from here: https://github.com/medcl/elasticsearch-analysis-ik/releases
-
-    create plugin folder `cd your-es-root/plugins/ && mkdir ik`
-    
-    unzip plugin to folder `your-es-root/plugins/ik`
-
-* optional 2 - use elasticsearch-plugin to install ( supported from version v5.5.1 ):
-
-    ```
-    ./bin/elasticsearch-plugin install https://github.com/medcl/elasticsearch-analysis-ik/releases/download/v6.3.0/elasticsearch-analysis-ik-6.3.0.zip
-    ```
-
-   NOTE: replace `6.3.0` to your own elasticsearch version
-
-2.restart elasticsearch
-
-
-
-#### Quick Example
+# Quick Start
 
 1.create a index
 
@@ -145,96 +122,74 @@ Result
 }
 ```
 
-### Dictionary Configuration
+# Dictionary Configuration
 
-`IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/config/IKAnalyzer.cfg.xml`
+Config file `IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/config/IKAnalyzer.cfg.xml`
 or `{plugins}/elasticsearch-analysis-ik-*/config/IKAnalyzer.cfg.xml`
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
-	<comment>IK Analyzer 扩展配置</comment>
-	<!--用户可以在这里配置自己的扩展字典 -->
 	<entry key="ext_dict">custom/mydict.dic;custom/single_word_low_freq.dic</entry>
-	 <!--用户可以在这里配置自己的扩展停止词字典-->
 	<entry key="ext_stopwords">custom/ext_stopword.dic</entry>
- 	<!--用户可以在这里配置远程扩展字典 -->
 	<entry key="remote_ext_dict">location</entry>
- 	<!--用户可以在这里配置远程扩展停止词字典-->
 	<entry key="remote_ext_stopwords">http://xxx.com/xxx.dic</entry>
 </properties>
 ```
 
-### 热更新 IK 分词使用方法
+## Hot-reload Dictionary
 
-目前该插件支持热更新 IK 分词，通过上文在 IK 配置文件中提到的如下配置
+The current plugin supports hot reloading dictionary for IK Analysis, through the configuration mentioned earlier in the IK configuration file.
 
 ```xml
- 	<!--用户可以在这里配置远程扩展字典 -->
 	<entry key="remote_ext_dict">location</entry>
- 	<!--用户可以在这里配置远程扩展停止词字典-->
 	<entry key="remote_ext_stopwords">location</entry>
 ```
 
-其中 `location` 是指一个 url，比如 `http://yoursite.com/getCustomDict`，该请求只需满足以下两点即可完成分词热更新。
+Among which `location` refers to a URL, such as `http://yoursite.com/getCustomDict`. This request only needs to meet the following two points to complete the segmentation hot update.
 
-1. 该 http 请求需要返回两个头部(header)，一个是 `Last-Modified`，一个是 `ETag`，这两者都是字符串类型，只要有一个发生变化，该插件就会去抓取新的分词进而更新词库。
+1. The HTTP request needs to return two headers, one is `Last-Modified`, and the other is `ETag`. Both of these are of string type, and if either changes, the plugin will fetch new segmentation to update the word library.
 
-2. 该 http 请求返回的内容格式是一行一个分词，换行符用 `\n` 即可。
+2. The content format returned by the HTTP request is one word per line, and the newline character is represented by `\n`.
 
-满足上面两点要求就可以实现热更新分词了，不需要重启 ES 实例。
+Meeting the above two requirements can achieve hot word updates without the need to restart the ES instance.
 
-可以将需自动更新的热词放在一个 UTF-8 编码的 .txt 文件里，放在 nginx 或其他简易 http server 下，当 .txt 文件修改时，http server 会在客户端请求该文件时自动返回相应的 Last-Modified 和 ETag。可以另外做一个工具来从业务系统提取相关词汇，并更新这个 .txt 文件。
+You can place the hot words that need to be automatically updated in a .txt file encoded in UTF-8. Place it under nginx or another simple HTTP server. When the .txt file is modified, the HTTP server will automatically return the corresponding Last-Modified and ETag when the client requests the file. You can also create a separate tool to extract relevant vocabulary from the business system and update this .txt file.
 
-have fun.
-
-常见问题
+## FAQs
 -------
 
-1.自定义词典为什么没有生效？
+1. Why isn't the custom dictionary taking effect?
 
-请确保你的扩展词典的文本格式为 UTF8 编码
+Please ensure that the text format of your custom dictionary is UTF8 encoded.
 
-2.如何手动安装？
+2. What is the difference between ik_max_word and ik_smart?
 
+ik_max_word: Performs the finest-grained segmentation of the text. For example, it will segment "中华人民共和国国歌" into "中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌", exhaustively generating various possible combinations, suitable for Term Query.
 
-```bash
-git clone https://github.com/medcl/elasticsearch-analysis-ik
-cd elasticsearch-analysis-ik
-git checkout tags/{version}
-mvn clean
-mvn compile
-mvn package
-```
+ik_smart: Performs the coarsest-grained segmentation of the text. For example, it will segment "中华人民共和国国歌" into "中华人民共和国,国歌", suitable for Phrase queries.
 
-拷贝和解压release下的文件: #{project_path}/elasticsearch-analysis-ik/target/releases/elasticsearch-analysis-ik-*.zip 到你的 elasticsearch 插件目录, 如: plugins/ik
-重启elasticsearch
-
-3.分词测试失败
-请在某个索引下调用analyze接口测试,而不是直接调用analyze接口
-如:
-```bash
-curl -XGET "http://localhost:9200/your_index/_analyze" -H 'Content-Type: application/json' -d'
-{
-   "text":"中华人民共和国MN","tokenizer": "my_ik"
-}'
-```
-
-
-4. ik_max_word 和 ik_smart 什么区别?
-
-
-ik_max_word: 会将文本做最细粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,中华人民,中华,华人,人民共和国,人民,人,民,共和国,共和,和,国国,国歌”，会穷尽各种可能的组合，适合 Term Query；
-
-ik_smart: 会做最粗粒度的拆分，比如会将“中华人民共和国国歌”拆分为“中华人民共和国,国歌”，适合 Phrase 查询。
-
-Changes
-------
-*自 v5.0.0 起*
-
-- 移除名为 `ik` 的analyzer和tokenizer,请分别使用 `ik_smart` 和 `ik_max_word`
+Note: ik_smart is not a subset of ik_max_word.
 
 # Community
 
-[https://discord.gg/NtZgghfW](https://discord.gg/NtZgghfW)
+Fell free to join the Discord server to discuss anything around this project: 
+
+[https://discord.gg/4tKTMkkvVX](https://discord.gg/4tKTMkkvVX)
+
+# License
+
+Copyright ©️ INFINI Labs.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
