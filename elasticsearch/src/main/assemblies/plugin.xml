@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<assembly>
+    <id>analysis-ik-release</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+        <directory>${project.basedir}/../config</directory>
+            <outputDirectory>config</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <files>
+        <file>
+            <source>${project.basedir}/src/main/resources/plugin-descriptor.properties</source>
+            <outputDirectory/>
+            <filtered>true</filtered>
+        </file>
+        <file>
+            <source>${project.basedir}/src/main/resources/plugin-security.policy</source>
+            <outputDirectory/>
+            <filtered>true</filtered>
+        </file>
+    </files>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory/>
+            <useProjectArtifact>true</useProjectArtifact>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <excludes>
+                <exclude>org.elasticsearch:elasticsearch</exclude>
+            </excludes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory/>
+            <useProjectArtifact>true</useProjectArtifact>
+            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <includes>
+                <include>org.apache.httpcomponents:httpclient</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+</assembly>

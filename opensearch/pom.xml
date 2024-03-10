@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>analysis-ik</artifactId>
+        <groupId>com.infinilabs</groupId>
+        <version>1.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>opensearch-analysis-ik</artifactId>
+    <version>${opensearch.version}</version>
+    <description>IK Analyzer for OpenSearch</description>
+    <packaging>jar</packaging>
+
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <opensearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</opensearch.assembly.descriptor>
+        <opensearch.plugin.name>analysis-ik</opensearch.plugin.name>
+        <opensearch.plugin.classname>com.infinilabs.ik.opensearch.AnalysisIkPlugin</opensearch.plugin.classname>
+        <opensearch.plugin.jvm>true</opensearch.plugin.jvm>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.infinilabs</groupId>
+            <artifactId>ik-core</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opensearch</groupId>
+            <artifactId>opensearch</artifactId>
+            <version>${opensearch.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <appendAssemblyId>false</appendAssemblyId>
+                    <outputDirectory>${project.build.directory}/releases/</outputDirectory>
+                    <descriptors>
+                        <descriptor>opensearch/src/main/assemblies/plugin.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
