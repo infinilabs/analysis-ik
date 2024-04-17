@@ -106,7 +106,7 @@ class DictSegment implements Comparable<DictSegment>{
 		if(searchHit == null){
 			//如果hit为空，新建
 			searchHit= new Hit();
-			//设置hit的其实文本位置
+			//设置hit的起始文本位置
 			searchHit.setBegin(begin);
 		}else{
 			//否则要将HIT状态重置
