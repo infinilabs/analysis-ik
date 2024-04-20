@@ -33,6 +33,12 @@ public class AnalysisIkPlugin extends Plugin implements AnalysisPlugin {
         extra.put("ik_smart", IkAnalyzerProvider::getIkSmartAnalyzerProvider);
         extra.put("ik_max_word", IkAnalyzerProvider::getIkAnalyzerProvider);
 
+        extra.put("fcp_index", FCPAnalyzerProvider::getFCPIndexAnalyzer);
+        extra.put("fcp_search", FCPAnalyzerProvider::getFCPSearchAnalyzer);
+        extra.put("lcp_index", FCPAnalyzerProvider::getLCPIndexAnalyzer);
+        extra.put("lcp_search", FCPAnalyzerProvider::getLCPSearchAnalyzer);
+
+
         return extra;
     }
 
