@@ -126,6 +126,10 @@ public class Dictionary {
 		}
 	}
 
+	public DictSegment get_MainDict() {
+		return _MainDict;
+	}
+
 	private String getProperty(String key){
 		if(props!=null){
 			return props.getProperty(key);

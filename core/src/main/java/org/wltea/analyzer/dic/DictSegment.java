@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 词典树分段，表示词典树的一个分枝
  */
-class DictSegment implements Comparable<DictSegment>{
+public class DictSegment implements Comparable<DictSegment>{
 	
 	//公用字典表，存储汉字
 	private static final Map<Character , Character> charMap = new ConcurrentHashMap<Character , Character>(16 , 0.95f);
@@ -55,7 +55,7 @@ class DictSegment implements Comparable<DictSegment>{
 	private int nodeState = 0;	
 	
 	
-	DictSegment(Character nodeChar){
+	public DictSegment(Character nodeChar){
 		if(nodeChar == null){
 			throw new IllegalArgumentException("node char cannot be empty");
 		}
@@ -78,7 +78,7 @@ class DictSegment implements Comparable<DictSegment>{
 	 * @param charArray
 	 * @return Hit
 	 */
-	Hit match(char[] charArray){
+	public Hit match(char[] charArray){
 		return this.match(charArray , 0 , charArray.length , null);
 	}
 	
@@ -166,7 +166,7 @@ class DictSegment implements Comparable<DictSegment>{
 	 * 加载填充词典片段
 	 * @param charArray
 	 */
-	void fillSegment(char[] charArray){
+	public void fillSegment(char[] charArray){
 		this.fillSegment(charArray, 0 , charArray.length , 1); 
 	}
 	
