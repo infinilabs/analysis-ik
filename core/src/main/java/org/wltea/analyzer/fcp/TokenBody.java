@@ -9,8 +9,9 @@ class TokenBody {
     String termBuffer;
     int startOffset, endOffset;
     // position 用于表示在 elasticsearch 分词时得到的 position， 通过 curr.position - prev.position 得到 positionIncrement
-    // startPosition、endPosition 用于收集 那些在 词库中 扩展出来的 token，主要给 ik_smart 使用
-    int position, startPosition = -1, endPosition = -1;
+    int position;
+    // todo 未来startPosition、endPosition 用于收集 那些在 词库中 扩展出来的 token，主要给 ik_smart 使用
+    int startPosition = -1, endPosition = -1;
     String type;
 
     List<TokenBody> child;

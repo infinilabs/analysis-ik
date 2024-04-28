@@ -5,10 +5,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.Tokenizer;
 import org.apache.lucene.analysis.ngram.NGramTokenizer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.analysis.synonym.SynonymMap;
 
-import java.util.Arrays;
-import java.util.List;
 
 public final class FCPAnalyzer extends Analyzer {
     /** Default maximum allowed token length */
@@ -21,7 +18,7 @@ public final class FCPAnalyzer extends Analyzer {
     // 特殊字符的映射，默认为 true 表示模糊匹配特殊字符。如果设置为 false ，将会把原始的char放到最终分词结果中。
     private boolean uselessMapping = true;
     // 默认文本是正确文本，其中的空白是有意义的，不能忽略空白。如果认为原文中的空白由于ETL错误引入，应该忽略空白。
-    private boolean ignoreBlank = false;
+    private boolean ignoreBlank = true;
     // 是否使用 first char position ，默认使用，如果为 false，则变为 lcp_analyzer
     private boolean useFirstPos = true;
     // 是否显示 offset，默认随着 indexMode 变化

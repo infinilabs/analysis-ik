@@ -12,6 +12,7 @@ import org.apache.lucene.util.Attribute;
  * <p>NOTE: this is optional, and most analyzers
  *  don't change the default value (1). */
 
+@Deprecated
 public interface PositionLengthAttribute extends Attribute {
     /**
      * Set the position length of this Token.
