@@ -143,6 +143,129 @@ Result
 }
 ```
 
+针对ES 的 match_phrase query 搜索，是一个非常消耗CPU的query，因为需要处理 term 和 position 的相对位置。为了加速搜素，现优化了分词形式，保存了正确position 的相对位置信息，使得match_phrase query 可以在分词条件下使用，经测试使用该分词之后查询降为原来的 10% 以下。该分词器分为 index 和 search分词器，分别用于索引数据和查询数据。</br>
+原理是分词出来的词项对应着首字 position ，所以可以在倒排中保存相对位置信息。index 分词器是切分出了所有的组合，search 分词器是没有重复的切出最少词项的组合，且不会重复。</br>
+使用：</br>
+1, 定义text 字段，analyzer 设置为 index 分词器，search_analyer 设置为 search分词器；</br>
+2, 写数据。</br>
+3, 查询。</br>
+4, 分词器首字确定位置： fcp_index、fcp_search; 末字确定位置：lcp_index、lcp_search</br>
+5, 缺点是目前原生的高亮不支持这种分词方式</br>
+
+原理<br>
+
+```json
+# 使用index 分词是，最细粒度的，按照字的position确定词的position，确定了position的取值标准
+POST /_analyze
+{
+  "analyzer": "fcp_index",
+  "text": "中国平安"
+}
+# response
+{
+  "tokens": [
+    {
+      "token": "中",
+      "start_offset": 0,
+      "end_offset": 0,
+      "type": "<CHAR_CHINESE>",
+      "position": 0
+    },
+    {
+      "token": "中国",
+      "start_offset": 0,
+      "end_offset": 0,
+      "type": "<COMBINE_WORD>",
+      "position": 0
+    },
+    {
+      "token": "国",
+      "start_offset": 0,
+      "end_offset": 0,
+      "type": "<CHAR_CHINESE>",
+      "position": 1
+    },
+    {
+      "token": "平",
+      "start_offset": 0,
+      "end_offset": 0,
+      "type": "<CHAR_CHINESE>",
+      "position": 2
+    },
+    {
+      "token": "平安",
+      "start_offset": 0,
+      "end_offset": 0,
+      "type": "<COMBINE_WORD>",
+      "position": 2
+    },
+    {
+      "token": "安",
+      "start_offset": 0,
+      "end_offset": 0,
+      "type": "<CHAR_CHINESE>",
+      "position": 3
+    }
+  ]
+}
+# 使用search 分词是粗粒度、无重叠分词，但仍按照字的position确定词的position，所以使用match_phrase有效
+POST /_analyze
+{
+  "analyzer": "fcp_search",
+  "text": "中国平安"
+}
+# response
+{
+  "tokens": [
+    {
+      "token": "中国",
+      "start_offset": 0,
+      "end_offset": 2,
+      "type": "<COMBINE_WORD>",
+      "position": 0
+    },
+    {
+      "token": "平安",
+      "start_offset": 2,
+      "end_offset": 4,
+      "type": "<COMBINE_WORD>",
+      "position": 2
+    }
+  ]
+}
+```
+
+```json
+PUT test_index
+{
+  "mappings": {
+    "properties": {
+      "content":{
+        "type": "text",
+        "analyzer": "fcp_index",
+        "search_analyzer": "fcp_search"
+      }
+    }
+  }
+}
+
+POST test_index/_doc/1
+{
+  "content": "如果需要覆盖原来的配置"
+}
+
+GET test_index/_search
+{
+  "query": {
+    "match_phrase": {
+      "content": {
+        "query": "要覆盖"
+      }
+    }
+  }
+}
+```
+
 # Dictionary Configuration
 
 Config file `IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/config/IKAnalyzer.cfg.xml`
