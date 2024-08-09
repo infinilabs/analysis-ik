@@ -314,6 +314,11 @@ class AnalyzeContext {
 			Lexeme singleCharLexeme = new Lexeme(this.buffOffset , index , 1 , Lexeme.TYPE_OTHER_CJK);
 			this.results.add(singleCharLexeme);
 		}
+		//todo:
+		else if(CharacterUtil.CHAR_SURROGATE == this.charTypes[index]){
+			Lexeme singleCharLexeme = new Lexeme(this.buffOffset , index , 1 , Lexeme.TYPE_OTHER_CJK);
+			this.results.add(singleCharLexeme);
+		}
 	}
 		
 	/**
