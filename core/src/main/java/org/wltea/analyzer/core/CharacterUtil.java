@@ -76,6 +76,11 @@ class CharacterUtil {
 				return CHAR_OTHER_CJK;
 				
 			}
+			else if(ub==Character.UnicodeBlock.HIGH_SURROGATES||ub==Character.UnicodeBlock.LOW_SURROGATES||
+			ub==Character.UnicodeBlock.SUPPLEMENTAL_ARROWS_B||ub==Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES)
+			{
+				return CHAR_CHINESE;
+			}
 		}
 		//其他的不做处理的字符
 		return CHAR_USELESS;

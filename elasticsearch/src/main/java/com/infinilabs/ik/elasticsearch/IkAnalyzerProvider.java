@@ -11,7 +11,7 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
     private final IKAnalyzer analyzer;
 
     public IkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings,boolean useSmart) {
-        super(name, settings);
+        super(indexSettings, name, settings);
 
         Configuration configuration = new ConfigurationSub(env,settings).setUseSmart(useSmart);
 
