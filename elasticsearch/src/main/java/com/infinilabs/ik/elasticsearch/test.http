@@ -1,0 +1,30 @@
+### 1
+DELETE http://localhost:9200/index/
+
+### b
+PUT http://localhost:9200/index
+Content-Type: application/json
+
+### b
+POST http://localhost:9200/index/_mapping
+Content-Type: application/json
+
+{
+  "properties": {
+    "content": {
+      "type": "text",
+      "analyzer": "ik_max_word",
+      "search_analyzer": "ik_smart"
+    }
+  }
+
+}
+
+### c
+POST http://localhost:9200/index/_analyze
+Content-Type: application/json
+
+{
+  "analyzer": "ik_max_word",
+  "text": "一只狗一个人剃\uDB84\uDC97鬚髪。或見菩\uDB84\uDCA7"
+}

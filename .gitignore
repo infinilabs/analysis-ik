@@ -8,3 +8,4 @@
 *.iml
 \.*
 !.travis.yml
+target
