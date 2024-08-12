@@ -1,6 +1,7 @@
 package com.infinilabs.ik.elasticsearch;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 
 public class Test {
     public static void main(String[] args) throws IOException {
+        //todo: 完善更多单元测试
+
         String configPath = "E:\\temp\\config";
         Settings settings = Settings.builder()
                 .put("path.home",configPath)
@@ -29,7 +32,10 @@ public class Test {
             while(tokenStream.incrementToken())
             {
                 CharTermAttribute charTermAttribute = tokenStream.getAttribute(CharTermAttribute.class);
-                char[] chars = charTermAttribute.buffer();
+                OffsetAttribute offsetAttribute = tokenStream.getAttribute(OffsetAttribute.class);
+                int len = offsetAttribute.endOffset()-offsetAttribute.startOffset();
+                char[] chars = new char[len];
+                System.arraycopy(charTermAttribute.buffer(), 0, chars, 0, len);
                 System.out.println(charTermAttribute.toString()+"-"+String.join(",",convertCharArrayToHex(chars)));
             }
         }
