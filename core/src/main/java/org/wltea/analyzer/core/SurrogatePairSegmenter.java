@@ -75,7 +75,7 @@ class SurrogatePairSegmenter implements ISegmenter {
             sb.append(context.getSegmentBuff()[this.start]);
             sb.append(context.getSegmentBuff()[this.end]);
             String lexemeText = sb.toString();
-            Lexeme lexeme = new Lexeme(context.getBufferOffset(), this.start, this.end - this.start + 1, Lexeme.TYPE_CNWORD);
+            Lexeme lexeme = new Lexeme(context.getBufferOffset(), this.start, this.end - this.start + 1, Lexeme.TYPE_CNCHAR);
             lexeme.setLexemeText(lexemeText);
             context.addLexeme(lexeme);
         }

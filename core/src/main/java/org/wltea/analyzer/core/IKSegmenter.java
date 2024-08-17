@@ -80,10 +80,10 @@ public final class IKSegmenter {
 		segmenters.add(new LetterSegmenter()); 
 		//处理中文数量词的子分词器
 		segmenters.add(new CN_QuantifierSegmenter());
-		//处理中文词的子分词器
-		segmenters.add(new CJKSegmenter());
 		//处理由两个char组成的SurrogatePair
 		segmenters.add(new SurrogatePairSegmenter());
+		//处理中文词的子分词器
+		segmenters.add(new CJKSegmenter());
 		return segmenters;
 	}
 	

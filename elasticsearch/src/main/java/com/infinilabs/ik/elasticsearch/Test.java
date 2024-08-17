@@ -26,7 +26,7 @@ public class Test {
 
         Configuration cfg = new ConfigurationSub(env, settings);
         try (IKAnalyzer ikAnalyzer = new IKAnalyzer(cfg)) {
-            org.apache.lucene.analysis.TokenStream tokenStream = ikAnalyzer.tokenStream("text","剃\uDB84\uDC97鬚髪。或見菩\uDB84\uDCA7");
+            org.apache.lucene.analysis.TokenStream tokenStream = ikAnalyzer.tokenStream("text","\uD83D\uDE00\uD83D\uDE43龟龙麟凤剃\uDB84\uDC97鬚髪。或見菩\uDB84\uDCA7做张做势牛哈");
             tokenStream.reset();
 
             while(tokenStream.incrementToken())
