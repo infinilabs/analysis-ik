@@ -2,19 +2,23 @@ package com.infinilabs.ik.elasticsearch;
 
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.lucene.IKAnalyzer;
+
+import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
 
 public class Test {
     public static void main(String[] args) throws IOException {
         //todo: 完善更多单元测试
-
-        String configPath = "E:\\temp\\config";
+        String configPath = new File(new File(Test.class.getResource("/").getPath()).getParentFile().getParentFile().getParentFile(),"config").getAbsolutePath();
+        configPath = URLDecoder.decode(configPath, "UTF-8");
         Settings settings = Settings.builder()
                 .put("path.home",configPath)
                 .put("path.data",configPath)
@@ -26,7 +30,7 @@ public class Test {
 
         Configuration cfg = new ConfigurationSub(env, settings);
         try (IKAnalyzer ikAnalyzer = new IKAnalyzer(cfg)) {
-            org.apache.lucene.analysis.TokenStream tokenStream = ikAnalyzer.tokenStream("text","\uD83D\uDE00\uD83D\uDE43龟龙麟凤剃\uDB84\uDC97鬚髪。或見菩\uDB84\uDCA7做张做势牛哈");
+            org.apache.lucene.analysis.TokenStream tokenStream = ikAnalyzer.tokenStream("text","又見菩\uDB84\uDD2E，處林放光，濟地獄苦，令入佛\uDB84\uDC01。又見佛子\uD83D\uDE00\uD83D\uDE43龟龙麟凤剃\uDB84\uDC97鬚髪。或見菩\uDB84\uDCA7做张做势牛哈");
             tokenStream.reset();
 
             while(tokenStream.incrementToken())
@@ -36,7 +40,8 @@ public class Test {
                 int len = offsetAttribute.endOffset()-offsetAttribute.startOffset();
                 char[] chars = new char[len];
                 System.arraycopy(charTermAttribute.buffer(), 0, chars, 0, len);
-                System.out.println(charTermAttribute.toString()+"-"+String.join(",",convertCharArrayToHex(chars)));
+                TypeAttribute typeAttribute = tokenStream.getAttribute(TypeAttribute.class);
+                System.out.println(charTermAttribute.toString()+"-"+typeAttribute.type()+"-"+String.join(",",convertCharArrayToHex(chars)));
             }
         }
 
