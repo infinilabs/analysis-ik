@@ -2,9 +2,12 @@
 /work
 /logs
 /.idea
-/target
-/out
+**/target
+**/out
 .DS_Store
 *.iml
 \.*
 !.travis.yml
+*.class
+*.jar
+*.zip
