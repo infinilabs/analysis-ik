@@ -9,24 +9,32 @@ The plugin comprises analyzer: `ik_smart` , `ik_max_word`, and tokenizer: `ik_sm
 
 # How to Install
 
-You can download the packaged plugins from here: `https://release.infinilabs.com/`, 
+### 🚀 **Get the Packaged Plugins**
 
-or you can use the `plugin` cli to install the plugin like this:
+You can download the packaged plugins from here:  
 
-For Elasticsearch
+**[https://release.infinilabs.com/](https://release.infinilabs.com/)**
 
-```
+---
+
+### 🛠️ **Install via CLI**
+
+Alternatively, you can use the `plugin` CLI to install the plugin. Here's how:
+
+#### For Elasticsearch:
+```bash
 bin/elasticsearch-plugin install https://get.infini.cloud/elasticsearch/analysis-ik/8.4.1
 ```
 
-For OpenSearch
-
-```
+#### For OpenSearch:
+```bash
 bin/opensearch-plugin install https://get.infini.cloud/opensearch/analysis-ik/2.12.0
 ```
 
-Tips: replace your own version number related to your elasticsearch or opensearch.
+---
 
+### ⚠️ **Tip**  
+Make sure to replace the version number with the one that matches your Elasticsearch or OpenSearch version.
 
 # Getting Started
 
