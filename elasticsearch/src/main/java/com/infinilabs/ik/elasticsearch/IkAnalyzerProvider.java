@@ -10,23 +10,22 @@ import org.wltea.analyzer.lucene.IKAnalyzer;
 public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer> {
     private final IKAnalyzer analyzer;
 
-    public IkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings,boolean useSmart) {
-        super(name, settings);
-
-        Configuration configuration = new ConfigurationSub(env,settings).setUseSmart(useSmart);
-
-        analyzer=new IKAnalyzer(configuration);
+    public IkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings, boolean useSmart) {
+        super(name);
+        Configuration configuration = new ConfigurationSub(env, settings).setUseSmart(useSmart);
+        analyzer = new IKAnalyzer(configuration);
     }
 
     public static IkAnalyzerProvider getIkSmartAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings) {
-        return new IkAnalyzerProvider(indexSettings,env,name,settings,true);
+        return new IkAnalyzerProvider(indexSettings, env, name, settings, true);
     }
 
     public static IkAnalyzerProvider getIkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings) {
-        return new IkAnalyzerProvider(indexSettings,env,name,settings,false);
+        return new IkAnalyzerProvider(indexSettings, env, name, settings, false);
     }
 
-    @Override public IKAnalyzer get() {
+    @Override
+    public IKAnalyzer get() {
         return this.analyzer;
     }
 }
