@@ -21,10 +21,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK 17
+    - name: Set up JDK 24
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '24'
         distribution: 'temurin'
         cache: maven
     - name: Run the Maven verify phase
