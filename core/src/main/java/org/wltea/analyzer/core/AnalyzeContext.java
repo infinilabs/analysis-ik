@@ -223,7 +223,7 @@ class AnalyzeContext {
 	 * 累计当前的segmentBuff相对于reader起始位置的位移
 	 */
 	void markBufferOffset(){
-		this.buffOffset += this.cursor;
+		this.buffOffset += this.cursor + 1;
 	}
 	
 	/**

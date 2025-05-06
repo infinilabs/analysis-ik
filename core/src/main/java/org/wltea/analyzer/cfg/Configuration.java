@@ -38,6 +38,11 @@ public abstract class Configuration {
 	public boolean isEnableLowercase() {
 		return enableLowercase;
 	}
+
+	public Configuration setEnableLowercase(boolean enableLowercase) {
+		this.enableLowercase = enableLowercase;
+		return this;
+	}
 	
 	public abstract Path getPath(String first, String... more);
 	

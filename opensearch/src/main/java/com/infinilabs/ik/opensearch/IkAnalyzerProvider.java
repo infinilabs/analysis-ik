@@ -12,8 +12,10 @@ public class IkAnalyzerProvider extends AbstractIndexAnalyzerProvider<IKAnalyzer
 
     public IkAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings,boolean useSmart) {
         super(indexSettings, name, settings);
+        // Get the enable_lowercase setting from analyzer settings, default to true
+        boolean enableLowercase = settings.getAsBoolean("enable_lowercase", true);
 
-        Configuration configuration = new ConfigurationSub(env,settings).setUseSmart(useSmart);
+        Configuration configuration = new ConfigurationSub(env,settings).setUseSmart(useSmart).setEnableLowercase(enableLowercase);
 
         analyzer=new IKAnalyzer(configuration);
     }
