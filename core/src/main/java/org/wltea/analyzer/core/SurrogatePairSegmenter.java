@@ -56,7 +56,7 @@ class SurrogatePairSegmenter implements ISegmenter {
                 outputSingleCharLexeme(context, this.start);
                 this.highSurrogate = Optional.empty();
             }
-            this.start = context.getCursor();
+            this.start = -1;
             this.end = -1;
         }
 
