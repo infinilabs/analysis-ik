@@ -19,7 +19,7 @@
     <properties>
         <lucene.version>9.3.0</lucene.version>
         <elasticsearch.version>8.4.1</elasticsearch.version>
-        <opensearch.version>2.0.1</opensearch.version>
+        <opensearch.version>3.0.0</opensearch.version>
         <maven.compiler.target>1.8</maven.compiler.target>
    
         <tests.rest.load_packaged>false</tests.rest.load_packaged>
