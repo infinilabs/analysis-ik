@@ -85,6 +85,38 @@ public class IKAnalyzerTests {
     }
 
     /**
+     * Surrogate Pair混合超出缓存区测试
+     */
+    @Test
+    public void tokenizeCase6_correctly()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(false);
+        // build a string with '菩' + spaces + 60 surrogate pairs
+        StringBuilder sb = new StringBuilder(4006);
+        sb.append("菩");
+        for (int i = 0; i < 3995; i++) {
+            sb.append(' ');
+        }
+        // Append the surrogate pair 41 times
+        for (int i = 0; i < 41; i++) {
+            sb.append("\uDB84\uDD2E ");
+        }
+        String[] values = tokenize(cfg, sb.toString());
+        
+        // First token should be '菩'
+        assert values[0].equals("菩");
+        
+        // There should be 41 tokens total (菩 + 41 surrogate pairs)
+        assert values.length == 42;
+        
+        // Verify all surrogate pair tokens
+        for (int i = 1; i <= 41; i++) {
+            assert values[i].equals("\uDB84\uDD2E") : "Token at index " + i + " is not the expected surrogate pair";
+        }
+    }
+
+
+    /**
      * 用ik_max_word分词器分词
      */
     @Test
