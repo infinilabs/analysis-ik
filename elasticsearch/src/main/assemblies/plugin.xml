@@ -23,6 +23,11 @@
             <outputDirectory/>
             <filtered>true</filtered>
         </file>
+        <file>
+            <source>${project.basedir}/src/main/resources/entitlement-policy.yaml</source>
+            <outputDirectory/>
+            <filtered>false</filtered>
+        </file>
     </files>
     <dependencySets>
         <dependencySet>
