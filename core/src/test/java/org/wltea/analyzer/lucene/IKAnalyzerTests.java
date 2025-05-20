@@ -3,13 +3,16 @@ package org.wltea.analyzer.lucene;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import org.junit.Test;
 import org.wltea.analyzer.cfg.Configuration;
+import org.wltea.analyzer.core.Lexeme;
 import org.wltea.analyzer.TestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class IKAnalyzerTests {
 
@@ -171,5 +174,123 @@ public class IKAnalyzerTests {
             throw new RuntimeException(ex);
         }
         return  tokens.toArray(new String[0]);
+    }
+
+    /**
+     * 用ik_max_word分词器分词，测试中文量词
+     */
+    @Test
+    public void tokenize_CN_Quantifier_correctly()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(false);
+        String text = "2023年人才";
+        
+        // 获取分词结果和类型
+        List<TokenInfo> tokenInfos = tokenizeWithType(cfg, text);
+        
+        // 打印所有分词结果和类型，便于调试
+        for (TokenInfo info : tokenInfos) {
+            System.out.println("Token: " + info.getText() + ", Type: " + info.getType());
+        }
+        
+        // 验证分词结果包含预期的词
+        List<String> tokens = tokenInfos.stream().map(TokenInfo::getText).collect(Collectors.toList());
+        assert tokens.contains("2023");
+        assert tokens.contains("年");
+        assert tokens.contains("人才");
+        
+        // 验证"人"不会被单独分割成COUNT类型
+        boolean hasPersonAsCount = tokenInfos.stream()
+                .anyMatch(info -> "人".equals(info.getText()) && info.getType() == Lexeme.TYPE_COUNT);
+        assert !hasPersonAsCount : "'人'不应该被分割为COUNT类型";
+        
+        // 验证"年"是量词类型
+        boolean hasYearAsCount = tokenInfos.stream()
+                .anyMatch(info -> "年".equals(info.getText()) && info.getType() == Lexeme.TYPE_COUNT);
+        assert hasYearAsCount : "'年'应该是COUNT类型";
+    }
+
+
+/**
+     * 分词结果信息类，包含词文本和类型
+     */
+    static class TokenInfo {
+        private String text;
+        private int type;
+        
+        public TokenInfo(String text, int type) {
+            this.text = text;
+            this.type = type;
+        }
+        
+        public String getText() {
+            return text;
+        }
+        
+        public int getType() {
+            return type;
+        }
+    }
+    
+    /**
+     * 获取分词结果及其类型信息
+     */
+    static List<TokenInfo> tokenizeWithType(Configuration configuration, String s) {
+        ArrayList<TokenInfo> tokenInfos = new ArrayList<>();
+        try (IKAnalyzer ikAnalyzer = new IKAnalyzer(configuration)) {
+            TokenStream tokenStream = ikAnalyzer.tokenStream("text", s);
+            tokenStream.reset();
+            
+            CharTermAttribute charTermAttribute = tokenStream.getAttribute(CharTermAttribute.class);
+            OffsetAttribute offsetAttribute = tokenStream.getAttribute(OffsetAttribute.class);
+            TypeAttribute typeAttribute = tokenStream.getAttribute(TypeAttribute.class);
+            
+            while(tokenStream.incrementToken()) {
+                int len = offsetAttribute.endOffset() - offsetAttribute.startOffset();
+                char[] chars = new char[len];
+                System.arraycopy(charTermAttribute.buffer(), 0, chars, 0, len);
+                String text = new String(chars);
+                
+                // 获取类型信息并映射回对应的数字常量
+                String typeStr = typeAttribute.type();
+                int type = mapTypeStringToInt(typeStr);
+                
+                tokenInfos.add(new TokenInfo(text, type));
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        return tokenInfos;
+    }
+    
+    /**
+     * 将类型字符串映射为对应的数字常量
+     * 
+     * @param typeStr 类型字符串
+     * @return 对应的数字常量
+     */
+    private static int mapTypeStringToInt(String typeStr) {
+        switch (typeStr) {
+            case "ENGLISH":
+                return Lexeme.TYPE_ENGLISH;
+            case "ARABIC":
+                return Lexeme.TYPE_ARABIC;
+            case "LETTER":
+                return Lexeme.TYPE_LETTER;
+            case "CN_WORD":
+                return Lexeme.TYPE_CNWORD;
+            case "CN_CHAR":
+                return Lexeme.TYPE_CNCHAR;
+            case "OTHER_CJK":
+                return Lexeme.TYPE_OTHER_CJK;
+            case "COUNT":
+                return Lexeme.TYPE_COUNT;
+            case "TYPE_CNUM":
+                return Lexeme.TYPE_CNUM;
+            case "TYPE_CQUAN":
+                return Lexeme.TYPE_CQUAN;
+            default:
+                return Lexeme.TYPE_UNKNOWN;
+        }
     }
 }
