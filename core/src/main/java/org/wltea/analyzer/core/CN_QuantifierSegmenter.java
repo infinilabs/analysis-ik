@@ -169,25 +169,36 @@ class CN_QuantifierSegmenter implements ISegmenter{
 					}					
 				}
 			}				
+			// 检查是否应该进行**新的**字量词匹配
+			// 只有在前面有数词的情况下才进行单字量词匹配
+			boolean shouldMatchSingleChar = false;
+			if(!context.getOrgLexemes().isEmpty()){
+				Lexeme l = context.getOrgLexemes().peekLast();
+				if((Lexeme.TYPE_CNUM == l.getLexemeType() || Lexeme.TYPE_ARABIC == l.getLexemeType())
+					&& (l.getBegin() + l.getLength() == context.getCursor())){
+					shouldMatchSingleChar = true;
+				}
+			}
+			if(shouldMatchSingleChar || !this.countHits.isEmpty()){
 
-			//*********************************
-			//对当前指针位置的字符进行单字匹配
-			Hit singleCharHit = Dictionary.getSingleton().matchInQuantifierDict(context.getSegmentBuff(), context.getCursor(), 1);
-			if(singleCharHit.isMatch()){//首字成量词词
-				//输出当前的词
-				Lexeme newLexeme = new Lexeme(context.getBufferOffset() , context.getCursor() , 1 , Lexeme.TYPE_COUNT);
-				context.addLexeme(newLexeme);
+				//*********************************
+				//对当前指针位置的字符进行单字匹配
+				Hit singleCharHit = Dictionary.getSingleton().matchInQuantifierDict(context.getSegmentBuff(), context.getCursor(), 1);
+				if(singleCharHit.isMatch()){//首字成量词词
+					//输出当前的词
+					Lexeme newLexeme = new Lexeme(context.getBufferOffset() , context.getCursor() , 1 , Lexeme.TYPE_COUNT);
+					context.addLexeme(newLexeme);
 
-				//同时也是词前缀
-				if(singleCharHit.isPrefix()){
+					//同时也是词前缀
+					if(singleCharHit.isPrefix()){
+						//前缀匹配则放入hit列表
+						this.countHits.add(singleCharHit);
+					}
+				}else if(singleCharHit.isPrefix()){//首字为量词前缀
 					//前缀匹配则放入hit列表
 					this.countHits.add(singleCharHit);
 				}
-			}else if(singleCharHit.isPrefix()){//首字为量词前缀
-				//前缀匹配则放入hit列表
-				this.countHits.add(singleCharHit);
 			}
-			
 			
 		}else{
 			//输入的不是中文字符
