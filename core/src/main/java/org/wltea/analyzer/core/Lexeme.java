@@ -120,11 +120,12 @@ public class Lexeme implements Comparable<Lexeme>{
             return -1;
         }else if(this.begin == other.getBegin()){
         	//词元长度优先
-        	if(this.length > other.getLength()){
+			//長度短的優先
+        	if(this.length < other.getLength()){
         		return -1;
         	}else if(this.length == other.getLength()){
         		return 0;
-        	}else {//this.length < other.getLength()
+        	}else {//this.length > other.getLength()
         		return 1;
         	}
         	
