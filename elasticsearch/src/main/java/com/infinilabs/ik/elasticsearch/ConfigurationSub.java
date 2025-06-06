@@ -29,7 +29,7 @@ public class ConfigurationSub extends Configuration {
 
 	@Override
 	public Path getConfDir() {
-		return this.environment.configDir().resolve(AnalysisIkPlugin.PLUGIN_NAME);
+		return this.environment.configFile().resolve(AnalysisIkPlugin.PLUGIN_NAME);
 	}
 
 	public Path getConfigInPluginDir() {
