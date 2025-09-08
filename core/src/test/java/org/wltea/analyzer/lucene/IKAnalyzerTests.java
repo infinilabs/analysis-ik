@@ -264,6 +264,42 @@ public class IKAnalyzerTests {
     }
     
     /**
+     * 用ik_smart分词器测试超长叠词性能
+     * 如果分词耗时超过5秒则测试失败
+     */
+    @Test
+    public void tokenize_smart_long_repeated_words_performance()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        
+        // 构建超长叠词：重复"哈哈哈哈哈哈哈哈哈哈"1000次
+        StringBuilder sb = new StringBuilder();
+        String repeatedWord = "哈哈哈哈哈哈哈哈哈哈";
+        for (int i = 0; i < 1001; i++) {
+            sb.append(repeatedWord);
+        }
+        String longRepeatedText = sb.toString();
+        
+        // 记录开始时间
+        long startTime = System.currentTimeMillis();
+        
+        // 执行分词
+        String[] tokens = tokenize(cfg, longRepeatedText);
+        
+        // 记录结束时间
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+        
+        // 验证分词耗时不超过5秒（5000毫秒）
+        assert duration <= 5000 : String.format("IK_SMART分词超长叠词耗时%dms，超过5秒限制", duration);
+        
+        // 验证分词结果不为空
+        assert tokens.length > 0 : "分词结果不能为空";
+        
+        System.out.println(String.format("IK_SMART分词超长叠词耗时: %dms, 分词结果数量: %d", duration, tokens.length));
+    }
+
+    /**
      * 将类型字符串映射为对应的数字常量
      * 
      * @param typeStr 类型字符串
