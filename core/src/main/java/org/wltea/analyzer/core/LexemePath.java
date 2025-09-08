@@ -156,13 +156,23 @@ class LexemePath extends QuickSortSet implements Comparable<LexemePath>{
 	 * @return
 	 */
 	int getXWeight(){
-		int product = 1;
+		long product = 1;
 		Cell c = this.getHead();
 		while( c != null && c.getLexeme() != null){
-			product *= c.getLexeme().getLength();
+			int length = c.getLexeme().getLength();
+			//限制长度避免溢出
+			if(length > 10){
+				length = 10;
+			}
+			product *= length;
+			//防止溢出
+			if(product > Integer.MAX_VALUE){
+				//System.out.println("weight too long");
+				return Integer.MAX_VALUE;
+			}
 			c = c.getNext();
 		}
-		return product;
+		return (int)product;
 	}
 	
 	/**
