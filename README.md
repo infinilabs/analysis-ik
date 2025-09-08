@@ -153,7 +153,7 @@ Result
 
 # Dictionary Configuration
 
-Config file `IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/config/IKAnalyzer.cfg.xml`
+Config file `IKAnalyzer.cfg.xml` can be located at `{conf}/analysis-ik/IKAnalyzer.cfg.xml`
 or `{plugins}/elasticsearch-analysis-ik-*/config/IKAnalyzer.cfg.xml`
 
 ```xml
