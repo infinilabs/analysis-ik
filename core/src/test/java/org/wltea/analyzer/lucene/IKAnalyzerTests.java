@@ -275,7 +275,7 @@ public class IKAnalyzerTests {
         // 构建超长叠词：重复"哈哈哈哈哈哈哈哈哈哈"1000次
         StringBuilder sb = new StringBuilder();
         String repeatedWord = "哈哈哈哈哈哈哈哈哈哈";
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 1001; i++) {
             sb.append(repeatedWord);
         }
         String longRepeatedText = sb.toString();
