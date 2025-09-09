@@ -84,12 +84,80 @@ class IKArbitrator {
 	}
 	
 	/**
+	 * 检测是否为叠词模式
+	 * @param lexemeCell 词元链表头
+	 * @return 如果检测到叠词模式返回简化的路径，否则返回null
+	 */
+	private LexemePath detectRepeatedWords(QuickSortSet.Cell lexemeCell) {
+		if (lexemeCell == null || lexemeCell.getLexeme() == null) {
+			return null;
+		}
+		
+		// 检查是否有连续的长词元（长度>10）或大量重复词元
+		QuickSortSet.Cell current = lexemeCell;
+		int longLexemeCount = 0;
+		int totalCount = 0;
+		Lexeme firstLexeme = null;
+		Lexeme lastLexeme = null;
+		
+		while (current != null && current.getLexeme() != null) {
+			Lexeme lexeme = current.getLexeme();
+			if (firstLexeme == null) {
+				firstLexeme = lexeme;
+			}
+			lastLexeme = lexeme;
+			
+			if (lexeme.getLength() > 10) {
+				longLexemeCount++;
+			}
+			totalCount++;
+			
+			// 如果发现多个长词元或词元总数过多，认为是叠词
+			if (longLexemeCount > 5 || totalCount > 50) {
+				// 构造简化路径：第一个词元 + 剩余部分合并为一个词元
+				LexemePath simplifiedPath = new LexemePath();
+				
+				// 添加第一个词元
+				simplifiedPath.addNotCrossLexeme(firstLexeme);
+				
+				// 如果有剩余部分，创建一个合并的词元
+				if (totalCount > 1 && lastLexeme != null) {
+					// 计算剩余部分的起始位置和长度
+					int remainStart = firstLexeme.getBegin() + firstLexeme.getLength();
+					int remainEnd = lastLexeme.getBegin() + lastLexeme.getLength();
+					int remainLength = remainEnd - remainStart;
+					
+					if (remainLength > 0) {
+						// 创建一个表示剩余部分的词元
+						// offset 应该是第一个词元的 offset + 第一个词元的长度
+						int remainOffset = firstLexeme.getOffset() + firstLexeme.getLength();
+						Lexeme remainLexeme = new Lexeme(remainOffset, remainStart, remainLength, Lexeme.TYPE_CNCHAR);
+						simplifiedPath.addNotCrossLexeme(remainLexeme);
+					}
+				}
+				
+				return simplifiedPath;
+			}
+			
+			current = current.getNext();
+		}
+		
+		return null; // 没有检测到叠词模式
+	}
+
+	/**
 	 * 歧义识别
 	 * @param lexemeCell 歧义路径链表头
 	 * @param fullTextLength 歧义路径文本长度
 	 * @return
 	 */
 	private LexemePath judge(QuickSortSet.Cell lexemeCell , int fullTextLength){
+		// 首先检测是否为叠词模式，如果是则直接返回简化路径
+		LexemePath simplifiedPath = this.detectRepeatedWords(lexemeCell);
+		if (simplifiedPath != null) {
+			//System.out.println("Detected repeated words pattern, using simplified path");
+			return simplifiedPath;
+		}
 		//候选路径集合
 		TreeSet<LexemePath> pathOptions = new TreeSet<LexemePath>();
 		//候选结果路径
@@ -128,6 +196,14 @@ class IKArbitrator {
 		QuickSortSet.Cell c = lexemeCell;
 		//迭代遍历Lexeme链表
 		while(c != null && c.getLexeme() != null){
+			//限制大长度叠词，避免性能问题和整数溢出
+			if(c.getLexeme().getLength() > 10){
+				//System.out.println("already repeat words 10 times");
+				//跳过过长的词元
+				c = c.getNext();
+				continue;
+			}
+
 			if(!option.addNotCrossLexeme(c.getLexeme())){
 				//词元交叉，添加失败则加入lexemeStack栈
 				conflictStack.push(c);
