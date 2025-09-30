@@ -16,6 +16,8 @@
 
 
     <properties>
+        <opensearch.version>2.0.1</opensearch.version>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <opensearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</opensearch.assembly.descriptor>
         <opensearch.plugin.name>analysis-ik</opensearch.plugin.name>
