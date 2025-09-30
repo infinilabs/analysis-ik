@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [17, 21, 24]
+        java: [21, 24]
         elasticsearch: ['9.0.0', '9.0.7', '9.1.0', '9.1.4']
 
     steps:
