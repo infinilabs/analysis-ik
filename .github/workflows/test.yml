@@ -8,7 +8,7 @@ on:
 
 jobs:
   test-elasticsearch:
-    name: Test Elasticsearch - JDK=${{ matrix.java }} ES=${{ matrix.elasticsearch }}
+    name: Test Elasticsearch=${{ matrix.elasticsearch }} JDK=${{ matrix.java }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -38,7 +38,7 @@ jobs:
         run: mvn verify -B
 
   test-opensearch:
-    name: Test OpenSearch - JDK=${{ matrix.java }} OS=${{ matrix.opensearch }}
+    name: Test OpenSearch=${{ matrix.opensearch }} JDK=${{ matrix.java }}
     runs-on: ubuntu-latest
 
     strategy:
