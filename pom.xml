@@ -20,7 +20,7 @@
         <lucene.version>10.2.2</lucene.version>
         <elasticsearch.version>9.1.4</elasticsearch.version>
         <opensearch.version>2.0.1</opensearch.version>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.target>21</maven.compiler.target>
 
         <tests.rest.load_packaged>false</tests.rest.load_packaged>
         <skip.unit.tests>true</skip.unit.tests>
