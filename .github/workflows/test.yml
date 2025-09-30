@@ -44,7 +44,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java: [17, 21, 24]
+        java: [21, 24]
         opensearch: ['2.0.1']
 
     steps:
