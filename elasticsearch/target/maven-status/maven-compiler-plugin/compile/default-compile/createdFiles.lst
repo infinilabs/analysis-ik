@@ -1,0 +1,4 @@
+com/infinilabs/ik/elasticsearch/IkAnalyzerProvider.class
+com/infinilabs/ik/elasticsearch/ConfigurationSub.class
+com/infinilabs/ik/elasticsearch/AnalysisIkPlugin.class
+com/infinilabs/ik/elasticsearch/IkTokenizerFactory.class

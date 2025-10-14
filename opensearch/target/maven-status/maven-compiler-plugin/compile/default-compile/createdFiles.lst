@@ -1,0 +1,4 @@
+com/infinilabs/ik/opensearch/AnalysisIkPlugin.class
+com/infinilabs/ik/opensearch/IkTokenizerFactory.class
+com/infinilabs/ik/opensearch/IkAnalyzerProvider.class
+com/infinilabs/ik/opensearch/ConfigurationSub.class

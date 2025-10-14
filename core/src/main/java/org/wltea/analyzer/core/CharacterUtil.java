@@ -40,8 +40,8 @@ class CharacterUtil {
 	public static final int CHAR_CHINESE = 0X00000004;
 	
 	public static final int CHAR_OTHER_CJK = 0X00000008;
-	
-	
+
+	public static final int CHAR_SURROGATE = 0X00000016;
 	/**
 	 * 识别字符类型
 	 * @param input
@@ -75,6 +75,11 @@ class CharacterUtil {
 					|| ub == Character.UnicodeBlock.KATAKANA_PHONETIC_EXTENSIONS){
 				return CHAR_OTHER_CJK;
 				
+			}
+			else if(ub==Character.UnicodeBlock.HIGH_SURROGATES||ub==Character.UnicodeBlock.LOW_SURROGATES||
+			ub==Character.UnicodeBlock.HIGH_PRIVATE_USE_SURROGATES)
+			{
+				return CHAR_SURROGATE;
 			}
 		}
 		//其他的不做处理的字符

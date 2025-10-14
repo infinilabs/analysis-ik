@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite tests="10" failures="0" name="org.wltea.analyzer.lucene.IKAnalyzerTests" time="0.22" errors="0" skipped="0">
+  <properties>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="java.vm.version" value="21.0.4+8-LTS-274"/>
+    <property name="sun.boot.library.path" value="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/lib"/>
+    <property name="maven.multiModuleProjectDirectory" value="/Users/jinduan/work/develop/ik_public/opensearch_version/analysis-ik"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="guice.disable.misplaced.annotation.check" value="true"/>
+    <property name="path.separator" value=":"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="user.script" value="Hans"/>
+    <property name="user.country" value="CN"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/Users/jinduan/work/develop/ik_public/opensearch_version/analysis-ik"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="java.runtime.version" value="21.0.4+8-LTS-274"/>
+    <property name="os.arch" value="aarch64"/>
+    <property name="java.io.tmpdir" value="/var/folders/hj/sfs2gmqd36z6drz9_2bk4j540000gn/T/"/>
+    <property name="line.separator" value="
+"/>
+    <property name="socksProxyPort" value="7897"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="https.proxyHost" value="127.0.0.1"/>
+    <property name="stderr.encoding" value="UTF-8"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="classworlds.conf" value="/opt/apache-maven-3.9.8/bin/m2.conf"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="stdout.encoding" value="UTF-8"/>
+    <property name="http.proxyPort" value="7897"/>
+    <property name="java.library.path" value="/Users/jinduan/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="maven.conf" value="/opt/apache-maven-3.9.8/conf"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="java.class.version" value="65.0"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="os.version" value="15.6.1"/>
+    <property name="library.jansi.path" value="/opt/apache-maven-3.9.8/lib/jansi-native"/>
+    <property name="http.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|localhost|*.localhost|local|*.local|crashlytics.com|*.crashlytics.com|&lt;local&gt;|*.&lt;local&gt;|git.infini.ltd|*.git.infini.ltd"/>
+    <property name="user.home" value="/Users/jinduan"/>
+    <property name="user.timezone" value="Asia/Shanghai"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.specification.version" value="21"/>
+    <property name="user.name" value="jinduan"/>
+    <property name="java.class.path" value="/opt/apache-maven-3.9.8/boot/plexus-classworlds-2.8.0.jar"/>
+    <property name="socksProxyHost" value="127.0.0.1"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher clean install"/>
+    <property name="java.home" value="/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home"/>
+    <property name="apple.awt.application.name" value="Launcher"/>
+    <property name="user.language" value="zh"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="java.version" value="21.0.4"/>
+    <property name="native.encoding" value="UTF-8"/>
+    <property name="http.proxyHost" value="127.0.0.1"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="maven.home" value="/opt/apache-maven-3.9.8"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.version.date" value="2024-07-16"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="https.proxyPort" value="7897"/>
+    <property name="socksNonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|localhost|*.localhost|local|*.local|crashlytics.com|*.crashlytics.com|&lt;local&gt;|*.&lt;local&gt;|git.infini.ltd|*.git.infini.ltd"/>
+    <property name="ftp.nonProxyHosts" value="127.0.0.1|192.168.0.0/16|*.192.168.0.0/16|10.0.0.0/8|*.10.0.0.0/8|172.16.0.0/12|*.172.16.0.0/12|localhost|*.localhost|local|*.local|crashlytics.com|*.crashlytics.com|&lt;local&gt;|*.&lt;local&gt;|git.infini.ltd|*.git.infini.ltd"/>
+  </properties>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenizeCase5_correctly" time="0.164"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenizeCase2_correctly" time="0"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenize_smart_correctly" time="0"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenize_max_word_correctly" time="0"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenizeCase4_correctly" time="0"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenize_smart_long_repeated_words_performance" time="0.03"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenize_CN_Quantifier_correctly" time="0.001"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenizeCase6_correctly" time="0.002"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenizeCase1_correctly" time="0"/>
+  <testcase classname="org.wltea.analyzer.lucene.IKAnalyzerTests" name="tokenizeCase3_correctly" time="0"/>
+</testsuite>
