@@ -14,8 +14,9 @@
     <description>IK Analyzer for Elasticsearch</description>
     <packaging>jar</packaging>
 
-
     <properties>
+        <elasticsearch.version>9.1.4</elasticsearch.version>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <elasticsearch.assembly.descriptor>${project.basedir}/src/main/assemblies/plugin.xml</elasticsearch.assembly.descriptor>
         <elasticsearch.plugin.name>analysis-ik</elasticsearch.plugin.name>

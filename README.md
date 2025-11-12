@@ -2,6 +2,8 @@ IK Analysis for Elasticsearch and OpenSearch
 ==================================
 
 ![](./assets/banner.png)
+[![Test](https://github.com/infinilabs/analysis-ik/actions/workflows/test.yml/badge.svg)](https://github.com/infinilabs/analysis-ik/actions/workflows/test.yml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE.txt)
 
 The IK Analysis plugin integrates Lucene IK analyzer, and support customized dictionary.  It supports major versions of Elasticsearch and OpenSearch. Maintained and supported with ❤️ by [INFINI Labs](https://infinilabs.com).
 
@@ -23,7 +25,7 @@ Alternatively, you can use the `plugin` CLI to install the plugin. Here's how:
 
 #### For Elasticsearch:
 ```bash
-bin/elasticsearch-plugin install https://get.infini.cloud/elasticsearch/analysis-ik/8.4.1
+bin/elasticsearch-plugin install https://get.infini.cloud/elasticsearch/analysis-ik/9.1.4
 ```
 
 #### For OpenSearch:

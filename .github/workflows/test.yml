@@ -1,0 +1,68 @@
+name: Test
+
+on:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  test-elasticsearch:
+    name: Test Elasticsearch=${{ matrix.elasticsearch }} JDK=${{ matrix.java }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [21, 24]
+        elasticsearch: ['9.0.0', '9.0.7', '9.1.0', '9.1.4']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Set Elasticsearch ${{ matrix.elasticsearch }} in POM
+        run: |
+          sed -i "s/<elasticsearch.version>.*<\/elasticsearch.version>/<elasticsearch.version>${{ matrix.elasticsearch }}<\/elasticsearch.version>/" elasticsearch/pom.xml
+          echo "Updated Elasticsearch version to ${{ matrix.elasticsearch }}"
+          grep -A 2 "<elasticsearch.version>" elasticsearch/pom.xml
+
+      - name: Build and test
+        run: mvn verify -B
+
+  test-opensearch:
+    name: Test OpenSearch=${{ matrix.opensearch }} JDK=${{ matrix.java }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [21, 24]
+        opensearch: ['2.0.1']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Set OpenSearch ${{ matrix.opensearch }} in POM
+        run: |
+          sed -i "s/<opensearch.version>.*<\/opensearch.version>/<opensearch.version>${{ matrix.opensearch }}<\/opensearch.version>/" opensearch/pom.xml
+          echo "Updated OpenSearch version to ${{ matrix.opensearch }}"
+          grep -A 2 "<opensearch.version>" opensearch/pom.xml
+
+      - name: Build and test
+        run: mvn verify -B
