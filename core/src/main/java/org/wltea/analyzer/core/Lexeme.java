@@ -243,7 +243,7 @@ public class Lexeme implements Comparable<Lexeme>{
 			return "TYPE_CQUAN";
 			
 		default :
-			return "UNKONW";
+			return "UNKNOWN";
 		}
 	}
 		
