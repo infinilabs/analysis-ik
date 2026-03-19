@@ -198,9 +198,10 @@ class IKArbitrator {
 		//迭代遍历Lexeme链表
 		while(c != null && c.getLexeme() != null){
 			//限制大长度叠词，避免性能问题和整数溢出
-			if(c.getLexeme().getLength() > 10){
-				//System.out.println("already repeat words 10 times");
-				//跳过过长的词元
+			//只对中文词元应用长度限制，因为只有中文才可能有叠词问题
+			//对于数字、字母、字母数字混合等其他类型的词元，不限制长度
+			if(c.getLexeme().getLexemeType() == Lexeme.TYPE_CNWORD && c.getLexeme().getLength() > 10){
+				//跳过过长的中文叠词
 				c = c.getNext();
 				continue;
 			}
