@@ -300,8 +300,114 @@ public class IKAnalyzerTests {
     }
 
     /**
+     * Test for Issue #1137: 超过10位的数字会被直接吞掉
+     * https://github.com/infinilabs/analysis-ik/issues/1137
+     */
+    @Test
+    public void tokenize_issue1137_long_digits_with_prefix()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true); // ik_smart
+        String[] tokens = tokenize(cfg, "RS12345678901");
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("rs12345678901");
+
+        assert hasFullToken : "Bug复现: 超过10位的数字被吞掉了！预期包含'rs12345678901'";
+    }
+
+    /**
+     * Test for Issue #1137: 纯数字，超过10位
+     */
+    @Test
+    public void tokenize_issue1137_pure_long_digits()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        String[] tokens = tokenize(cfg, "12345678901234567890"); // 20位数字
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("12345678901234567890");
+
+        assert hasFullToken : "Bug复现: 纯长数字也被吞掉了！预期包含'12345678901234567890'";
+    }
+
+    /**
+     * Test for Issue #1137: 恰好10位数字（应该正常工作）
+     */
+    @Test
+    public void tokenize_issue1137_exactly_10_digits()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        String[] tokens = tokenize(cfg, "1234567890"); // 恰好10位
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("1234567890");
+
+        assert hasFullToken : "10位数字应该正常分词";
+    }
+
+    /**
+     * Test for Issue #1137: 11位数字
+     */
+    @Test
+    public void tokenize_issue1137_11_digits()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        String[] tokens = tokenize(cfg, "12345678901"); // 11位
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("12345678901");
+
+        assert hasFullToken : "Bug复现: 11位数字被吞掉了！预期包含'12345678901'";
+    }
+
+    /**
+     * Test for Issue #1137: 手机号
+     */
+    @Test
+    public void tokenize_issue1137_phone_number()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        String[] tokens = tokenize(cfg, "13800138000"); // 手机号
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("13800138000");
+
+        assert hasFullToken : "手机号应该完整保留！预期包含'13800138000'";
+    }
+
+    /**
+     * Test for Issue #1137: 订单号前缀
+     */
+    @Test
+    public void tokenize_issue1137_order_id()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        String[] tokens = tokenize(cfg, "ORD202603180001"); // 订单号
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("ord202603180001");
+
+        assert hasFullToken : "订单号应该完整保留！预期包含'ord202603180001'";
+    }
+
+    /**
+     * Test for Issue #1137: 使用 ik_max_word 模式
+     */
+    @Test
+    public void tokenize_issue1137_ik_max_word()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(false); // ik_max_word
+        String[] tokens = tokenize(cfg, "RS12345678901");
+
+        List<String> tokenList = Arrays.asList(tokens);
+        boolean hasFullToken = tokenList.contains("rs12345678901");
+
+        assert hasFullToken : "Bug复现: ik_max_word模式下长数字也被吞掉了！";
+    }
+
+    /**
      * 将类型字符串映射为对应的数字常量
-     * 
+     *
      * @param typeStr 类型字符串
      * @return 对应的数字常量
      */
