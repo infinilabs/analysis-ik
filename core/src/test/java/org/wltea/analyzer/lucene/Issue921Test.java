@@ -24,25 +24,24 @@ import java.util.stream.Collectors;
  * 核心问题：当多值字段中某个值全部被停用词过滤时，
  * IKTokenizer.end() 返回的 finalOffset 为 0 而非实际长度，
  * 导致后续值的 offset 累积错误，FVH 高亮偏移。
+ *
+ * 每个测试场景同时覆盖 ik_max_word 和 ik_smart 两种模式，交错展示。
  */
 public class Issue921Test {
 
     private static Configuration cfgMaxWord;
     private static Configuration cfgSmart;
 
-    /**
-     * 初始化配置并将 "value" 添加到停用词字典
-     */
     @BeforeClass
     public static void setUp() throws Exception {
         cfgMaxWord = TestUtils.createFakeConfigurationSub(false);
         cfgSmart = TestUtils.createFakeConfigurationSub(true);
         addStopword("value");
+        addStopword("hello");
+        addStopword("world");
+        addStopword("的");
     }
 
-    /**
-     * 通过反射向 Dictionary 的停用词字典树中添加一个词
-     */
     private static void addStopword(String word) throws Exception {
         Field stopWordsField = Dictionary.class.getDeclaredField("_StopWords");
         stopWordsField.setAccessible(true);
@@ -52,9 +51,8 @@ public class Issue921Test {
         fillSegment.invoke(stopWords, (Object) word.toLowerCase().toCharArray());
     }
 
-    /**
-     * 辅助方法：收集所有 token 及其 offset 和 positionIncrement
-     */
+    // ========== 工具方法 ==========
+
     static List<TokenInfo> tokenizeWithDetails(Configuration cfg, String text) {
         List<TokenInfo> tokens = new ArrayList<>();
         try (IKAnalyzer ikAnalyzer = new IKAnalyzer(cfg)) {
@@ -67,12 +65,12 @@ public class Issue921Test {
             TypeAttribute typeAttr = tokenStream.getAttribute(TypeAttribute.class);
 
             while (tokenStream.incrementToken()) {
-                String term = charTermAttr.toString();
-                int startOffset = offsetAttr.startOffset();
-                int endOffset = offsetAttr.endOffset();
-                int posIncr = posIncrAttr.getPositionIncrement();
-                String type = typeAttr.type();
-                tokens.add(new TokenInfo(term, startOffset, endOffset, posIncr, type));
+                tokens.add(new TokenInfo(
+                        charTermAttr.toString(),
+                        offsetAttr.startOffset(),
+                        offsetAttr.endOffset(),
+                        posIncrAttr.getPositionIncrement(),
+                        typeAttr.type()));
             }
             tokenStream.end();
 
@@ -84,266 +82,334 @@ public class Issue921Test {
         return tokens;
     }
 
-    /**
-     * 获取 finalOffset（调用 end() 后的 offset）
-     */
     static int getFinalOffset(Configuration cfg, String text) {
         try (IKAnalyzer ikAnalyzer = new IKAnalyzer(cfg)) {
             TokenStream tokenStream = ikAnalyzer.tokenStream("text", text);
             tokenStream.reset();
-            while (tokenStream.incrementToken()) {
-                // 消费所有 token
-            }
+            while (tokenStream.incrementToken()) {}
             tokenStream.end();
-            OffsetAttribute offsetAttr = tokenStream.getAttribute(OffsetAttribute.class);
-            return offsetAttr.startOffset();
+            return tokenStream.getAttribute(OffsetAttribute.class).startOffset();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-    // ==========================================
-    // 测试用例
-    // ==========================================
+    private void printHeader(String scenario, String mode, String description) {
+        System.out.println();
+        System.out.println("┌─────────────────────────────────────────────────────────");
+        System.out.println("│ 场景: " + scenario + " [" + mode + "]");
+        System.out.println("│ 说明: " + description);
+        System.out.println("└─────────────────────────────────────────────────────────");
+    }
 
-    /**
-     * 测试1: 单值字段全是停用词 - finalOffset 应正确
-     * "value" 被过滤后不应产生任何 token，但 finalOffset 应为 5
-     */
-    @Test
-    public void testSingleStopwordValue_finalOffset() {
-        String text = "value";
+    private void printInput(String text) {
+        System.out.println("  输入: \"" + text + "\" (长度=" + text.length() + ")");
+    }
 
-        List<TokenInfo> tokens = tokenizeWithDetails(cfgMaxWord, text);
-
-        System.out.println("=== testSingleStopwordValue_finalOffset ===");
-        System.out.println("Input: \"value\"");
-        for (TokenInfo t : tokens) {
-            System.out.println("  " + t);
-        }
-
-        // "value" 是停用词，不应产生任何实质 token
-        List<String> realTokens = tokens.stream()
+    private void printTokenTable(List<TokenInfo> tokens, String originalText) {
+        List<TokenInfo> realTokens = tokens.stream()
                 .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
-                .map(TokenInfo::getTerm)
                 .collect(Collectors.toList());
-        assert realTokens.isEmpty() : "\"value\" 是停用词，不应产生分词结果，实际: " + realTokens;
-
-        // 关键验证：finalOffset 应为 5（"value" 的长度）
-        TokenInfo finalToken = tokens.stream()
+        TokenInfo finalOffsetToken = tokens.stream()
                 .filter(t -> t.term.equals("<FINAL_OFFSET>"))
-                .findFirst()
-                .orElse(null);
-        assert finalToken != null : "应有 FINAL_OFFSET token";
-        assert finalToken.startOffset == 5 :
-                "finalOffset 应为 5，实际为 " + finalToken.startOffset;
-    }
+                .findFirst().orElse(null);
 
-    /**
-     * 测试2: 文本中间有停用词 - offset 和 positionIncrement 正确
-     * "hello value world" 中 "value" 被过滤
-     */
-    @Test
-    public void testStopwordInMiddle_offsetAndPosition() {
-        String text = "hello value world";
+        // Token 明细表
+        System.out.println("  ┌────────────────────┬──────────┬──────────┬──────────┬────────────┐");
+        System.out.println("  │ term               │ start    │ end      │ posIncr  │ type       │");
+        System.out.println("  ├────────────────────┼──────────┼──────────┼──────────┼────────────┤");
+        for (TokenInfo t : realTokens) {
+            System.out.printf("  │ %-18s │ %8d │ %8d │ %8d │ %-10s │%n",
+                    t.term.length() > 18 ? t.term.substring(0, 15) + "..." : t.term,
+                    t.startOffset, t.endOffset, t.posIncrement, t.type);
+        }
+        System.out.println("  └────────────────────┴──────────┴──────────┴──────────┴────────────┘");
 
-        List<TokenInfo> tokens = tokenizeWithDetails(cfgMaxWord, text);
+        // 分词结果汇总
+        if (originalText != null && !originalText.isEmpty()) {
+            System.out.println("  原文:       \"" + originalText + "\"");
 
-        System.out.println("=== testStopwordInMiddle_offsetAndPosition ===");
-        System.out.println("Input: " + text);
-        for (TokenInfo t : tokens) {
-            System.out.println("  " + t);
+            StringBuilder mapLine = new StringBuilder();
+            boolean[] covered = new boolean[originalText.length()];
+            for (TokenInfo t : realTokens) {
+                for (int i = t.startOffset; i < t.endOffset && i < originalText.length(); i++) {
+                    covered[i] = true;
+                }
+            }
+            for (int i = 0; i < originalText.length(); i++) {
+                mapLine.append(covered[i] ? "^" : " ");
+            }
+            System.out.println("  词元覆盖:                 " + mapLine);
+
+            String resultTerms = realTokens.stream()
+                    .map(t -> "\"" + t.term + "\"")
+                    .collect(Collectors.joining(", "));
+            System.out.println("  分词结果:   [" + resultTerms + "] (" + realTokens.size() + "个词元)");
+
+            // 未覆盖区域
+            int uncoveredStart = -1;
+            List<String> gaps = new ArrayList<>();
+            for (int i = 0; i < originalText.length(); i++) {
+                if (!covered[i]) {
+                    if (uncoveredStart == -1) uncoveredStart = i;
+                } else {
+                    if (uncoveredStart != -1) {
+                        gaps.add("\"" + originalText.substring(uncoveredStart, i).trim() + "\"");
+                        uncoveredStart = -1;
+                    }
+                }
+            }
+            if (uncoveredStart != -1) {
+                String remaining = originalText.substring(uncoveredStart).trim();
+                if (!remaining.isEmpty()) gaps.add("\"" + remaining + "\"");
+            }
+            if (!gaps.isEmpty()) {
+                System.out.println("  过滤区间:   " + String.join(", ", gaps) + " (停用词/空白)");
+            }
         }
 
-        List<String> terms = tokens.stream()
-                .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
-                .map(TokenInfo::getTerm)
-                .collect(Collectors.toList());
-
-        assert terms.contains("hello") : "应包含 'hello'";
-        assert terms.contains("world") : "应包含 'world'";
-        assert !terms.contains("value") : "不应包含 'value'";
-
-        // 验证 offset
-        TokenInfo helloToken = tokens.stream().filter(t -> t.term.equals("hello")).findFirst().orElse(null);
-        assert helloToken != null;
-        assert helloToken.startOffset == 0 : "hello startOffset 应为 0";
-        assert helloToken.endOffset == 5 : "hello endOffset 应为 5";
-
-        TokenInfo worldToken = tokens.stream().filter(t -> t.term.equals("world")).findFirst().orElse(null);
-        assert worldToken != null;
-        assert worldToken.startOffset == 12 : "world startOffset 应为 12，实际为 " + worldToken.startOffset;
-        assert worldToken.endOffset == 17 : "world endOffset 应为 17";
-
-        // 验证 "world" 的 positionIncrement 应为 2（跳过了 "value"）
-        assert worldToken.posIncrement == 2 :
-                "'world' 的 positionIncrement 应为 2（跳过了 'value'），实际为 " + worldToken.posIncrement;
-
-        // 验证 finalOffset
-        TokenInfo finalToken = tokens.stream().filter(t -> t.term.equals("<FINAL_OFFSET>")).findFirst().orElse(null);
-        assert finalToken != null;
-        assert finalToken.startOffset == 17 : "finalOffset 应为 17";
+        if (finalOffsetToken != null) {
+            System.out.println("  finalOffset: " + finalOffsetToken.startOffset);
+        }
     }
 
-    /**
-     * 测试3: 中文停用词
-     * 手动添加 "的" 为停用词，验证中文停用词过滤
-     */
-    @Test
-    public void testChineseStopword() throws Exception {
-        addStopword("的");
-        String text = "我的数据库";
-
-        List<TokenInfo> tokens = tokenizeWithDetails(cfgMaxWord, text);
-
-        System.out.println("=== testChineseStopword ===");
-        System.out.println("Input: " + text);
-        for (TokenInfo t : tokens) {
-            System.out.println("  " + t);
-        }
-
-        List<String> terms = tokens.stream()
-                .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
-                .map(TokenInfo::getTerm)
-                .collect(Collectors.toList());
-
-        assert !terms.contains("的") : "'的' 是停用词，不应出现";
-        assert terms.contains("我") : "应包含 '我'";
-        assert terms.contains("数据库") : "应包含 '数据库'";
+    private void printAssertion(String label, Object expected, Object actual, boolean pass) {
+        String icon = pass ? "✓" : "✗";
+        System.out.println("  " + icon + " " + label + ": 期望=" + expected + ", 实际=" + actual);
     }
 
-    /**
-     * 测试4: 复现 issue #921 原始场景
-     * 模拟多值数组 ["RS", "复称", "value", "数据", "采集", "232", "485", "数据库", "数据库服务器"]
-     * 其中 "value" 是停用词，验证所有值的 finalOffset 正确
-     */
-    @Test
-    public void testOriginalIssueScenario_multiValueOffsets() {
-        String[] values = {"RS", "复称", "value", "数据", "采集", "232", "485", "数据库", "数据库服务器"};
-        // 每个值的期望 finalOffset = 值的字符串长度
-        int[] expectedLengths = {2, 2, 5, 2, 2, 3, 3, 3, 6};
-
-        System.out.println("=== testOriginalIssueScenario_multiValueOffsets ===");
-
-        // 累积 offset（模拟 ES 多值字段索引）
-        int cumulativeOffset = 0;
-        for (int i = 0; i < values.length; i++) {
-            String value = values[i];
-            int expectedLength = expectedLengths[i];
-
-            int actualFinalOffset = getFinalOffset(cfgMaxWord, value);
-            cumulativeOffset += actualFinalOffset;
-
-            System.out.println("  Value " + (i + 1) + ": \"" + value + "\" (len=" + value.length() + ")");
-            System.out.println("    finalOffset: " + actualFinalOffset + " (expected: " + expectedLength + ")");
-            System.out.println("    cumulativeOffset: " + cumulativeOffset);
-
-            assert actualFinalOffset == expectedLength :
-                    "值 " + (i + 1) + " (\"" + value + "\") finalOffset 错误: 期望 " + expectedLength + "，实际 " + actualFinalOffset;
-        }
-
-        // 最终累积 offset 应该等于所有值长度之和
+    private void printMultiValueResult(String[] values, int[] expectedLengths, int[] actualOffsets, int cumulativeOffset) {
         int expectedTotal = 0;
-        for (int len : expectedLengths) {
-            expectedTotal += len;
+        for (int len : expectedLengths) expectedTotal += len;
+
+        System.out.println("  ┌─────┬────────────────────┬──────┬──────────┬──────────┬───────┐");
+        System.out.println("  │  #  │ 值                 │ 长度 │ 期望FO   │ 实际FO   │ 结果  │");
+        System.out.println("  ├─────┼────────────────────┼──────┼──────────┼──────────┼───────┤");
+        for (int i = 0; i < values.length; i++) {
+            boolean pass = actualOffsets[i] == expectedLengths[i];
+            String result = pass ? "  ✓  " : "  ✗  ";
+            System.out.printf("  │ %3d │ %-18s │ %4d │ %8d │ %8d │ %s │%n",
+                    i + 1,
+                    values[i].length() > 18 ? values[i].substring(0, 15) + "..." : values[i],
+                    values[i].length(), expectedLengths[i], actualOffsets[i], result);
         }
-        System.out.println("Total cumulative offset: " + cumulativeOffset + " (expected: " + expectedTotal + ")");
-        assert cumulativeOffset == expectedTotal :
-                "总累积 offset 错误: 期望 " + expectedTotal + "，实际 " + cumulativeOffset;
+        System.out.println("  ├─────┼────────────────────┼──────┼──────────┼──────────┼───────┤");
+        boolean totalPass = cumulativeOffset == expectedTotal;
+        System.out.printf("  │     │ 累积 offset        │      │ %8d │ %8d │ %s │%n",
+                expectedTotal, cumulativeOffset, totalPass ? "  ✓  " : "  ✗  ");
+        System.out.println("  └─────┴────────────────────┴──────┴──────────┴──────────┴───────┘");
     }
 
-    /**
-     * 测试5: 无停用词场景 - 确保行为不变（回归测试）
-     */
+    /** 对两种模式运行同一个验证逻辑 */
+    private void runBothModes(String scenario, String description, BiConsumerWithException<Configuration, String> verifier) throws Exception {
+        printHeader(scenario, "ik_max_word", description);
+        verifier.accept(cfgMaxWord, "maxWord");
+        printHeader(scenario, "ik_smart", description);
+        verifier.accept(cfgSmart, "smart");
+    }
+
+    @FunctionalInterface
+    interface BiConsumerWithException<T, U> {
+        void accept(T t, U u) throws Exception;
+    }
+
+    // ========== 场景1: 全停用词 + 连续停用词 ==========
+
     @Test
-    public void testNoStopword_regression() {
-        String text = "中华人民共和国";
+    public void testAllStopwords() throws Exception {
+        runBothModes("全停用词 + 连续停用词",
+                "全部被过滤时 finalOffset 正确；连续停用词 posIncrement 累加",
+                (cfg, mode) -> {
+            // --- 单值全是停用词 ---
+            String text = "value";
+            List<TokenInfo> tokens = tokenizeWithDetails(cfg, text);
+            printInput(text);
+            printTokenTable(tokens, text);
 
-        List<TokenInfo> tokens = tokenizeWithDetails(cfgMaxWord, text);
+            List<String> realTokens = tokens.stream()
+                    .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
+                    .map(TokenInfo::getTerm).collect(Collectors.toList());
+            boolean noTokens = realTokens.isEmpty();
+            printAssertion("无 token 产出（停用词全部过滤）", true, noTokens, noTokens);
+            assert noTokens : "[" + mode + "] \"value\" 是停用词，不应产生 token";
 
-        System.out.println("=== testNoStopword (regression) ===");
-        System.out.println("Input: " + text);
-        for (TokenInfo t : tokens) {
-            System.out.println("  " + t);
-        }
+            int finalOffset = tokens.stream()
+                    .filter(t -> t.term.equals("<FINAL_OFFSET>"))
+                    .findFirst().map(TokenInfo::getStartOffset).orElse(-1);
+            printAssertion("finalOffset = 文本长度", 5, finalOffset, finalOffset == 5);
+            assert finalOffset == 5 : "[" + mode + "] finalOffset 应为 5，实际为 " + finalOffset;
 
-        List<String> terms = tokens.stream()
-                .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
-                .map(TokenInfo::getTerm)
-                .collect(Collectors.toList());
-        assert !terms.isEmpty();
+            // --- 连续停用词 ---
+            String text2 = "hello a the world test";
+            List<TokenInfo> tokens2 = tokenizeWithDetails(cfg, text2);
+            printInput(text2);
+            printTokenTable(tokens2, text2);
 
-        // 验证最后一个 token 的 endOffset 和 finalOffset 一致
-        TokenInfo lastRealToken = tokens.get(tokens.size() - 2);
-        TokenInfo finalToken = tokens.get(tokens.size() - 1);
-        assert finalToken.startOffset >= lastRealToken.endOffset :
-                "finalOffset 应 >= 最后一个 token 的 endOffset";
+            TokenInfo testToken = tokens2.stream()
+                    .filter(t -> t.term.equals("test")).findFirst().orElse(null);
+            assert testToken != null;
+            boolean posCorrect = testToken.posIncrement == 5;
+            printAssertion("'test' posIncrement（跳过 hello/a/the/world 4个停用词）", 5, testToken.posIncrement, posCorrect);
+            assert posCorrect : "[" + mode + "] 'test' posIncrement 应为 5，实际为 " + testToken.posIncrement;
+
+            int finalOffset2 = tokens2.stream()
+                    .filter(t -> t.term.equals("<FINAL_OFFSET>"))
+                    .findFirst().map(TokenInfo::getStartOffset).orElse(-1);
+            printAssertion("finalOffset = 文本长度", 22, finalOffset2, finalOffset2 == 22);
+            assert finalOffset2 == 22 : "[" + mode + "] finalOffset 应为 22";
+        });
     }
 
-    /**
-     * 测试6: ik_smart 模式下停用词过滤
-     */
+    // ========== 场景2: 停用词过滤（英文+中文） ==========
+
     @Test
-    public void testSmartModeStopword() {
-        String text = "hello value world";
+    public void testStopwordFiltering() throws Exception {
+        runBothModes("停用词过滤（英文 offset + 中文停用词）",
+                "英文停用词被过滤后 offset/posIncrement 正确；中文 '的' 被过滤",
+                (cfg, mode) -> {
+            // --- 英文 offset + positionIncrement ---
+            String text = "foo value bar";
+            List<TokenInfo> tokens = tokenizeWithDetails(cfg, text);
+            printInput(text);
+            printTokenTable(tokens, text);
 
-        List<TokenInfo> tokens = tokenizeWithDetails(cfgSmart, text);
+            TokenInfo fooToken = tokens.stream().filter(t -> t.term.equals("foo")).findFirst().orElse(null);
+            assert fooToken != null;
+            printAssertion("'foo' startOffset", 0, fooToken.startOffset, fooToken.startOffset == 0);
+            printAssertion("'foo' endOffset", 3, fooToken.endOffset, fooToken.endOffset == 3);
+            printAssertion("'foo' posIncrement", 1, fooToken.posIncrement, fooToken.posIncrement == 1);
+            assert fooToken.startOffset == 0 && fooToken.endOffset == 3 && fooToken.posIncrement == 1;
 
-        System.out.println("=== testSmartModeStopword ===");
-        System.out.println("Input: " + text);
-        for (TokenInfo t : tokens) {
-            System.out.println("  " + t);
-        }
+            TokenInfo barToken = tokens.stream().filter(t -> t.term.equals("bar")).findFirst().orElse(null);
+            assert barToken != null;
+            printAssertion("'bar' startOffset（跳过 'value ' 共6字符）", 10, barToken.startOffset, barToken.startOffset == 10);
+            printAssertion("'bar' endOffset", 13, barToken.endOffset, barToken.endOffset == 13);
+            printAssertion("'bar' posIncrement（跳过 value 1个停用词）", 2, barToken.posIncrement, barToken.posIncrement == 2);
+            assert barToken.startOffset == 10 && barToken.endOffset == 13 && barToken.posIncrement == 2;
 
-        List<String> terms = tokens.stream()
-                .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
-                .map(TokenInfo::getTerm)
-                .collect(Collectors.toList());
-        assert terms.contains("hello") : "应包含 'hello'";
-        assert terms.contains("world") : "应包含 'world'";
-        assert !terms.contains("value") : "不应包含 'value'";
+            // --- 中文停用词 ---
+            String text2 = "我的数据库";
+            List<TokenInfo> tokens2 = tokenizeWithDetails(cfg, text2);
+            printInput(text2);
+            printTokenTable(tokens2, text2);
 
-        // 验证 finalOffset
-        TokenInfo finalToken = tokens.stream().filter(t -> t.term.equals("<FINAL_OFFSET>")).findFirst().orElse(null);
-        assert finalToken != null;
-        assert finalToken.startOffset == 17 : "finalOffset 应为 17";
+            List<String> cnTerms = tokens2.stream()
+                    .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
+                    .map(TokenInfo::getTerm).collect(Collectors.toList());
+            printAssertion("'的' 不出现（停用词过滤）", false, cnTerms.contains("的"), !cnTerms.contains("的"));
+            printAssertion("'我' 存在", true, cnTerms.contains("我"), cnTerms.contains("我"));
+            printAssertion("'数据库' 存在", true, cnTerms.contains("数据库"), cnTerms.contains("数据库"));
+            assert !cnTerms.contains("的") : "[" + mode + "] '的' 不应出现";
+            assert cnTerms.contains("我") && cnTerms.contains("数据库");
+        });
     }
 
-    /**
-     * 测试7: 连续停用词 - positionIncrement 正确累加
-     */
+    // ========== 场景3: 原始 issue 多值场景 ==========
+
     @Test
-    public void testConsecutiveStopwords() throws Exception {
-        addStopword("hello");
-        addStopword("world");
+    public void testOriginalIssueScenario() throws Exception {
+        runBothModes("原始 issue #921 多值场景",
+                "模拟 ES 多值字段 [\"RS\",\"复称\",\"value\",\"数据\",\"采集\",\"232\",\"485\",\"数据库\",\"数据库服务器\"]，其中 \"value\" 是停用词",
+                (cfg, mode) -> {
+            String[] values = {"RS", "复称", "value", "数据", "采集", "232", "485", "数据库", "数据库服务器"};
+            int[] expectedLengths = {2, 2, 5, 2, 2, 3, 3, 3, 6};
+            int[] actualOffsets = new int[values.length];
 
-        String text = "hello a the world test";
+            int cumulativeOffset = 0;
+            for (int i = 0; i < values.length; i++) {
+                actualOffsets[i] = getFinalOffset(cfg, values[i]);
+                cumulativeOffset += actualOffsets[i];
+                assert actualOffsets[i] == expectedLengths[i] :
+                        "[" + mode + "] 值 " + (i + 1) + " finalOffset: 期望 " + expectedLengths[i] + "，实际 " + actualOffsets[i];
+            }
 
-        List<TokenInfo> tokens = tokenizeWithDetails(cfgMaxWord, text);
+            int expectedTotal = 0;
+            for (int len : expectedLengths) expectedTotal += len;
+            printMultiValueResult(values, expectedLengths, actualOffsets, cumulativeOffset);
 
-        System.out.println("=== testConsecutiveStopwords ===");
-        System.out.println("Input: " + text);
-        for (TokenInfo t : tokens) {
-            System.out.println("  " + t);
-        }
+            assert cumulativeOffset == expectedTotal :
+                    "[" + mode + "] 总累积 offset: 期望 " + expectedTotal + "，实际 " + cumulativeOffset;
 
-        // "hello", "a", "the", "world" 都是停用词，只有 "test" 不是
-        List<String> terms = tokens.stream()
-                .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
-                .map(TokenInfo::getTerm)
-                .collect(Collectors.toList());
-        assert !terms.contains("hello") : "不应包含 'hello'";
-        assert !terms.contains("a") : "不应包含 'a'";
-        assert !terms.contains("the") : "不应包含 'the'";
-        assert !terms.contains("world") : "不应包含 'world'";
-        assert terms.contains("test") : "应包含 'test'";
-
-        // "test" 的 positionIncrement 应为 5（跳过了4个停用词）
-        TokenInfo testToken = tokens.stream().filter(t -> t.term.equals("test")).findFirst().orElse(null);
-        assert testToken != null;
-        assert testToken.posIncrement == 5 :
-                "'test' 的 positionIncrement 应为 5（跳过了4个停用词），实际为 " + testToken.posIncrement;
+            System.out.println("  ※ 值3 \"value\" 全部是停用词，修复前 finalOffset=0，修复后 finalOffset=5");
+            System.out.println("  ※ 修复前累积 offset 差 5 字符，导致后续所有值的高亮偏移");
+        });
     }
+
+    // ========== 场景4: 无停用词回归测试 ==========
+
+    @Test
+    public void testNoStopwordRegression() throws Exception {
+        runBothModes("无停用词回归测试",
+                "确保修复不影响正常分词场景",
+                (cfg, mode) -> {
+            String text = "中华人民共和国";
+            List<TokenInfo> tokens = tokenizeWithDetails(cfg, text);
+            printInput(text);
+            printTokenTable(tokens, text);
+
+            List<String> terms = tokens.stream()
+                    .filter(t -> !t.term.equals("<FINAL_OFFSET>"))
+                    .map(TokenInfo::getTerm).collect(Collectors.toList());
+            assert !terms.isEmpty() : "[" + mode + "] 应有分词结果";
+
+            TokenInfo lastRealToken = tokens.get(tokens.size() - 2);
+            TokenInfo finalToken = tokens.get(tokens.size() - 1);
+            boolean pass = finalToken.startOffset >= lastRealToken.endOffset;
+            printAssertion("finalOffset >= 最后 token endOffset",
+                    ">=" + lastRealToken.endOffset, finalToken.startOffset, pass);
+            assert pass : "[" + mode + "] finalOffset 应 >= 最后一个 token 的 endOffset";
+        });
+    }
+
+    // ========== 场景5: 多值+值内含停用词 ==========
+
+    @Test
+    public void testMultiValueWithPartialStopword() throws Exception {
+        runBothModes("多值+值内含停用词",
+                "多值字段 [\"RS\",\"foo value bar\",\"数据库\"]，\"value\" 被过滤但 finalOffset 仍正确",
+                (cfg, mode) -> {
+            String[] values = {"RS", "foo value bar", "数据库"};
+            int[] expectedLengths = {2, 13, 3};
+
+            int cumulativeOffset = 0;
+            int[] actualOffsets = new int[values.length];
+
+            for (int i = 0; i < values.length; i++) {
+                List<TokenInfo> tokens = tokenizeWithDetails(cfg, values[i]);
+                int actualFinalOffset = tokens.stream()
+                        .filter(t -> t.term.equals("<FINAL_OFFSET>"))
+                        .findFirst().map(TokenInfo::getStartOffset).orElse(-1);
+                actualOffsets[i] = actualFinalOffset;
+                cumulativeOffset += actualFinalOffset;
+                assert actualFinalOffset == expectedLengths[i] :
+                        "[" + mode + "] 值 " + (i + 1) + " finalOffset: 期望 " + expectedLengths[i] + "，实际 " + actualFinalOffset;
+            }
+
+            printMultiValueResult(values, expectedLengths, actualOffsets, cumulativeOffset);
+
+            int expectedTotal = 0;
+            for (int len : expectedLengths) expectedTotal += len;
+            assert cumulativeOffset == expectedTotal :
+                    "[" + mode + "] 总累积 offset: 期望 " + expectedTotal + "，实际 " + cumulativeOffset;
+
+            // "foo value bar" 内部细节
+            System.out.println("  ── \"foo value bar\" 内部分词详情 ──");
+            List<TokenInfo> midTokens = tokenizeWithDetails(cfg, "foo value bar");
+            printTokenTable(midTokens, "foo value bar");
+
+            TokenInfo barToken = midTokens.stream().filter(t -> t.term.equals("bar")).findFirst().orElse(null);
+            assert barToken != null;
+            boolean offsetPass = barToken.startOffset == 10;
+            boolean posPass = barToken.posIncrement == 2;
+            printAssertion("'bar' startOffset（'value ' 被过滤，offset 不跳跃）", 10, barToken.startOffset, offsetPass);
+            printAssertion("'bar' posIncrement（跳过 'value' 1个停用词）", 2, barToken.posIncrement, posPass);
+            assert offsetPass && posPass;
+
+            System.out.println("  ※ \"foo value bar\" 中 'value' 被过滤，但 offset 仍基于原始文本位置 [0,13]");
+        });
+    }
+
+    // ========== Token 信息类 ==========
 
     static class TokenInfo {
         private final String term;
@@ -365,10 +431,5 @@ public class Issue921Test {
         public int getEndOffset() { return endOffset; }
         public int getPosIncrement() { return posIncrement; }
         public String getType() { return type; }
-
-        @Override
-        public String toString() {
-            return term + "[" + startOffset + "," + endOffset + "] posIncr=" + posIncrement + " type=" + type;
-        }
     }
 }
