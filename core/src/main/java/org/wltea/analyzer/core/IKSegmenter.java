@@ -45,6 +45,10 @@ public final class IKSegmenter {
 	//分词歧义裁决器
 	private IKArbitrator arbitrator;
 	private Configuration configuration;
+	//记录已被消费的最大结束位置（在 context.reset() 前保存）
+	private int savedMaxConsumedEndPosition;
+	//记录累计跳过的停用词数量（在一次 incrementToken 调用周期内）
+	private int savedSkippedCount;
 	
 
 	/**
@@ -94,6 +98,7 @@ public final class IKSegmenter {
 	 */
 	public synchronized Lexeme next()throws IOException{
 		Lexeme l = null;
+		savedSkippedCount = 0;
 		while((l = context.getNextLexeme()) == null ){
 			/*
 			 * 从reader中读取数据，填充buffer
@@ -103,9 +108,11 @@ public final class IKSegmenter {
 			int available = context.fillBuffer(this.input);
 			if(available <= 0){
 				//reader已经读完
+				//在 reset() 前保存已消费的最大位置，供 end() 使用
+				savedMaxConsumedEndPosition = context.getMaxConsumedEndPosition();
 				context.reset();
 				return null;
-				
+
 			}else{
 				//初始化指针
 				context.initCursor();
@@ -130,8 +137,9 @@ public final class IKSegmenter {
 			//将分词结果输出到结果集，并处理未切分的单个CJK字符
 			context.outputToResult();
 			//记录本次分词的缓冲区位移
-			context.markBufferOffset();			
+			context.markBufferOffset();
 		}
+		savedSkippedCount += context.getLastSkippedCount();
 		return l;
 	}
 
@@ -145,6 +153,8 @@ public final class IKSegmenter {
 		for(ISegmenter segmenter : segmenters){
 			segmenter.reset();
 		}
+		savedMaxConsumedEndPosition = 0;
+		savedSkippedCount = 0;
 	}
 
 	/**
@@ -152,5 +162,21 @@ public final class IKSegmenter {
 	 */
 	public int getLastUselessCharNum() {
 		return this.context.getLastUselessCharNum();
+	}
+
+	/**
+	 * 获取已被消费的最大结束位置（含被停用词过滤的词元）
+	 * 用于修复 issue#921：全部词元被停用词过滤时 end() 返回正确的 finalOffset
+	 */
+	public int getSavedMaxConsumedEndPosition() {
+		return Math.max(savedMaxConsumedEndPosition, context.getMaxConsumedEndPosition());
+	}
+
+	/**
+	 * 获取累计跳过的停用词数量
+	 * 用于修复 issue#921：正确设置 positionIncrement
+	 */
+	public int getSavedSkippedCount() {
+		return savedSkippedCount;
 	}
 }
