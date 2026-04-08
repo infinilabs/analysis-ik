@@ -78,6 +78,12 @@ class AnalyzeContext {
 	//分词器配置项
 	private Configuration cfg;
 
+	//记录已被消费的最大结束位置（含被停用词过滤的词元）
+	//用于修复 issue#921：全部词元被停用词过滤时 end() 返回正确的 finalOffset
+	private int maxConsumedEndPosition;
+	//记录最近一次 getNextLexeme() 调用中跳过的停用词数量
+	private int lastSkippedCount;
+
     public AnalyzeContext(Configuration configuration){
         this.cfg = configuration;
     	this.segmentBuff = new char[BUFF_SIZE];
@@ -322,20 +328,28 @@ class AnalyzeContext {
 	}
 		
 	/**
-	 * 返回lexeme 
-	 * 
+	 * 返回lexeme
+	 *
 	 * 同时处理合并
 	 * @return
 	 */
 	Lexeme getNextLexeme(){
+		//重置本次调用的停用词跳过计数
+		lastSkippedCount = 0;
 		//从结果集取出，并移除第一个Lexme
 		Lexeme result = this.results.pollFirst();
 		while(result != null){
     		//数量词合并
     		this.compound(result);
+    		//跟踪所有被消费的词元的最大结束位置（含被停用词过滤的）
+    		int endPos = result.getBeginPosition() + result.getLength();
+    		if(endPos > maxConsumedEndPosition){
+    			maxConsumedEndPosition = endPos;
+    		}
     		if(Dictionary.getSingleton().isStopWord(this.segmentBuff ,  result.getBegin() , result.getLength())){
        			//是停止词继续取列表的下一个
-    			result = this.results.pollFirst(); 				
+    			lastSkippedCount++;
+    			result = this.results.pollFirst();
     		}else{
 	 			//不是停止词, 生成lexeme的词元文本,输出
 	    		result.setLexemeText(String.valueOf(segmentBuff , result.getBegin() , result.getLength()));
@@ -343,6 +357,20 @@ class AnalyzeContext {
     		}
 		}
 		return result;
+	}
+
+	/**
+	 * 获取已被消费的最大结束位置（含被停用词过滤的词元）
+	 */
+	int getMaxConsumedEndPosition(){
+		return maxConsumedEndPosition;
+	}
+
+	/**
+	 * 获取最近一次 getNextLexeme() 调用中跳过的停用词数量
+	 */
+	int getLastSkippedCount(){
+		return lastSkippedCount;
 	}
 
 	/**
@@ -355,7 +383,7 @@ class AnalyzeContext {
 	/**
 	 * 重置分词上下文状态
 	 */
-	void reset(){		
+	void reset(){
 		this.buffLocker.clear();
         this.orgLexemes = new QuickSortSet();
         this.available =0;
@@ -365,6 +393,8 @@ class AnalyzeContext {
     	this.results.clear();
     	this.segmentBuff = new char[BUFF_SIZE];
     	this.pathMap.clear();
+    	this.maxConsumedEndPosition = 0;
+    	this.lastSkippedCount = 0;
 	}
 	
 	/**

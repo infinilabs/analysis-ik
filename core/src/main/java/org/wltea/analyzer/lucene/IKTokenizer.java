@@ -81,11 +81,12 @@ public final class IKTokenizer extends Tokenizer {
 	public boolean incrementToken() throws IOException {
 		//清除所有的词元属性
 		clearAttributes();
-        skippedPositions = 0;
 
         Lexeme nextLexeme = _IKImplement.next();
 		if(nextLexeme != null){
-            posIncrAtt.setPositionIncrement(skippedPositions +1 );
+			//从底层获取跳过的停用词数量，正确设置 positionIncrement
+			skippedPositions = _IKImplement.getSavedSkippedCount();
+            posIncrAtt.setPositionIncrement(skippedPositions + 1);
 
 			//将Lexeme转成Attributes
 			//设置词元文本
@@ -98,7 +99,7 @@ public final class IKTokenizer extends Tokenizer {
             //记录分词的最后位置
 			endPosition = nextLexeme.getEndPosition();
 			//记录词元分类
-			typeAtt.setType(nextLexeme.getLexemeTypeString());			
+			typeAtt.setType(nextLexeme.getLexemeTypeString());
 			//返会true告知还有下个词元
 			return true;
 		}
@@ -122,7 +123,9 @@ public final class IKTokenizer extends Tokenizer {
 	public final void end() throws IOException {
         super.end();
 	    // set final offset
-		int finalOffset = correctOffset(this.endPosition+ _IKImplement.getLastUselessCharNum());
+	    //修复 issue#921：使用 max(endPosition, savedMaxConsumedEndPosition) 确保全部词元被停用词过滤时 finalOffset 仍正确
+		int maxEnd = Math.max(this.endPosition, _IKImplement.getSavedMaxConsumedEndPosition());
+		int finalOffset = correctOffset(maxEnd + _IKImplement.getLastUselessCharNum());
 		offsetAtt.setOffset(finalOffset, finalOffset);
         posIncrAtt.setPositionIncrement(posIncrAtt.getPositionIncrement() + skippedPositions);
 	}
