@@ -1,7 +1,7 @@
 /**
  * IK 中文分词  版本 5.0.1
  * IK Analyzer release 5.0.1
- * 
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -20,9 +20,8 @@
  * 源代码由林良益(linliangyi2005@gmail.com)提供
  * 版权声明 2012，乌龙茶工作室
  * provided by Linliangyi and copyright 2012 by Oolong studio
- * 
 
- * 
+ *
  */
 package org.wltea.analyzer.lucene;
 
@@ -43,10 +42,10 @@ import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
  * 兼容Lucene 4.0版本
  */
 public final class IKTokenizer extends Tokenizer {
-	
+
 	//IK分词器实现
 	private IKSegmenter _IKImplement;
-	
+
 	//词元文本属性
 	private final CharTermAttribute termAtt;
 	//词元位移属性
@@ -81,11 +80,12 @@ public final class IKTokenizer extends Tokenizer {
 	public boolean incrementToken() throws IOException {
 		//清除所有的词元属性
 		clearAttributes();
-        skippedPositions = 0;
 
         Lexeme nextLexeme = _IKImplement.next();
 		if(nextLexeme != null){
-            posIncrAtt.setPositionIncrement(skippedPositions +1 );
+			//从底层获取跳过的停用词数量，正确设置 positionIncrement
+			skippedPositions = _IKImplement.getSavedSkippedCount();
+            posIncrAtt.setPositionIncrement(skippedPositions + 1);
 
 			//将Lexeme转成Attributes
 			//设置词元文本
@@ -98,14 +98,14 @@ public final class IKTokenizer extends Tokenizer {
             //记录分词的最后位置
 			endPosition = nextLexeme.getEndPosition();
 			//记录词元分类
-			typeAtt.setType(nextLexeme.getLexemeTypeString());			
+			typeAtt.setType(nextLexeme.getLexemeTypeString());
 			//返会true告知还有下个词元
 			return true;
 		}
 		//返会false告知词元输出完毕
 		return false;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * @see org.apache.lucene.analysis.Tokenizer#reset(java.io.Reader)
@@ -116,13 +116,15 @@ public final class IKTokenizer extends Tokenizer {
 		_IKImplement.reset(input);
         skippedPositions = 0;
 		endPosition = 0;
-	}	
-	
+	}
+
 	@Override
 	public final void end() throws IOException {
         super.end();
 	    // set final offset
-		int finalOffset = correctOffset(this.endPosition+ _IKImplement.getLastUselessCharNum());
+	    //修复 issue#921：使用 max(endPosition, savedMaxConsumedEndPosition) 确保全部词元被停用词过滤时 finalOffset 仍正确
+		int maxEnd = Math.max(this.endPosition, _IKImplement.getSavedMaxConsumedEndPosition());
+		int finalOffset = correctOffset(maxEnd + _IKImplement.getLastUselessCharNum());
 		offsetAtt.setOffset(finalOffset, finalOffset);
         posIncrAtt.setPositionIncrement(posIncrAtt.getPositionIncrement() + skippedPositions);
 	}
