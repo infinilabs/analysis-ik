@@ -3,7 +3,6 @@
  */
 package com.infinilabs.ik.elasticsearch;
 
-import org.elasticsearch.SpecialPermission;
 import org.elasticsearch.core.PathUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
@@ -61,6 +60,5 @@ public class ConfigurationSub extends Configuration {
 	}
 	
 	public void check(){
-		SpecialPermission.check();
 	}
 }
