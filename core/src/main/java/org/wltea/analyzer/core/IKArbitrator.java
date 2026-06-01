@@ -130,7 +130,7 @@ class IKArbitrator {
 					if (remainLength > 0) {
 						// 创建一个表示剩余部分的词元
 						// offset 应该是第一个词元的 offset + 第一个词元的长度
-						int remainOffset = firstLexeme.getOffset() + firstLexeme.getLength();
+						int remainOffset = firstLexeme.getOffset();
 						Lexeme remainLexeme = new Lexeme(remainOffset, remainStart, remainLength, Lexeme.TYPE_CNCHAR);
 						simplifiedPath.addNotCrossLexeme(remainLexeme);
 					}
