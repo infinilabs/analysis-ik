@@ -5,16 +5,30 @@ import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.analysis.tokenattributes.TypeAttribute;
 import java.util.stream.Collectors;
+import org.junit.Assert;
 import org.junit.Test;
 import org.wltea.analyzer.cfg.Configuration;
 import org.wltea.analyzer.TestUtils;
 import org.wltea.analyzer.core.Lexeme;
+import org.wltea.analyzer.dic.Dictionary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class IKAnalyzerTests {
+
+    private static final List<String> ISSUE_1155_WORDS = Arrays.asList(
+            "这段文字用于测试分词器",
+            "文字用于测试分词器偏移",
+            "用于测试分词器偏移量计",
+            "测试分词器偏移量计算在",
+            "分词器偏移量计算在运行",
+            "器偏移量计算在运行过程"
+    );
+
+    private static final String ISSUE_1155_TEXT =
+            "这段文字用于测试分词器偏移量计算在运行过程后检验和确认结果";
 
     /**
      * 单char汉字+一个Surrogate Pair
@@ -403,6 +417,81 @@ public class IKAnalyzerTests {
         boolean hasFullToken = tokenList.contains("rs12345678901");
 
         assert hasFullToken : "Bug复现: ik_max_word模式下长数字也被吞掉了！";
+    }
+
+    /**
+     * Test for Issue #1155: complex crossPath fallback must not emit regressing offsets.
+     * https://github.com/infinilabs/analysis-ik/issues/1155
+     */
+    @Test
+    public void tokenize_issue1155_smart_complex_cross_path_offsets_do_not_go_backwards()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        Dictionary.getSingleton().addWords(ISSUE_1155_WORDS);
+
+        assertOffsetsNeverGoBackwards(cfg, ISSUE_1155_TEXT);
+    }
+
+    /**
+     * Test for Issue #1155: repeated complex crossPath input should remain bounded.
+     * This is a coarse performance guard, not a micro benchmark.
+     * https://github.com/infinilabs/analysis-ik/issues/1155
+     */
+    @Test
+    public void tokenize_issue1155_smart_complex_cross_path_performance()
+    {
+        Configuration cfg = TestUtils.createFakeConfigurationSub(true);
+        Dictionary.getSingleton().addWords(ISSUE_1155_WORDS);
+
+        StringBuilder sb = new StringBuilder(ISSUE_1155_TEXT.length() * 200);
+        for (int i = 0; i < 200; i++) {
+            sb.append(ISSUE_1155_TEXT).append('。');
+        }
+
+        long startTime = System.currentTimeMillis();
+        assertOffsetsNeverGoBackwards(cfg, sb.toString());
+        long duration = System.currentTimeMillis() - startTime;
+
+        Assert.assertTrue(
+                String.format("IK_SMART分词Issue #1155复杂crossPath耗时%dms，超过5秒限制", duration),
+                duration <= 5000);
+
+        System.out.println(String.format("IK_SMART分词Issue #1155复杂crossPath耗时: %dms", duration));
+    }
+
+    static void assertOffsetsNeverGoBackwards(Configuration configuration, String s)
+    {
+        try (IKAnalyzer ikAnalyzer = new IKAnalyzer(configuration)) {
+            TokenStream tokenStream = ikAnalyzer.tokenStream("text", s);
+            tokenStream.reset();
+
+            OffsetAttribute offsetAttribute = tokenStream.getAttribute(OffsetAttribute.class);
+            int lastStartOffset = 0;
+            boolean sawToken = false;
+
+            while(tokenStream.incrementToken()) {
+                int startOffset = offsetAttribute.startOffset();
+                int endOffset = offsetAttribute.endOffset();
+
+                Assert.assertTrue("startOffset must be non-negative", startOffset >= 0);
+                Assert.assertTrue("endOffset must be >= startOffset", endOffset >= startOffset);
+                Assert.assertTrue(
+                        String.format("offsets must not go backwards: startOffset=%d,lastStartOffset=%d",
+                                startOffset,
+                                lastStartOffset),
+                        startOffset >= lastStartOffset);
+
+                lastStartOffset = startOffset;
+                sawToken = true;
+            }
+
+            tokenStream.end();
+            Assert.assertTrue("分词结果不能为空", sawToken);
+        }
+        catch (Exception ex)
+        {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
