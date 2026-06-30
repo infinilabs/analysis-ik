@@ -31,6 +31,11 @@ import java.util.TreeSet;
  * IK分词歧义裁决器
  */
 class IKArbitrator {
+	private static final int LONG_CN_WORD_LENGTH_THRESHOLD = 10;
+	private static final int LONG_CN_WORD_COUNT_THRESHOLD = 5;
+	private static final int TOTAL_LEXEME_COUNT_THRESHOLD = 50;
+	private static final int DENSE_CROSS_PATH_SIZE_THRESHOLD = 20;
+	private static final int DENSE_OVERLAP_RATIO_THRESHOLD = 4;
 
 	IKArbitrator(){
 		
@@ -55,8 +60,7 @@ class IKArbitrator {
 					context.addLexemePath(crossPath);
 				}else{
 					//对当前的crossPath进行歧义处理
-					QuickSortSet.Cell headCell = crossPath.getHead();
-					LexemePath judgeResult = this.judge(headCell, crossPath.getPathLength());
+					LexemePath judgeResult = this.judge(crossPath);
 					//输出歧义处理结果judgeResult
 					context.addLexemePath(judgeResult);
 				}
@@ -76,88 +80,108 @@ class IKArbitrator {
 			context.addLexemePath(crossPath);
 		}else{
 			//对当前的crossPath进行歧义处理
-			QuickSortSet.Cell headCell = crossPath.getHead();
-			LexemePath judgeResult = this.judge(headCell, crossPath.getPathLength());
+			LexemePath judgeResult = this.judge(crossPath);
 			//输出歧义处理结果judgeResult
 			context.addLexemePath(judgeResult);
 		}
 	}
 	
 /**
-	 * 检测是否为叠词模式
-	 * @param lexemeCell 词元链表头
-	 * @return 如果检测到叠词模式返回简化的路径，否则返回null
+	 * 为过于复杂的交叉路径构造低成本兜底路径。
+	 * 该逻辑是ik_smart歧义裁决的性能护栏，避免在高密度crossPath上进行昂贵的回溯裁决。
+	 * @param crossPath 当前待裁决的交叉词元路径
+	 * @return 如果路径复杂度超过阈值则返回兜底路径，否则返回null
 	 */
-	private LexemePath detectRepeatedWords(QuickSortSet.Cell lexemeCell) {
-		if (lexemeCell == null || lexemeCell.getLexeme() == null) {
+	private LexemePath tryBuildFallbackPathForComplexCrossPath(LexemePath crossPath) {
+		if (crossPath == null || crossPath.isEmpty()) {
 			return null;
 		}
-		
-		// 检查是否有连续的长词元（长度>10）或大量重复词元
-		QuickSortSet.Cell current = lexemeCell;
-		int longLexemeCount = 0;
-		int totalCount = 0;
-		Lexeme firstLexeme = null;
-		Lexeme lastLexeme = null;
-		
+
+		if (!this.shouldFallbackForComplexCrossPath(crossPath)) {
+			return null;
+		}
+
+		return this.buildFallbackPath(crossPath);
+	}
+
+	/**
+	 * 判断当前交叉路径是否已经复杂到需要跳过正常回溯裁决。
+	 */
+	private boolean shouldFallbackForComplexCrossPath(LexemePath crossPath) {
+		if (crossPath.size() > TOTAL_LEXEME_COUNT_THRESHOLD) {
+			return true;
+		}
+
+		int longCnWordCount = 0;
+		long totalLexemeLength = 0;
+		QuickSortSet.Cell current = crossPath.getHead();
 		while (current != null && current.getLexeme() != null) {
 			Lexeme lexeme = current.getLexeme();
-			if (firstLexeme == null) {
-				firstLexeme = lexeme;
+
+			totalLexemeLength += lexeme.getLength();
+
+			if (lexeme.getLexemeType() == Lexeme.TYPE_CNWORD
+					&& lexeme.getLength() > LONG_CN_WORD_LENGTH_THRESHOLD) {
+				longCnWordCount++;
 			}
-			lastLexeme = lexeme;
-			
-			if (lexeme.getLength() > 10) {
-				longLexemeCount++;
-			}
-			totalCount++;
-			
-			// 如果发现多个长词元或词元总数过多，认为是叠词
-			if (longLexemeCount > 5 || totalCount > 50) {
-				// 构造简化路径：第一个词元 + 剩余部分合并为一个词元
-				LexemePath simplifiedPath = new LexemePath();
-				
-				// 添加第一个词元
-				simplifiedPath.addNotCrossLexeme(firstLexeme);
-				
-				// 如果有剩余部分，创建一个合并的词元
-				if (totalCount > 1 && lastLexeme != null) {
-					// 计算剩余部分的起始位置和长度
-					int remainStart = firstLexeme.getBegin() + firstLexeme.getLength();
-					int remainEnd = lastLexeme.getBegin() + lastLexeme.getLength();
-					int remainLength = remainEnd - remainStart;
-					
-					if (remainLength > 0) {
-						// 创建一个表示剩余部分的词元
-						// offset 应该是第一个词元的 offset + 第一个词元的长度
-						int remainOffset = firstLexeme.getOffset() + firstLexeme.getLength();
-						Lexeme remainLexeme = new Lexeme(remainOffset, remainStart, remainLength, Lexeme.TYPE_CNCHAR);
-						simplifiedPath.addNotCrossLexeme(remainLexeme);
-					}
-				}
-				
-				return simplifiedPath;
-			}
-			
 			current = current.getNext();
 		}
-		
-		return null; // 没有检测到叠词模式
+
+		int pathLength = crossPath.getPathEnd() - crossPath.getPathBegin();
+		if (pathLength <= 0) {
+			return false;
+		}
+
+		return longCnWordCount > LONG_CN_WORD_COUNT_THRESHOLD
+				&& crossPath.size() >= DENSE_CROSS_PATH_SIZE_THRESHOLD
+				&& totalLexemeLength >= (long) pathLength * DENSE_OVERLAP_RATIO_THRESHOLD;
+	}
+
+	/**
+	 * 构造低成本兜底路径。保留首词，并将其后的覆盖区间合成为一个词元。
+	 */
+	private LexemePath buildFallbackPath(LexemePath crossPath) {
+		Lexeme firstLexeme = crossPath.peekFirst();
+		if (firstLexeme == null) {
+			return null;
+		}
+
+		LexemePath fallbackPath = new LexemePath();
+		if (!fallbackPath.addNotCrossLexeme(firstLexeme)) {
+			return null;
+		}
+
+		int remainStart = firstLexeme.getBegin() + firstLexeme.getLength();
+		int remainLength = crossPath.getPathEnd() - remainStart;
+
+		if (remainLength > 0) {
+			Lexeme remainLexeme = new Lexeme(
+					firstLexeme.getOffset(),
+					remainStart,
+					remainLength,
+					Lexeme.TYPE_CNWORD);
+			if (!fallbackPath.addNotCrossLexeme(remainLexeme)) {
+				return null;
+			}
+		}
+
+		return fallbackPath;
 	}
 
 	/**
 	 * 歧义识别
-	 * @param lexemeCell 歧义路径链表头
-	 * @param fullTextLength 歧义路径文本长度
+	 * @param crossPath 歧义路径
 	 * @return
 	 */
-	private LexemePath judge(QuickSortSet.Cell lexemeCell , int fullTextLength){
-		// 首先检测是否为叠词模式，如果是则直接返回简化路径
-		LexemePath simplifiedPath = this.detectRepeatedWords(lexemeCell);
-		if (simplifiedPath != null) {
-			//System.out.println("Detected repeated words pattern, using simplified path");
-			return simplifiedPath;
+	private LexemePath judge(LexemePath crossPath){
+		// 首先判断当前crossPath是否过于复杂，如果是则直接返回低成本兜底路径
+		LexemePath fallbackPath = this.tryBuildFallbackPathForComplexCrossPath(crossPath);
+		if (fallbackPath != null) {
+			return fallbackPath;
 		}
+
+		QuickSortSet.Cell lexemeCell = crossPath.getHead();
+
 		//候选路径集合
 		TreeSet<LexemePath> pathOptions = new TreeSet<LexemePath>();
 		//候选结果路径
@@ -196,16 +220,6 @@ class IKArbitrator {
 		QuickSortSet.Cell c = lexemeCell;
 		//迭代遍历Lexeme链表
 		while(c != null && c.getLexeme() != null){
-			//限制大长度叠词，避免性能问题和整数溢出
-                        //只对中文词元应用长度限制，因为只有中文才可能有叠词问题
-			//对于数字、字母、字母数字混合等其他类型的词元，不限制长度
-			if(c.getLexeme().getLexemeType() == Lexeme.TYPE_CNWORD && c.getLexeme().getLength() > 10){
-				//跳过过长的中文叠词
-				//System.out.println("already repeat words 10 times");
-				//跳过过长的词元
-				c = c.getNext();
-				continue;
-			}
 			if(!option.addNotCrossLexeme(c.getLexeme())){
 				//词元交叉，添加失败则加入lexemeStack栈
 				conflictStack.push(c);
